@@ -1,4 +1,4 @@
-# Microservice de Formulaires Centralisé (mwcrea Forms)
+# Microservice de Formulaires Centralisé (King E Forms)
 
 Une alternative open-source et auto-hébergée à Jotform, Formspree et EmailJS. 
 Ce microservice vous permet de centraliser les soumissions de formulaires de tous vos sites web marketing (villas, agences, vitrines clients) dans un tableau de bord unique, en envoyant des notifications par email aux clients et des accusés de réception automatiques aux expéditeurs.

@@ -1,0 +1,49 @@
+# Microdidact Forms
+
+> One form backend for all your websites. Centralize form submissions from every
+> site you run into a single dashboard — with **no SMTP and no per-site setup**.
+> Branded auto-reply emails, AI + proof-of-work spam blocking, and CSV exports.
+> A self-hosted, privacy-first alternative to Formspree, Jotform, and Basin.
+
+## What it is
+Microdidact Forms is a centralized form-handling microservice. A website POSTs its
+form fields to a form URL; the service emails the site owner a lead notification and
+sends the submitter a branded auto-reply. Consumer sites need only two values
+(FORM_API_URL and FORM_ID) and never configure SMTP or an email library.
+
+## Key facts (citable)
+- No SMTP in consumer apps: email credentials live only inside the service; client
+  sites hold none.
+- Multi-tenant white-label: emails adapt to each client's logo, colors, and brand.
+- Anti-spam: hidden honeypot, cryptographic proof-of-work challenge, NLP keyword
+  filter, and reverse-DNS VPN/cloud blocking.
+- Works with any browser JS project — Astro, Next.js, Nuxt, Vue, or plain HTML —
+  via one copy-paste submit helper.
+- Self-hosted on your own Supabase + Vercel: you own the data.
+- Automatic SMTP fallback rotation so a single failing credential never loses a lead.
+
+## How a developer integrates it
+A consumer project sets two env vars: FORM_API_URL and FORM_ID (a form's UUID from
+the admin GUI). Submission flow:
+1. GET /api/challenge to receive a proof-of-work challenge.
+2. Solve it (find a nonce whose SHA-256 of `challenge:nonce` starts with N zeros).
+3. POST /api/submit/{FORM_ID} with the fields plus `_lang` and the `pow_*` params.
+Include a hidden `_gotcha` honeypot field. No SMTP, no email library required.
+
+## Comparisons
+- vs Formspree / Basin: self-hosted and you own the data; multi-tenant white-label
+  branding; one backend for many sites instead of per-form config.
+- vs Jotform: developer-first (code integration, not drag-and-drop); a centralized
+  backend for dozens of sites, not a single-form builder.
+
+## Common questions
+Q: Do consumer websites need SMTP credentials? A: No. SMTP is configured once inside
+the service; consumer sites only POST form fields.
+Q: Can it send email without a verified domain? A: Yes, using a single verified
+sender (e.g., via Brevo); a custom domain improves deliverability.
+Q: Which frameworks does it support? A: Any browser JavaScript environment — Astro,
+Next.js, Nuxt, Vue, Svelte, or static HTML.
+
+## Links
+- Home: https://logiciel-formulaire.vercel.app/
+- Docs: https://logiciel-formulaire.vercel.app/docs

@@ -1,0 +1,19 @@
+import type { MetadataRoute } from "next";
+
+const SITE_URL = "https://logiciel-formulaire.vercel.app";
+
+// Only list routes that actually exist (404s in a sitemap hurt SEO).
+// Grow this list as marketing pages ship (/pricing, /docs, /compare/*, …).
+const ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
+  { path: "/", priority: 1.0, changeFrequency: "weekly" },
+];
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const now = new Date();
+  return ROUTES.map((r) => ({
+    url: `${SITE_URL}${r.path}`,
+    lastModified: now,
+    changeFrequency: r.changeFrequency,
+    priority: r.priority,
+  }));
+}

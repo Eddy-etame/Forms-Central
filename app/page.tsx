@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 
 const SITE_URL = "https://logiciel-formulaire.vercel.app";
-const SITE_NAME = "Microdidact Forms";
+const SITE_NAME = "King E Forms";
 
 /* ---------------------------------------------------------------- FAQ data
    Single source of truth: rendered in the page AND in FAQPage JSON-LD.
@@ -101,7 +101,7 @@ function NavBar() {
     <nav className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 font-bold text-white shadow-sm">M</div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 font-bold text-white shadow-sm">K</div>
           <span className="font-semibold tracking-tight text-slate-900">{SITE_NAME}</span>
         </Link>
         <div className="hidden items-center gap-8 text-sm text-slate-600 md:flex">
@@ -112,7 +112,7 @@ function NavBar() {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/client/login" className="hidden text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors sm:block">Sign in</Link>
-          <Link href="/client/login" className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 transition-colors">
+          <Link href="/client/signup" className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 transition-colors">
             Get started <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -145,7 +145,7 @@ export default function Home() {
               Centralize submissions from every site into one dashboard — with <strong className="text-slate-900">no SMTP and no per-site setup</strong>. Branded auto-reply emails, AI + proof-of-work spam blocking, CSV exports. The privacy-first alternative to Formspree and Jotform.
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/client/login" className="inline-flex h-12 items-center gap-2 rounded-full bg-slate-900 px-7 text-base font-medium text-white shadow-lg hover:bg-slate-800 transition-colors">
+              <Link href="/client/signup" className="inline-flex h-12 items-center gap-2 rounded-full bg-slate-900 px-7 text-base font-medium text-white shadow-lg hover:bg-slate-800 transition-colors">
                 Start free <ArrowRight className="h-4 w-4" />
               </Link>
               <a href="#how" className="inline-flex h-12 items-center gap-2 rounded-full border border-slate-200 bg-white px-7 text-base font-medium text-slate-800 hover:border-slate-300 transition-colors">
@@ -313,7 +313,7 @@ export default function Home() {
             <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Ship forms today. Own them forever.</h2>
             <p className="mx-auto mt-5 max-w-xl text-lg text-slate-300">One backend for every site you build — no SMTP, no lock-in, your data.</p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/client/login" className="inline-flex h-12 items-center gap-2 rounded-full bg-white px-7 text-base font-medium text-slate-900 hover:bg-slate-100 transition-colors">
+              <Link href="/client/signup" className="inline-flex h-12 items-center gap-2 rounded-full bg-white px-7 text-base font-medium text-slate-900 hover:bg-slate-100 transition-colors">
                 Get started free <ArrowRight className="h-4 w-4" />
               </Link>
               <a href="#how" className="inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-7 text-base font-medium text-white hover:bg-white/10 transition-colors">
@@ -327,7 +327,7 @@ export default function Home() {
         <footer className="border-t border-slate-200 bg-white py-12">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 text-sm text-slate-500 sm:flex-row lg:px-8">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white">M</div>
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white">K</div>
               <span className="font-semibold text-slate-800">{SITE_NAME}</span>
             </div>
             <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">

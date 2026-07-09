@@ -6,6 +6,8 @@ const SITE_URL = "https://logiciel-formulaire.vercel.app";
 // Grow this list as marketing pages ship (/pricing, /docs, /compare/*, …).
 const ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
   { path: "/", priority: 1.0, changeFrequency: "weekly" },
+  { path: "/pricing", priority: 0.9, changeFrequency: "weekly" },
+  { path: "/client/signup", priority: 0.6, changeFrequency: "monthly" },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

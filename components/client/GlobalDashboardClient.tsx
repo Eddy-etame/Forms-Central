@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { BarChart3, TrendingUp, Users, FileText, CalendarDays, Download, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import NewFormButton from './NewFormButton';
 
 interface DashboardStats {
   allTime: number;
@@ -73,14 +74,37 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
             Manage your forms and review your latest leads.
           </p>
         </div>
-        <button 
-          onClick={exportToCSV}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 transition-colors"
-        >
-          <Download className="h-4 w-4" />
-          Export CSV
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <NewFormButton />
+          <button
+            onClick={exportToCSV}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </button>
+        </div>
       </div>
+
+      {stats?.formsCount === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-8 text-center"
+        >
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600">
+            <FileText className="h-6 w-6 text-white" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900">Create your first form</h3>
+          <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
+            Name it, copy two values into your website, and submissions start landing
+            here — with spam blocked and branded auto-replies sent for you.
+          </p>
+          <div className="mt-5 flex justify-center">
+            <NewFormButton prominent />
+          </div>
+        </motion.div>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <motion.div 

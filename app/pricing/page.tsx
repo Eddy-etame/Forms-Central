@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, Minus, ArrowRight, Sparkles } from "lucide-react";
 import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
+import AiChat from "@/components/AiChat";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -151,6 +152,7 @@ export default function PricingPage() {
           </p>
         </section>
 
+        <AiChat />
         <SiteFooter />
       </div>
     </>

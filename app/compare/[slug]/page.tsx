@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Check, X, ArrowRight } from "lucide-react";
 import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
+import AiChat from "@/components/AiChat";
 
 /**
  * Data-driven competitor comparison pages ("X alternative" search intent).
@@ -147,6 +148,7 @@ export default async function ComparePage({ params }: { params: Promise<{ slug: 
           </div>
         </main>
 
+        <AiChat />
         <SiteFooter />
       </div>
     </>

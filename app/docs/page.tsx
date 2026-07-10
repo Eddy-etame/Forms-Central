@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
+import AiChat from "@/components/AiChat";
 import { Check, Terminal, ShieldCheck, Mail } from "lucide-react";
 import CopyButton from "@/components/CopyButton";
 
@@ -179,6 +180,7 @@ export default function DocsPage() {
           </div>
         </main>
 
+        <AiChat />
         <SiteFooter />
       </div>
     </>

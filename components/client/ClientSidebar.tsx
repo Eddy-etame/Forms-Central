@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, FileText, Settings, LogOut, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, FileText, KeyRound, LogOut, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function ClientSidebar({ forms }: { forms: { id: string, name: string }[] }) {
@@ -40,6 +40,22 @@ export default function ClientSidebar({ forms }: { forms: { id: string, name: st
             )}>
               <LayoutDashboard className="mr-3 h-4 w-4" />
               Overview
+            </span>
+          </Link>
+          <Link href="/client/dashboard/developer" className="relative px-3 py-2 rounded-lg text-sm font-medium transition-colors group">
+            {pathname === '/client/dashboard/developer' && (
+              <motion.div
+                layoutId="active-bg"
+                className="absolute inset-0 bg-blue-50 border border-blue-100 rounded-lg"
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              />
+            )}
+            <span className={cn(
+              "relative flex items-center z-10",
+              pathname === '/client/dashboard/developer' ? "text-blue-700" : "text-slate-600 group-hover:text-slate-900"
+            )}>
+              <KeyRound className="mr-3 h-4 w-4" />
+              Developer
             </span>
           </Link>
         </div>

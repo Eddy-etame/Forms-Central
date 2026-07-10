@@ -29,6 +29,7 @@ export interface Plan {
   analytics: boolean;
   priorityDeliverability: boolean;
   retentionDays: number | null;    // null = unlimited
+  apiAccess: boolean;              // API keys + MCP server
 }
 
 export const PLANS: Record<PlanId, Plan> = {
@@ -45,6 +46,7 @@ export const PLANS: Record<PlanId, Plan> = {
     analytics: false,
     priorityDeliverability: false,
     retentionDays: 30,
+    apiAccess: false,
   },
   solo: {
     id: 'solo',
@@ -59,6 +61,7 @@ export const PLANS: Record<PlanId, Plan> = {
     analytics: true,
     priorityDeliverability: false,
     retentionDays: 365,
+    apiAccess: true,
   },
   pro: {
     id: 'pro',
@@ -73,6 +76,7 @@ export const PLANS: Record<PlanId, Plan> = {
     analytics: true,
     priorityDeliverability: true,
     retentionDays: null,
+    apiAccess: true,
   },
   max: {
     id: 'max',
@@ -87,6 +91,7 @@ export const PLANS: Record<PlanId, Plan> = {
     analytics: true,
     priorityDeliverability: true,
     retentionDays: null,
+    apiAccess: true,
   },
 };
 

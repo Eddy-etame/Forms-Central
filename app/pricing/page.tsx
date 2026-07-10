@@ -71,6 +71,7 @@ const ROWS: Row[] = [
   { label: "Spam protection (honeypot + PoW + NLP)", values: [true, true, true, true] },
   { label: "Branded auto-reply emails", values: [true, true, true, true] },
   { label: "AI assistant", values: ["1 trial message", "100 / month", "Unlimited", "Unlimited"] },
+  { label: "API + MCP server (your AI runs your forms)", values: [false, true, true, true] },
   { label: "CSV export", values: [false, true, true, true] },
   { label: "Analytics dashboard", values: [false, true, true, true] },
   { label: "White-label sender (no King E footer)", values: [false, false, true, true] },

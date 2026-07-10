@@ -10,7 +10,7 @@ import CopyButton from "@/components/CopyButton";
 import Reveal from "@/components/Reveal";
 
 const SITE_URL = "https://forms-central-h1ee.vercel.app";
-const SITE_NAME = "King E Forms";
+const SITE_NAME = "Formdock";
 
 /* ---------------------------------------------------------------- FAQ data
    Single source of truth: rendered in the page AND in FAQPage JSON-LD.
@@ -68,6 +68,7 @@ const jsonLd = {
       name: SITE_NAME,
       url: SITE_URL,
       logo: `${SITE_URL}/icon.svg`,
+      founder: { "@type": "Person", name: "King_E" },
     },
     {
       "@type": "WebSite",
@@ -311,7 +312,7 @@ export default function Home() {
         <footer className="border-t border-slate-200 bg-white py-12">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 text-sm text-slate-500 sm:flex-row lg:px-8">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white">K</div>
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white">F</div>
               <span className="font-semibold text-slate-800">{SITE_NAME}</span>
             </div>
             <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">

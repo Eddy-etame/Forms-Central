@@ -5,7 +5,7 @@ import { verifyApiKey, type ApiKeyAuth } from '@/lib/apiKeys';
 import { getPlan } from '@/lib/plans';
 
 /**
- * King E Forms MCP server (Streamable HTTP, stateless).
+ * Formdock MCP server (Streamable HTTP, stateless).
  * Endpoint: POST /api/mcp — Authorization: Bearer kef_... (API key from the
  * dashboard, paid plans). An AI agent connected to this server can create
  * forms, read leads, and fetch the exact integration snippet.
@@ -25,7 +25,7 @@ function buildHandler(auth: ApiKeyAuth) {
     (server) => {
       server.tool(
         'list_forms',
-        'List all forms in this King E Forms account with their IDs and status.',
+        'List all forms in this Formdock account with their IDs and status.',
         {},
         async () => {
           const { data, error } = await supabase
@@ -129,7 +129,7 @@ function buildHandler(auth: ApiKeyAuth) {
       );
     },
     {
-      serverInfo: { name: 'king-e-forms', version: '1.0.0' },
+      serverInfo: { name: 'formdock', version: '1.0.0' },
     },
     {
       basePath: '/api',
@@ -148,7 +148,7 @@ async function withAuth(req: Request): Promise<Response> {
         jsonrpc: '2.0',
         error: {
           code: -32001,
-          message: `Unauthorized: pass a King E Forms API key as "Authorization: Bearer kef_...". Create one in your dashboard (${SERVICE_ORIGIN}/client/dashboard/developer).`,
+          message: `Unauthorized: pass a Formdock API key as "Authorization: Bearer kef_...". Create one in your dashboard (${SERVICE_ORIGIN}/client/dashboard/developer).`,
         },
         id: null,
       },

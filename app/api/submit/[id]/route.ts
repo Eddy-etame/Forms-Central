@@ -319,7 +319,7 @@ export async function POST(
       403,
       'FORM_INACTIVE',
       'This form has been deactivated by the administrator.',
-      'Log into the King E Forms dashboard and toggle "Active" for this form.',
+      'Log into the Formdock dashboard and toggle "Active" for this form.',
       origin,
       isJson,
       redirectUrl
@@ -333,7 +333,7 @@ export async function POST(
         403,
         'CORS_NOT_ALLOWED',
         `Origin '${origin}' is not authorized to submit to this form. Please configure it in your form settings.`,
-        `Log into the King E Forms dashboard, edit this form, and add "${origin}" to the Allowed Domains list.`,
+        `Log into the Formdock dashboard, edit this form, and add "${origin}" to the Allowed Domains list.`,
         origin,
         isJson,
         redirectUrl

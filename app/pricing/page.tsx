@@ -8,7 +8,7 @@ import { PLANS } from "@/lib/plans";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "King E Forms pricing — Free, Solo ($9), Pro ($19) and Max ($49). Self-hosted form backend with white-label emails, AI assistance, anti-spam and CSV exports. Start free, upgrade when your leads do.",
+    "Formdock pricing — Free, Solo ($9), Pro ($19) and Max ($49). Self-hosted form backend with white-label emails, AI assistance, anti-spam and CSV exports. Start free, upgrade when your leads do.",
   alternates: { canonical: "/pricing" },
 };
 
@@ -47,9 +47,9 @@ const faqJsonLd = {
 const productJsonLd = {
   "@context": "https://schema.org",
   "@type": "Product",
-  name: "King E Forms",
+  name: "Formdock",
   description: "Self-hosted form backend for all your websites.",
-  brand: { "@type": "Brand", name: "King E Forms" },
+  brand: { "@type": "Brand", name: "Formdock" },
   offers: Object.values(PLANS).map((p) => ({
     "@type": "Offer",
     name: p.name,
@@ -74,7 +74,7 @@ const ROWS: Row[] = [
   { label: "API + MCP server (your AI runs your forms)", values: [false, true, true, true] },
   { label: "CSV export", values: [false, true, true, true] },
   { label: "Analytics dashboard", values: [false, true, true, true] },
-  { label: "White-label sender (no King E footer)", values: [false, false, true, true] },
+  { label: "White-label sender (no Formdock footer)", values: [false, false, true, true] },
   { label: "Priority deliverability (SMTP rotation)", values: [false, false, true, true] },
   { label: "Data retention", values: ["30 days", "1 year", "Unlimited", "Unlimited"] },
   { label: "Priority support", values: [false, false, false, true] },
@@ -209,7 +209,7 @@ export default function PricingPage() {
             features={[
               `Unlimited forms · ${fmt(P.pro.submissionsPerMonth)} submissions/mo`,
               `${P.pro.emailsPerDay} emails/day`,
-              "White-label sender — no King E footer",
+              "White-label sender — no Formdock footer",
               "Unlimited AI assistant",
               "Priority deliverability (SMTP rotation)",
               "Unlimited data retention",

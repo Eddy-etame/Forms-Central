@@ -43,7 +43,7 @@ export default function DeveloperPanel() {
   const mcpUrl = typeof window !== 'undefined' ? `${window.location.origin}/api/mcp` : '/api/mcp';
   const mcpConfig = `{
   "mcpServers": {
-    "king-e-forms": {
+    "formdock": {
       "type": "http",
       "url": "${mcpUrl}",
       "headers": { "Authorization": "Bearer YOUR_API_KEY" }

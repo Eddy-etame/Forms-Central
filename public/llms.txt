@@ -1,4 +1,4 @@
-# King E Forms
+# Formdock
 
 > One form backend for all your websites. Centralize form submissions from every
 > site you run into a single dashboard — with **no SMTP and no per-site setup**.
@@ -6,7 +6,7 @@
 > A self-hosted, privacy-first alternative to Formspree, Jotform, and Basin.
 
 ## What it is
-King E Forms is a centralized form-handling microservice. A website POSTs its
+Formdock is a centralized form-handling microservice. A website POSTs its
 form fields to a form URL; the service emails the site owner a lead notification and
 sends the submitter a branded auto-reply. Consumer sites need only two values
 (FORM_API_URL and FORM_ID) and never configure SMTP or an email library.
@@ -56,3 +56,5 @@ domain). Over quota, leads keep being stored - only outgoing email pauses.
 - Docs: https://forms-central-h1ee.vercel.app/docs
 - Pricing: https://forms-central-h1ee.vercel.app/pricing
 - AI agent install file: https://forms-central-h1ee.vercel.app/llm-install.md
+
+Formdock is built and operated by King_E.

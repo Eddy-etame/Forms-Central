@@ -1,12 +1,12 @@
-# King E Forms — AI Agent Installation File
+# Formdock — AI Agent Installation File
 
 You are an AI coding agent. Your task: wire a form in this project to
-King E Forms, a centralized form backend. Follow this file exactly.
+Formdock, a centralized form backend. Follow this file exactly.
 Do NOT add SMTP, nodemailer, or any email library — the service does delivery.
 
 ## Inputs you need from the user
-1. FORM_API_URL — the King E Forms service origin (e.g. https://forms-central-h1ee.vercel.app)
-2. FORM_ID — the form's UUID (the user copies it from their King E Forms dashboard;
+1. FORM_API_URL — the Formdock service origin (e.g. https://forms-central-h1ee.vercel.app)
+2. FORM_ID — the form's UUID (the user copies it from their Formdock dashboard;
    if they don't have one, tell them to sign up at {FORM_API_URL}/client/signup
    and click "New form" — it takes under a minute)
 
@@ -88,7 +88,7 @@ await submitForm({
 ## Error codes you may receive (JSON `code` field)
 - FORM_NOT_FOUND — wrong FORM_ID. Ask the user to re-copy it.
 - CORS_NOT_ALLOWED — the site's origin isn't whitelisted. Tell the user to add
-  it in their King E Forms dashboard (form settings, Allowed Domains).
+  it in their Formdock dashboard (form settings, Allowed Domains).
 - POW_* — regenerate the challenge; never cache or reuse one.
 - RATE_LIMIT_EXCEEDED — back off for 60 seconds.
 

@@ -8,7 +8,7 @@ import CopyButton from "@/components/CopyButton";
 export const metadata: Metadata = {
   title: "Documentation — integrate in minutes",
   description:
-    "How to integrate King E Forms into any website: the two-value contract (FORM_API_URL + FORM_ID), the proof-of-work challenge, the submit endpoint, field conventions, and a copy-paste helper for Astro, Next.js, Vue or plain HTML.",
+    "How to integrate Formdock into any website: the two-value contract (FORM_API_URL + FORM_ID), the proof-of-work challenge, the submit endpoint, field conventions, and a copy-paste helper for Astro, Next.js, Vue or plain HTML.",
   alternates: { canonical: "/docs" },
 };
 
@@ -56,16 +56,16 @@ await submitForm({
 });`;
 
 const LLM_PROMPT = `Read https://forms-central-h1ee.vercel.app/llm-install.md
-and integrate King E Forms into this project exactly as it instructs.
+and integrate Formdock into this project exactly as it instructs.
 My values: FORM_API_URL=https://forms-central-h1ee.vercel.app FORM_ID=<paste yours>`;
 
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  headline: "King E Forms integration guide",
+  headline: "Formdock integration guide",
   description:
     "Integrate a form backend with no SMTP: two env values, one copy-paste helper, proof-of-work spam protection built in.",
-  author: { "@type": "Organization", name: "King E Forms" },
+  author: { "@type": "Organization", name: "Formdock" },
 };
 
 function Code({ title, code }: { title: string; code: string }) {

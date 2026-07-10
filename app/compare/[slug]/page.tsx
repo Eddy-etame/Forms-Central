@@ -26,7 +26,7 @@ const COMPETITORS: Competitor[] = [
     slug: "formspree",
     name: "Formspree",
     intro:
-      "Formspree is a popular hosted form endpoint for static sites. King E Forms solves the same problem — forms without a backend — but self-hosted, multi-tenant, and white-label.",
+      "Formspree is a popular hosted form endpoint for static sites. Formdock solves the same problem — forms without a backend — but self-hosted, multi-tenant, and white-label.",
     bestFor: "Formspree is great for a single site with a single form and zero infrastructure.",
     rows: [
       { label: "No SMTP or email library in your site", us: true, them: true },
@@ -38,13 +38,13 @@ const COMPETITORS: Competitor[] = [
       { label: "Runs on your own Supabase + Vercel (free tiers)", us: true, them: false },
     ],
     verdict:
-      "If you run one site, Formspree is a fine default. If you build and manage many sites — agencies, freelancers, studios — King E Forms centralizes every lead in one dashboard you own, with each client seeing their own brand.",
+      "If you run one site, Formspree is a fine default. If you build and manage many sites — agencies, freelancers, studios — Formdock centralizes every lead in one dashboard you own, with each client seeing their own brand.",
   },
   {
     slug: "jotform",
     name: "Jotform",
     intro:
-      "Jotform is a drag-and-drop form builder with hosted forms. King E Forms is developer-first: your forms live in your own site's code and design, and the service handles delivery, spam and branded replies.",
+      "Jotform is a drag-and-drop form builder with hosted forms. Formdock is developer-first: your forms live in your own site's code and design, and the service handles delivery, spam and branded replies.",
     bestFor: "Jotform is great for non-developers who need a hosted form page quickly.",
     rows: [
       { label: "Forms match your site's exact design (your code)", us: true, them: "Themed builder" },
@@ -56,7 +56,7 @@ const COMPETITORS: Competitor[] = [
       { label: "Proof-of-work anti-spam (no CAPTCHA friction)", us: true, them: "CAPTCHA" },
     ],
     verdict:
-      "If you need a form page without writing code, use Jotform. If your forms live inside websites you build — and you want them native, branded, and centralized — King E Forms is built exactly for that.",
+      "If you need a form page without writing code, use Jotform. If your forms live inside websites you build — and you want them native, branded, and centralized — Formdock is built exactly for that.",
   },
 ];
 
@@ -69,8 +69,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const c = COMPETITORS.find((x) => x.slug === slug);
   if (!c) return {};
   return {
-    title: `${c.name} alternative — King E Forms vs ${c.name}`,
-    description: `Looking for a ${c.name} alternative? King E Forms is a self-hosted, white-label form backend: no SMTP in your sites, proof-of-work anti-spam, one dashboard for every website you run.`,
+    title: `${c.name} alternative — Formdock vs ${c.name}`,
+    description: `Looking for a ${c.name} alternative? Formdock is a self-hosted, white-label form backend: no SMTP in your sites, proof-of-work anti-spam, one dashboard for every website you run.`,
     alternates: { canonical: `/compare/${c.slug}` },
   };
 }
@@ -89,9 +89,9 @@ export default async function ComparePage({ params }: { params: Promise<{ slug: 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
-    headline: `King E Forms vs ${c.name}`,
+    headline: `Formdock vs ${c.name}`,
     description: c.intro,
-    author: { "@type": "Organization", name: "King E Forms" },
+    author: { "@type": "Organization", name: "Formdock" },
   };
 
   return (
@@ -103,7 +103,7 @@ export default async function ComparePage({ params }: { params: Promise<{ slug: 
         <main className="mx-auto max-w-3xl px-6 py-16 lg:py-20">
           <p className="text-sm font-semibold text-blue-600">Comparison</p>
           <h1 className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
-            King E Forms vs {c.name}
+            Formdock vs {c.name}
           </h1>
           <p className="mt-5 text-lg leading-8 text-slate-600">{c.intro}</p>
           <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm leading-6 text-slate-600">
@@ -115,7 +115,7 @@ export default async function ComparePage({ params }: { params: Promise<{ slug: 
               <thead className="bg-slate-50 text-slate-500">
                 <tr>
                   <th className="px-6 py-4 font-medium">Capability</th>
-                  <th className="px-6 py-4 font-semibold text-slate-900">King E Forms</th>
+                  <th className="px-6 py-4 font-semibold text-slate-900">Formdock</th>
                   <th className="px-6 py-4 font-medium">{c.name}</th>
                 </tr>
               </thead>

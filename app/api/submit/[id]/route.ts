@@ -4,6 +4,7 @@ import { isBlacklisted, blacklistTarget } from '@/lib/blacklist';
 import { handleHoneypotTrigger, resolveHostDomain } from '@/lib/dnsLookup';
 import { verifyChallenge } from '@/lib/pow';
 import { sendLeadEmail, sendAutoReplyEmail } from '@/lib/email';
+import { getQuotaState, logEmailSend } from '@/lib/quota';
 
 // Basic in-memory cache for anti-replay (holds challenges for 5 mins)
 const challengeReplayCache = new Set<string>();
@@ -280,7 +281,7 @@ export async function POST(
 
   const { data: form, error: formError } = await supabase
     .from('forms')
-    .select('name, is_active, allowed_origins, notify_email, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, client_id, clients(name, email, logo_url, primary_color, font_family)')
+    .select('name, is_active, allowed_origins, notify_email, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, client_id, clients(name, email, logo_url, primary_color, font_family, plan)')
     .eq('id', formId)
     .single();
 
@@ -621,7 +622,22 @@ export async function POST(
     );
   }
 
-  if (form.notify_email && form.clients) {
+  // Plan-quota accounting (lib/plans + lib/quota). The lead above is ALWAYS
+  // stored — quotas only pause outgoing email, exactly as /pricing promises.
+  const quota = form.client_id
+    ? await getQuotaState(form.client_id, (form.clients as unknown as { plan?: string })?.plan)
+    : null;
+  let emailBudget = quota ? quota.emailBudgetLeft : Number.POSITIVE_INFINITY;
+  const emailsPaused = quota ? quota.submissionsExhausted || emailBudget <= 0 : false;
+  if (quota && emailsPaused) {
+    logFailure(
+      formId,
+      'QUOTA_EMAIL_PAUSED',
+      `Emails paused for plan '${quota.plan.id}': ${quota.submissionsThisMonth} submissions this month (cap ${quota.plan.submissionsPerMonth}), ${quota.emailsToday} emails today (cap ${quota.plan.emailsPerDay}). Lead stored.`,
+    );
+  }
+
+  if (form.notify_email && form.clients && !emailsPaused && emailBudget > 0) {
     const clientObj = form.clients as unknown as { name: string; email: string; logo_url?: string; primary_color?: string; font_family?: string };
     const clientEmail = clientObj?.email;
     const clientName = clientObj?.name;
@@ -630,8 +646,10 @@ export async function POST(
       primary_color: clientObj?.primary_color,
       font_family: clientObj?.font_family,
     };
-    
+
     if (clientEmail) {
+      emailBudget -= 1;
+      if (form.client_id) logEmailSend(form.client_id, formId, 'lead');
       // Asynchronously send SMTP email
       sendLeadEmail(clientEmail, form.name, cleanPayload, ipAddress, clientName, branding).catch(err => {
         console.error('SMTP Background error:', err);
@@ -640,8 +658,8 @@ export async function POST(
     }
   }
 
-  // 7b. Send Auto-Reply confirmation to sender if enabled
-  if (form.auto_reply_enabled) {
+  // 7b. Send Auto-Reply confirmation to sender if enabled (and within budget)
+  if (form.auto_reply_enabled && !emailsPaused && emailBudget > 0) {
     // Check if the payload contains the sender's email (case-insensitive search)
     const senderEmailKey = Object.keys(cleanPayload).find(k => k.toLowerCase() === 'email');
     const senderEmail = senderEmailKey ? cleanPayload[senderEmailKey] : undefined;
@@ -661,6 +679,7 @@ export async function POST(
 
       // Apply anti-reply rate limit for auto-replies
       if (checkAutoReplyRateLimit(emailToSubmit)) {
+        if (form.client_id) logEmailSend(form.client_id, formId, 'auto_reply');
         sendAutoReplyEmail(
           emailToSubmit,
           form.name,

@@ -55,3 +55,4 @@ domain). Over quota, leads keep being stored - only outgoing email pauses.
 - Home: https://forms-central-h1ee.vercel.app/
 - Docs: https://forms-central-h1ee.vercel.app/docs
 - Pricing: https://forms-central-h1ee.vercel.app/pricing
+- AI agent install file: https://forms-central-h1ee.vercel.app/llm-install.md

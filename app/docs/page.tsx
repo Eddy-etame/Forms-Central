@@ -55,14 +55,9 @@ await submitForm({
   message: "I'd like a quote.",
 });`;
 
-const LLM_PROMPT = `Integrate King E Forms into this project.
-Contract: set PUBLIC_FORM_API_URL and PUBLIC_FORM_ID env vars.
-Flow: GET {API_URL}/api/challenge -> solve proof-of-work (find nonce where
-SHA-256("challenge:nonce") starts with N zeros, N = difficulty) ->
-POST {API_URL}/api/submit/{FORM_ID} with the form fields plus _lang, an empty
-_gotcha honeypot, pow_challenge, pow_timestamp, pow_nonce.
-The service handles owner notification and the branded auto-reply.
-Do NOT add SMTP or any email library — that is the whole point.`;
+const LLM_PROMPT = `Read https://forms-central-h1ee.vercel.app/llm-install.md
+and integrate King E Forms into this project exactly as it instructs.
+My values: FORM_API_URL=https://forms-central-h1ee.vercel.app FORM_ID=<paste yours>`;
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -145,7 +140,9 @@ export default function DocsPage() {
           {/* LLM prompt */}
           <h2 className="mt-14 text-2xl font-bold tracking-tight">4 · Let your AI do it</h2>
           <p className="mt-3 mb-5 leading-7 text-slate-600">
-            Using Copilot, Claude, or Cursor? Paste this prompt and it will wire your form correctly:
+            Using Claude, Cursor, or Copilot? We publish a machine-readable install file at{" "}
+            <a href="/llm-install.md" className="font-semibold text-blue-600 hover:underline">/llm-install.md</a>{" "}
+            — paste this prompt and your AI does the whole integration, correctly, on the first try:
           </p>
           <Code title="prompt.txt — paste into your AI assistant" code={LLM_PROMPT} />
 

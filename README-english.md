@@ -9,7 +9,7 @@ This microservice lets you centralize form submissions from all your marketing w
 This system is now in **V3**, integrating an advanced Live Failure Logs engine, keyword-based NLP Spam filter, secure DB-driven redirects, CSV lead exports, and dynamic variables (`{{name}}`) in auto-responders.
 
 **Quick Setup Steps:**
-1. **[Database Setup](#1-database-setup-supabase)**: Run `schema.sql`, `migration_auto_reply.sql`, `migration_v2_branding.sql` and **`migration_v3.sql`**. Create a public `uploads` bucket in Storage.
+1. **[Database Setup](#1-database-setup-supabase)**: Run `migrations/schema.sql`, `migration_auto_reply.sql`, `migration_v2_branding.sql` and **`migration_v3.sql`**. Create a public `uploads` bucket in Storage.
 2. **[SMTP Configuration](#-smtp-provider-setup-guide-resend-vs-brevo)**: Set up Brevo/Resend. (Disable IP Blocking in Brevo to prevent `525 5.7.1` errors).
 3. **[Environment Variables](#2-environment-variables-configuration)**: Configure `.env.local` with Supabase, JWT, and SMTP credentials.
 4. **[Frontend Integration & Error Handling](#-frontend-integration-guide)**: Connect via HTML or AJAX. The API now returns detailed JSON error objects with `remedy` instructions for easy debugging.
@@ -62,7 +62,7 @@ This system is now in **V3**, integrating an advanced Live Failure Logs engine, 
 │   ├── pow.ts             # Cryptographic Proof-of-Work verifier
 │   └── supabase.ts        # Service role Supabase client
 ├── proxy.ts               # Middleware guard (User-Agent blacklisting & admin path obfuscation)
-├── schema.sql             # Primary database tables
+├── migrations/schema.sql             # Primary database tables
 ├── migration_auto_reply.sql # V2 Auto-reply DB migration
 ├── migration_v2_branding.sql # Client logos and colors DB migration
 └── migration_v3.sql       # V3 DB Migration (Spam filter, Redirects, Live Logs)
@@ -131,7 +131,7 @@ Resend is a premium developer-focused mailer. It is free for **100 emails/day** 
 
 ### 1. Database Setup (Supabase)
 Create a new project on [Supabase](https://supabase.com) and execute the SQL definitions in the SQL Editor:
-1.  Run `schema.sql` to initialize tables (`clients`, `forms`, `submissions`, `blacklist`, `refresh_tokens`).
+1.  Run `migrations/schema.sql` to initialize tables (`clients`, `forms`, `submissions`, `blacklist`, `refresh_tokens`).
 2.  Run `migration_auto_reply.sql`, `migration_v2_branding.sql` and **`migration_v3.sql`**.
 3.  **Storage Setup:** Go to Storage and create a new bucket named exactly `uploads`. Make sure you set it to **Public**. This is required for handling file attachments.
 

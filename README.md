@@ -9,7 +9,7 @@ Ce microservice vous permet de centraliser les soumissions de formulaires de tou
 Ce système est désormais en **V3**, intégrant un moteur avancé de logs en direct (Live Failure Logs), un filtre anti-spam par mots-clés, des redirections sécurisées en base de données, l'exportation CSV des leads, et des variables dynamiques (`{{name}}`) dans les auto-répondeurs.
 
 **Étapes de Configuration Rapide :**
-1. **[Configuration de la Base de Données](#1-configuration-de-la-base-de-données-supabase)** : Exécutez `schema.sql`, `migration_auto_reply.sql`, `migration_v2_branding.sql` et **`migration_v3.sql`**. Créez un bucket public nommé `uploads` dans Storage.
+1. **[Configuration de la Base de Données](#1-configuration-de-la-base-de-données-supabase)** : Exécutez `migrations/schema.sql`, `migration_auto_reply.sql`, `migration_v2_branding.sql` et **`migration_v3.sql`**. Créez un bucket public nommé `uploads` dans Storage.
 2. **[Configuration SMTP](#-guide-de-configuration-du-fournisseur-smtp-resend-vs-brevo)** : Configurez Brevo/Resend. (Désactivez le blocage d'IP dans Brevo pour éviter l'erreur `525 5.7.1`).
 3. **[Variables d'Environnement](#2-configuration-des-variables-denvironnement)** : Configurez `.env.local` avec les identifiants Supabase, JWT et SMTP.
 4. **[Intégration Frontend & Gestion des Erreurs](#-guide-dintégration-frontend)** : Connectez-vous via HTML ou AJAX. L'API retourne désormais des objets d'erreur JSON détaillés avec des instructions `remedy` pour un débogage facile.
@@ -63,7 +63,7 @@ Ce système est désormais en **V3**, intégrant un moteur avancé de logs en di
 │   ├── pow.ts             # Vérificateur cryptographique Proof-of-Work
 │   └── supabase.ts        # Client Supabase (Service role)
 ├── proxy.ts               # Gardien Middleware (Blacklist User-Agent & obfuscation du chemin admin)
-├── schema.sql             # Tables principales de la base de données
+├── migrations/schema.sql             # Tables principales de la base de données
 ├── migration_auto_reply.sql # Migration DB pour l'auto-réponse
 ├── migration_v2_branding.sql # Migration DB pour les logos et couleurs clients
 └── migration_v3.sql       # Migration DB (Filtre Spam, Redirections, Live Logs)
@@ -120,7 +120,7 @@ SMTP_FROM="Votre Agence <contact@votre-domaine.com>"
 
 ### 1. Configuration de la Base de Données (Supabase)
 Créez un nouveau projet sur [Supabase](https://supabase.com) et exécutez les définitions SQL dans l'Éditeur SQL :
-1.  Exécutez `schema.sql` pour initialiser les tables.
+1.  Exécutez `migrations/schema.sql` pour initialiser les tables.
 2.  Exécutez `migration_auto_reply.sql`, `migration_v2_branding.sql` et **`migration_v3.sql`**.
 3.  **Configuration du Stockage (Storage) :** Allez dans Storage et créez un nouveau bucket nommé exactement `uploads`. Assurez-vous de le configurer en **Public**. Ceci est requis pour la gestion des pièces jointes Base64.
 

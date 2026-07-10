@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 
 /**
  * Sliding-window rate limiter backed by the auth_attempts table
- * (migration_v6), so limits hold across serverless instances.
+ * (migrations/migration_v6), so limits hold across serverless instances.
  *
  * Fail-open: if the table is missing or the DB errors, the request is
  * allowed (auth must not go down because the limiter did) — scrypt cost

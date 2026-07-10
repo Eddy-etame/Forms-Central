@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { NavBar } from "@/components/marketing/NavBar";
 import AiChat from "@/components/AiChat";
-import DemoFlow from "@/components/DemoFlow";
+import LazyDemoFlow from "@/components/LazyDemoFlow";
 import CopyButton from "@/components/CopyButton";
 import Reveal from "@/components/Reveal";
 
@@ -179,7 +179,7 @@ export default function Home() {
         </section>
 
         {/* ---------------- Animated demo ---------------- */}
-        <DemoFlow />
+        <LazyDemoFlow />
 
         {/* ---------------- Features ---------------- */}
         <section id="features" className="mx-auto max-w-7xl px-6 py-20 lg:px-8">

@@ -110,7 +110,7 @@ try {
   // Detect api_keys table for Phase 2
   const { error: tableErr } = await sb.from('api_keys').select('id').limit(1);
   if (tableErr) {
-    console.log(`\n== Phase 2 SKIPPED: api_keys table missing (run migration_v9_api_keys.sql) ==`);
+    console.log(`\n== Phase 2 SKIPPED: api_keys table missing (run migrations/migration_v9_api_keys.sql) ==`);
     console.log(`   (${tableErr.message})`);
   } else {
     console.log(`\n== Phase 2: full MCP flow ==`);

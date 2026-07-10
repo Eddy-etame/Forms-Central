@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { signJWT } from '@/lib/jwt';
-import { decryptPassword } from '@/lib/crypto';
+import { verifyPassword, needsRehash, hashPassword } from '@/lib/passwords';
 import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
@@ -29,13 +29,20 @@ export async function POST(req: Request) {
       );
     }
 
-    // Decrypt and compare passwords
-    const decryptedPassword = decryptPassword(client.encrypted_password);
-    if (password !== decryptedPassword) {
+    // Verify (scrypt hash, with legacy AES fallback).
+    if (!verifyPassword(password, client.encrypted_password)) {
       return NextResponse.json(
         { success: false, error: 'Identifiants incorrects.' },
         { status: 401 }
       );
+    }
+
+    // Transparent upgrade: re-store legacy reversible rows as one-way hashes.
+    if (needsRehash(client.encrypted_password)) {
+      await supabase
+        .from('clients')
+        .update({ encrypted_password: hashPassword(password) })
+        .eq('id', client.id);
     }
 
     // Passwords match -> Generate JWT

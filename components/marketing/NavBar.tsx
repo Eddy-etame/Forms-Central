@@ -13,8 +13,8 @@ export function NavBar() {
         <div className="hidden items-center gap-8 text-sm text-slate-600 md:flex">
           <Link href="/#features" className="hover:text-slate-900 transition-colors">Features</Link>
           <Link href="/#how" className="hover:text-slate-900 transition-colors">How it works</Link>
+          <Link href="/docs" className="hover:text-slate-900 transition-colors">Docs</Link>
           <Link href="/pricing" className="hover:text-slate-900 transition-colors">Pricing</Link>
-          <Link href="/#compare" className="hover:text-slate-900 transition-colors">Compare</Link>
           <Link href="/#faq" className="hover:text-slate-900 transition-colors">FAQ</Link>
         </div>
         <div className="flex items-center gap-3">
@@ -39,9 +39,10 @@ export function SiteFooter() {
         </div>
         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
           <Link href="/#features" className="hover:text-slate-900 transition-colors">Features</Link>
+          <Link href="/docs" className="hover:text-slate-900 transition-colors">Docs</Link>
           <Link href="/pricing" className="hover:text-slate-900 transition-colors">Pricing</Link>
-          <Link href="/#compare" className="hover:text-slate-900 transition-colors">Compare</Link>
-          <Link href="/#faq" className="hover:text-slate-900 transition-colors">FAQ</Link>
+          <Link href="/compare/formspree" className="hover:text-slate-900 transition-colors">vs Formspree</Link>
+          <Link href="/compare/jotform" className="hover:text-slate-900 transition-colors">vs Jotform</Link>
           <Link href="/client/login" className="hover:text-slate-900 transition-colors">Sign in</Link>
         </nav>
         <p>&copy; {new Date().getFullYear()} King E Forms</p>

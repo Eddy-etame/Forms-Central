@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { signJWT } from '@/lib/jwt';
-import { encryptPassword } from '@/lib/crypto';
+import { hashPassword } from '@/lib/passwords';
 import { cookies } from 'next/headers';
 
 /**
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
       .insert({
         name: cleanName,
         email: cleanEmail,
-        encrypted_password: encryptPassword(cleanPassword),
+        encrypted_password: hashPassword(cleanPassword),
         plan: 'free',
       })
       .select('id')

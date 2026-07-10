@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = "https://logiciel-formulaire.vercel.app";
+const SITE_URL = "https://forms-central-h1ee.vercel.app";
 
 export default function robots(): MetadataRoute.Robots {
   return {

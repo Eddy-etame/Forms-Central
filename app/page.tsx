@@ -5,8 +5,9 @@ import {
 } from "lucide-react";
 import { NavBar } from "@/components/marketing/NavBar";
 import AiChat from "@/components/AiChat";
+import DemoFlow from "@/components/DemoFlow";
 
-const SITE_URL = "https://logiciel-formulaire.vercel.app";
+const SITE_URL = "https://forms-central-h1ee.vercel.app";
 const SITE_NAME = "King E Forms";
 
 /* ---------------------------------------------------------------- FAQ data
@@ -173,6 +174,9 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* ---------------- Animated demo ---------------- */}
+        <DemoFlow />
 
         {/* ---------------- Features ---------------- */}
         <section id="features" className="mx-auto max-w-7xl px-6 py-20 lg:px-8">

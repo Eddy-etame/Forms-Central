@@ -45,5 +45,5 @@ Q: Which frameworks does it support? A: Any browser JavaScript environment — A
 Next.js, Nuxt, Vue, Svelte, or static HTML.
 
 ## Links
-- Home: https://logiciel-formulaire.vercel.app/
-- Docs: https://logiciel-formulaire.vercel.app/docs
+- Home: https://forms-central-h1ee.vercel.app/
+- Docs: https://forms-central-h1ee.vercel.app/docs

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { verifyJWT } from '@/lib/jwt';
 import { getClientForms } from '@/lib/actions';
 import ClientSidebar from '@/components/client/ClientSidebar';
+import SignOutLink from '@/components/client/SignOutLink';
 
 export default async function ClientProtectedLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -26,13 +27,11 @@ export default async function ClientProtectedLayout({ children }: { children: Re
       <header className="lg:hidden sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white font-bold text-sm">
-            M
+            K
           </div>
-          <span className="font-bold text-slate-900">Espace Client</span>
+          <span className="font-bold text-slate-900">King E Forms</span>
         </div>
-        <a href="/client/login" className="text-sm font-medium text-red-600 hover:text-red-700">
-          Déconnexion
-        </a>
+        <SignOutLink className="text-sm font-medium text-red-600 hover:text-red-700" />
       </header>
 
       {/* Sidebar */}

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { signJWT } from '@/lib/jwt';
 import { hashPassword } from '@/lib/passwords';
+import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 import { cookies } from 'next/headers';
 
 /**
@@ -11,6 +12,15 @@ import { cookies } from 'next/headers';
  */
 export async function POST(req: Request) {
   try {
+    // Abuse guard: 3 account creations / 10 min per IP.
+    const ip = clientIp(req.headers);
+    if (!(await checkRateLimit(`signup:${ip}`, 3, 10 * 60_000))) {
+      return NextResponse.json(
+        { success: false, error: 'Too many signups from this connection. Try again later.' },
+        { status: 429 }
+      );
+    }
+
     const { name, email, password } = await req.json();
 
     const cleanName = String(name ?? '').trim();

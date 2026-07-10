@@ -6,6 +6,8 @@ import {
 import { NavBar } from "@/components/marketing/NavBar";
 import AiChat from "@/components/AiChat";
 import DemoFlow from "@/components/DemoFlow";
+import CopyButton from "@/components/CopyButton";
+import Reveal from "@/components/Reveal";
 
 const SITE_URL = "https://forms-central-h1ee.vercel.app";
 const SITE_NAME = "King E Forms";
@@ -169,6 +171,7 @@ export default function Home() {
                 <span className="h-3 w-3 rounded-full bg-amber-500/70" />
                 <span className="h-3 w-3 rounded-full bg-emerald-500/70" />
                 <span className="ml-2 inline-flex items-center gap-1.5 text-xs text-slate-400"><Terminal className="h-3.5 w-3.5" /> submit.js</span>
+                <CopyButton text={SNIPPET} />
               </div>
               <pre className="overflow-x-auto p-5 text-[13px] leading-relaxed text-slate-200"><code>{SNIPPET}</code></pre>
             </div>
@@ -180,10 +183,10 @@ export default function Home() {
 
         {/* ---------------- Features ---------------- */}
         <section id="features" className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
-          <div className="mb-14 max-w-2xl">
+          <Reveal className="mb-14 max-w-2xl">
             <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Built for deliverability and scale</h2>
             <p className="mt-4 text-lg text-slate-600">One backend, many client sites — each with its own branding, all protected and centralized.</p>
-          </div>
+          </Reveal>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3 auto-rows-[240px]">
             {[
               { icon: Inbox, title: "Centralized inbox", desc: "Every submission from every site lands in one dashboard with live status.", cls: "md:col-span-2", color: "text-blue-600", bg: "bg-blue-50" },
@@ -209,10 +212,10 @@ export default function Home() {
         {/* ---------------- How it works ---------------- */}
         <section id="how" className="border-y border-slate-100 bg-slate-50/60 py-20">
           <div className="mx-auto max-w-6xl px-6 lg:px-8">
-            <div className="mb-14 max-w-2xl">
+            <Reveal className="mb-14 max-w-2xl">
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Live in three steps</h2>
               <p className="mt-4 text-lg text-slate-600">From zero to receiving branded lead emails — in minutes.</p>
-            </div>
+            </Reveal>
             <div className="grid gap-8 md:grid-cols-3">
               {[
                 { n: "01", t: "Create a form", d: "Add a form in the admin, pick its brand, copy its unique ID." },
@@ -232,10 +235,10 @@ export default function Home() {
 
         {/* ---------------- Comparison ---------------- */}
         <section id="compare" className="mx-auto max-w-5xl px-6 py-20 lg:px-8">
-          <div className="mb-12 text-center">
+          <Reveal className="mb-12 text-center">
             <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Why teams switch</h2>
             <p className="mt-4 text-lg text-slate-600">Self-hosted, multi-tenant, and developer-first.</p>
-          </div>
+          </Reveal>
           <div className="overflow-x-auto rounded-2xl border border-slate-200">
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead className="bg-slate-50 text-slate-500">

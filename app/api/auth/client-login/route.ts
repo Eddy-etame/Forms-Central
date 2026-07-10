@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { signJWT } from '@/lib/jwt';
 import { verifyPassword, needsRehash, hashPassword } from '@/lib/passwords';
+import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
@@ -12,6 +13,19 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { success: false, error: 'Email et mot de passe requis.' },
         { status: 400 }
+      );
+    }
+
+    // Brute-force guard: 5 attempts/min per IP+email, 20/min per IP.
+    const ip = clientIp(req.headers);
+    const [okPair, okIp] = await Promise.all([
+      checkRateLimit(`login:${ip}:${String(email).toLowerCase()}`, 5, 60_000),
+      checkRateLimit(`login-ip:${ip}`, 20, 60_000),
+    ]);
+    if (!okPair || !okIp) {
+      return NextResponse.json(
+        { success: false, error: 'Too many attempts. Try again in a minute.' },
+        { status: 429 }
       );
     }
 

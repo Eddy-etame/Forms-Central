@@ -29,7 +29,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
     const headers = ['Date', ...Array.from(allKeys)];
     
     const csvRows = stats.recentLeads.map(lead => {
-      const date = new Date(lead.created_at).toLocaleString('fr-FR');
+      const date = new Date(lead.created_at).toLocaleString('en-GB');
       
       const payloadData = Array.from(allKeys).map(key => {
         let val = lead.payload[key];
@@ -75,11 +75,11 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
         <div className="flex flex-col gap-1">
           <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 w-fit mb-2 border border-blue-100">
             <FileText className="h-3 w-3" />
-            Vue par Formulaire
+            Form view
           </div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{stats?.formName}</h1>
           <p className="text-sm text-slate-500">
-            Gérez spécifiquement les données et fichiers associés à ce formulaire.
+            Data and files submitted through this form.
           </p>
         </div>
         <button 
@@ -87,7 +87,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 transition-colors"
         >
           <Download className="h-4 w-4" />
-          Exporter CSV ({stats?.allTime})
+          Export CSV ({stats?.allTime})
         </button>
       </div>
 
@@ -101,10 +101,10 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
           <div className="absolute -right-4 -top-4 rounded-full bg-blue-50 p-8">
             <BarChart3 className="h-8 w-8 text-blue-500" />
           </div>
-          <p className="text-sm font-medium text-slate-500">Soumissions Totales</p>
+          <p className="text-sm font-medium text-slate-500">Total submissions</p>
           <h3 className="mt-2 text-4xl font-bold text-slate-900">{stats?.allTime || 0}</h3>
           <div className="mt-4 flex items-center text-sm text-blue-600 font-medium">
-            <TrendingUp className="mr-1 h-4 w-4" /> Pour ce formulaire
+            <TrendingUp className="mr-1 h-4 w-4" /> For this form
           </div>
         </motion.div>
 
@@ -115,7 +115,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
             transition={{ delay: 0.2 }}
             className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
           >
-            <h3 className="font-bold text-slate-900 mb-4 text-sm">Tendance (30 jours)</h3>
+            <h3 className="font-bold text-slate-900 mb-4 text-sm">Trend (last 30 days)</h3>
             <div className="h-[120px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats?.dailyTrends || []}>
@@ -137,8 +137,8 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
             className="rounded-2xl border border-blue-100 bg-blue-50/50 p-6 shadow-sm flex items-center justify-center flex-col text-center"
           >
             <TrendingUp className="h-6 w-6 text-blue-400 mb-2" />
-            <p className="text-sm font-semibold text-slate-900">Plus de données requises</p>
-            <p className="text-xs text-slate-500">Le graphique s'activera à 10 soumissions.</p>
+            <p className="text-sm font-semibold text-slate-900">More data needed</p>
+            <p className="text-xs text-slate-500">The chart unlocks at 10 submissions.</p>
           </motion.div>
         )}
       </div>
@@ -150,12 +150,12 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
         className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col"
       >
         <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="font-bold text-slate-900">Données Structurées</h3>
+          <h3 className="font-bold text-slate-900">Structured data</h3>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input 
               type="text" 
-              placeholder="Chercher dans ces résultats..." 
+              placeholder="Search these results…" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-4 py-2 w-full sm:w-64 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -171,7 +171,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                   <th key={col} className="px-6 py-4">{col.replace(/_/g, ' ')}</th>
                 ))}
                 {schemaKeys.length > 5 && (
-                  <th className="px-6 py-4 text-slate-300">... ({schemaKeys.length - 5} autres)</th>
+                  <th className="px-6 py-4 text-slate-300">… ({schemaKeys.length - 5} more)</th>
                 )}
               </tr>
             </thead>
@@ -179,12 +179,12 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
               {filteredLeads.length === 0 ? (
                 <tr>
                   <td colSpan={tableColumns.length + 2} className="px-6 py-12 text-center text-slate-500">
-                    Aucune donnée trouvée.
+                    No data found.
                   </td>
                 </tr>
               ) : (
                 filteredLeads.map((lead) => {
-                  const date = new Date(lead.created_at).toLocaleDateString('fr-FR', {
+                  const date = new Date(lead.created_at).toLocaleDateString('en-GB', {
                     day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
                   });
                   
@@ -210,7 +210,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                                 onClick={(e) => e.stopPropagation()}
                                 className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200 transition-colors"
                               >
-                                <Paperclip className="h-3 w-3" /> Fichier
+                                <Paperclip className="h-3 w-3" /> File
                               </a>
                             ) : (
                               <div className="max-w-[200px] truncate" title={String(val || '')}>
@@ -223,7 +223,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                       
                       {schemaKeys.length > 5 && (
                         <td className="px-6 py-4 text-xs text-blue-600 font-medium">
-                          Voir détails &rarr;
+                          View details &rarr;
                         </td>
                       )}
                     </tr>
@@ -253,9 +253,9 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
             >
               <div className="border-b border-slate-100 bg-slate-50 px-6 py-4 flex items-center justify-between shrink-0">
                 <div>
-                  <h3 className="font-bold text-slate-900 text-lg">Données Complètes</h3>
+                  <h3 className="font-bold text-slate-900 text-lg">Full submission</h3>
                   <p className="text-xs text-slate-500">
-                    Soumis le {new Date(selectedLead.created_at).toLocaleString('fr-FR')}
+                    Submitted {new Date(selectedLead.created_at).toLocaleString('en-GB')}
                   </p>
                 </div>
                 <button 
@@ -291,7 +291,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                             ) : (
                               <div className="h-16 w-full rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
                                 <Paperclip className="h-6 w-6 text-blue-400 mr-2" />
-                                <span className="text-sm font-medium text-blue-700">Document attaché</span>
+                                <span className="text-sm font-medium text-blue-700">Attached document</span>
                               </div>
                             )}
                             <a 
@@ -301,7 +301,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                               className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition-colors w-full"
                             >
                               <Download className="h-4 w-4" />
-                              Télécharger le fichier
+                              Download file
                             </a>
                           </div>
                         ) : (
@@ -322,7 +322,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                   onClick={() => setSelectedLead(null)}
                   className="rounded-lg bg-white border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
                 >
-                  Fermer
+                  Close
                 </button>
               </div>
             </motion.div>

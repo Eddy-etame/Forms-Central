@@ -27,11 +27,11 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
       Object.keys(lead.payload).forEach(k => allKeys.add(k));
     });
     
-    const headers = ['Date', 'Formulaire', ...Array.from(allKeys)];
+    const headers = ['Date', 'Form', ...Array.from(allKeys)];
     
     const csvRows = stats.recentLeads.map(lead => {
-      const date = new Date(lead.created_at).toLocaleString('fr-FR');
-      const formName = lead.forms?.name || 'Inconnu';
+      const date = new Date(lead.created_at).toLocaleString('en-GB');
+      const formName = lead.forms?.name || 'Unknown';
       
       const payloadData = Array.from(allKeys).map(key => {
         let val = lead.payload[key];
@@ -68,9 +68,9 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Vue d'ensemble</h1>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Overview</h1>
           <p className="text-sm text-slate-500">
-            Gérez vos formulaires et consultez vos derniers leads.
+            Manage your forms and review your latest leads.
           </p>
         </div>
         <button 
@@ -78,7 +78,7 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 transition-colors"
         >
           <Download className="h-4 w-4" />
-          Exporter CSV
+          Export CSV
         </button>
       </div>
 
@@ -92,10 +92,10 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
           <div className="absolute -right-4 -top-4 rounded-full bg-blue-50 p-8">
             <Users className="h-8 w-8 text-blue-500" />
           </div>
-          <p className="text-sm font-medium text-slate-500">Total des Leads</p>
+          <p className="text-sm font-medium text-slate-500">Total leads</p>
           <h3 className="mt-2 text-4xl font-bold text-slate-900">{stats?.allTime || 0}</h3>
           <div className="mt-4 flex items-center text-sm text-blue-600 font-medium">
-            <TrendingUp className="mr-1 h-4 w-4" /> Volume global
+            <TrendingUp className="mr-1 h-4 w-4" /> All-time volume
           </div>
         </motion.div>
 
@@ -108,10 +108,10 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
           <div className="absolute -right-4 -top-4 rounded-full bg-emerald-50 p-8">
             <BarChart3 className="h-8 w-8 text-emerald-500" />
           </div>
-          <p className="text-sm font-medium text-slate-500">Les 7 derniers jours</p>
+          <p className="text-sm font-medium text-slate-500">Last 7 days</p>
           <h3 className="mt-2 text-4xl font-bold text-slate-900">{stats?.past7Days || 0}</h3>
           <div className="mt-4 flex items-center text-sm text-emerald-600 font-medium">
-            <CalendarDays className="mr-1 h-4 w-4" /> Dynamique récente
+            <CalendarDays className="mr-1 h-4 w-4" /> Recent momentum
           </div>
         </motion.div>
 
@@ -124,10 +124,10 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
           <div className="absolute -right-4 -top-4 rounded-full bg-purple-50 p-8">
             <FileText className="h-8 w-8 text-purple-500" />
           </div>
-          <p className="text-sm font-medium text-slate-500">Formulaires Actifs</p>
+          <p className="text-sm font-medium text-slate-500">Active forms</p>
           <h3 className="mt-2 text-4xl font-bold text-slate-900">{stats?.formsCount || 0}</h3>
           <div className="mt-4 flex items-center text-sm text-purple-600 font-medium">
-            <FileText className="mr-1 h-4 w-4" /> Sources de conversion
+            <FileText className="mr-1 h-4 w-4" /> Conversion sources
           </div>
         </motion.div>
       </div>
@@ -140,7 +140,7 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
             transition={{ delay: 0.4 }}
             className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
           >
-            <h3 className="font-bold text-slate-900 mb-6">Tendance des Soumissions (30 jours)</h3>
+            <h3 className="font-bold text-slate-900 mb-6">Submission trend (last 30 days)</h3>
             <div className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats?.dailyTrends || []}>
@@ -161,10 +161,10 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
             transition={{ delay: 0.5 }}
             className="lg:col-span-1 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col"
           >
-            <h3 className="font-bold text-slate-900 mb-6">Top Formulaires</h3>
+            <h3 className="font-bold text-slate-900 mb-6">Top forms</h3>
             <div className="flex-1 space-y-4 overflow-y-auto">
               {stats?.formPerformance.length === 0 ? (
-                <p className="text-sm text-slate-500 text-center mt-10">Aucune donnée.</p>
+                <p className="text-sm text-slate-500 text-center mt-10">No data yet.</p>
               ) : (
                 stats?.formPerformance.map((form, idx) => {
                   const total = stats.allTime || 1;
@@ -197,9 +197,9 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
             <TrendingUp className="h-6 w-6 text-blue-600" />
           </div>
-          <h3 className="text-lg font-bold text-slate-900">Analytique avancée bientôt disponible</h3>
+          <h3 className="text-lg font-bold text-slate-900">Advanced analytics unlocks at 15 leads</h3>
           <p className="mt-2 text-sm text-slate-600 max-w-md mx-auto">
-            Les graphiques et statistiques de performance se débloqueront automatiquement une fois que vous aurez atteint <strong>15 leads</strong>. Collectez encore {15 - (stats?.allTime || 0)} leads pour y accéder !
+            Charts and performance stats unlock automatically once you reach <strong>15 leads</strong>. Only {15 - (stats?.allTime || 0)} more to go!
           </p>
         </motion.div>
       )}
@@ -211,12 +211,12 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
         className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col"
       >
         <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="font-bold text-slate-900">Base de Données Leads</h3>
+          <h3 className="font-bold text-slate-900">Lead database</h3>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input 
               type="text" 
-              placeholder="Chercher un nom, email..." 
+              placeholder="Search name, email…" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-4 py-2 w-full sm:w-64 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -228,27 +228,27 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
             <thead className="bg-white border-b border-slate-100 text-xs font-semibold uppercase text-slate-400">
               <tr>
                 <th className="px-6 py-4">Date</th>
-                <th className="px-6 py-4">Formulaire</th>
-                <th className="px-6 py-4">Identité Principale</th>
-                <th className="px-6 py-4">Aperçu</th>
+                <th className="px-6 py-4">Form</th>
+                <th className="px-6 py-4">Primary identity</th>
+                <th className="px-6 py-4">Preview</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
               {filteredLeads.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
-                    Aucun lead ne correspond à votre recherche.
+                    No leads match your search.
                   </td>
                 </tr>
               ) : (
                 filteredLeads.map((lead) => {
-                  const date = new Date(lead.created_at).toLocaleDateString('fr-FR', {
+                  const date = new Date(lead.created_at).toLocaleDateString('en-GB', {
                     day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
                   });
                   const nameKey = Object.keys(lead.payload).find(k => k.toLowerCase() === 'nom' || k.toLowerCase() === 'name');
                   const emailKey = Object.keys(lead.payload).find(k => k.toLowerCase() === 'email');
-                  const name = nameKey ? lead.payload[nameKey] : 'Inconnu';
-                  const email = emailKey ? lead.payload[emailKey] : 'Inconnu';
+                  const name = nameKey ? lead.payload[nameKey] : 'Unknown';
+                  const email = emailKey ? lead.payload[emailKey] : '—';
                   
                   const otherData = Object.entries(lead.payload).filter(([k]) => k !== nameKey && k !== emailKey);
                   
@@ -263,7 +263,7 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
                         <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800">
-                          {lead.forms?.name || 'Inconnu'}
+                          {lead.forms?.name || 'Unknown'}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -306,9 +306,9 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
             >
               <div className="border-b border-slate-100 bg-slate-50 px-6 py-4 flex items-center justify-between shrink-0">
                 <div>
-                  <h3 className="font-bold text-slate-900 text-lg">Détails de la soumission</h3>
+                  <h3 className="font-bold text-slate-900 text-lg">Submission details</h3>
                   <p className="text-xs text-slate-500">
-                    Reçu le {new Date(selectedLead.created_at).toLocaleString('fr-FR')} via <strong>{selectedLead.forms?.name}</strong>
+                    Received {new Date(selectedLead.created_at).toLocaleString('en-GB')} via <strong>{selectedLead.forms?.name}</strong>
                   </p>
                 </div>
                 <button 
@@ -342,7 +342,7 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
                               className="inline-flex items-center justify-center gap-2 rounded bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 transition-colors self-start"
                             >
                               <Download className="h-3 w-3" />
-                              Télécharger l'image
+                              Download file
                             </a>
                           </div>
                         ) : (
@@ -360,7 +360,7 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
                   onClick={() => setSelectedLead(null)}
                   className="rounded-lg bg-white border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
                 >
-                  Fermer
+                  Close
                 </button>
               </div>
             </motion.div>

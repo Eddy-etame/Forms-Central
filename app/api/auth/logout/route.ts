@@ -29,5 +29,7 @@ export async function POST(request: NextRequest) {
   const response = NextResponse.json({ success: true });
   response.cookies.delete('access_token');
   response.cookies.delete('refresh_token');
+  // Client (tenant) session — without this, client sign-out never actually signed out.
+  response.cookies.delete('client_access_token');
   return response;
 }

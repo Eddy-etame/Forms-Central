@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
 import { Check, Terminal, ShieldCheck, Mail } from "lucide-react";
+import CopyButton from "@/components/CopyButton";
 
 export const metadata: Metadata = {
   title: "Documentation — integrate in minutes",
@@ -77,6 +78,7 @@ function Code({ title, code }: { title: string; code: string }) {
       <div className="flex items-center gap-2 border-b border-slate-800 px-4 py-2.5">
         <Terminal className="h-3.5 w-3.5 text-slate-500" />
         <span className="text-xs text-slate-400">{title}</span>
+        <CopyButton text={code} />
       </div>
       <pre className="overflow-x-auto p-5 text-[13px] leading-relaxed text-slate-200"><code>{code}</code></pre>
     </div>

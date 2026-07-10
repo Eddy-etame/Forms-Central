@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
@@ -11,7 +10,6 @@ export default function ClientLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,11 +29,13 @@ export default function ClientLoginPage() {
 
       if (res.ok && data.success) {
         window.location.href = '/client/dashboard';
+      } else if (res.status === 429) {
+        setError('Too many attempts. Please wait a minute and try again.');
       } else {
-        setError(data.error || 'Identifiants incorrects.');
+        setError(data.error || 'Incorrect email or password.');
       }
-    } catch (err) {
-      setError('Impossible de se connecter au serveur.');
+    } catch {
+      setError('Could not reach the server.');
     } finally {
       setLoading(false);
     }
@@ -45,7 +45,7 @@ export default function ClientLoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <div className="absolute top-4 left-4">
         <Link href="/" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
-          &larr; Retour au site
+          &larr; Back to site
         </Link>
       </div>
       <div className="w-full max-w-md rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
@@ -54,27 +54,28 @@ export default function ClientLoginPage() {
             K
           </div>
           <h2 className="mt-6 text-2xl font-bold text-slate-900 tracking-tight">
-            Espace Client
+            Welcome back
           </h2>
           <p className="mt-1.5 text-sm text-slate-500">
-            Connectez-vous pour consulter vos leads et vos performances.
+            Sign in to see your leads and performance.
           </p>
         </div>
 
         <form className="mt-8 space-y-4" onSubmit={handleLogin}>
           {error && (
-            <div className="rounded-lg bg-red-50 border border-red-100 p-3 text-xs text-red-600 font-medium">
+            <div role="alert" className="rounded-lg bg-red-50 border border-red-100 p-3 text-xs text-red-600 font-medium">
               {error}
             </div>
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">
+            <label htmlFor="email" className="text-xs font-semibold text-slate-700">
               Email
             </label>
             <Input
+              id="email"
               type="email"
-              placeholder="contact@entreprise.com"
+              placeholder="you@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -84,10 +85,11 @@ export default function ClientLoginPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">
-              Mot de passe
+            <label htmlFor="password" className="text-xs font-semibold text-slate-700">
+              Password
             </label>
             <Input
+              id="password"
               type="password"
               placeholder="••••••••••••"
               value={password}
@@ -103,8 +105,15 @@ export default function ClientLoginPage() {
             className="w-full py-2.5 mt-2 justify-center"
             disabled={loading}
           >
-            {loading ? 'Connexion en cours...' : 'Se connecter'}
+            {loading ? 'Signing in…' : 'Sign in'}
           </Button>
+
+          <p className="text-center text-xs text-slate-500 pt-1">
+            No account yet?{' '}
+            <Link href="/client/signup" className="font-semibold text-slate-900 hover:underline">
+              Create one free
+            </Link>
+          </p>
         </form>
       </div>
     </div>

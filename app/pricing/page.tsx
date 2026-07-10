@@ -3,42 +3,82 @@ import Link from "next/link";
 import { Check, Minus, ArrowRight, Sparkles } from "lucide-react";
 import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
 import AiChat from "@/components/AiChat";
+import { PLANS } from "@/lib/plans";
 
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "King E Forms pricing — start free, upgrade to Pro for unlimited AI assistance, white-label emails, CSV export, analytics and priority deliverability. Self-hosted: you own the data.",
+    "King E Forms pricing — Free, Solo ($9), Pro ($19) and Max ($49). Self-hosted form backend with white-label emails, AI assistance, anti-spam and CSV exports. Start free, upgrade when your leads do.",
   alternates: { canonical: "/pricing" },
 };
 
-const UPGRADE_MAILTO =
-  "mailto:eddy.eetame@gmail.com?subject=King%20E%20Forms%20Pro%20upgrade&body=Hi%2C%20I%27d%20like%20to%20upgrade%20my%20King%20E%20Forms%20account%20to%20Pro.%20My%20account%20email%20is%3A%20";
+const UPGRADE_MAILTO = (plan: string) =>
+  `mailto:eddy.eetame@gmail.com?subject=King%20E%20Forms%20${plan}%20upgrade&body=Hi%2C%20I%27d%20like%20to%20upgrade%20my%20King%20E%20Forms%20account%20to%20${plan}.%20My%20account%20email%20is%3A%20`;
 
-type Row = { label: string; free: string | boolean; pro: string | boolean };
-const ROWS: Row[] = [
-  { label: "Forms", free: "Up to 3", pro: "Unlimited" },
-  { label: "Submissions", free: "100 / month", pro: "10,000 / month" },
-  { label: "Spam protection (honeypot + proof-of-work + NLP)", free: true, pro: true },
-  { label: "Branded auto-reply emails", free: true, pro: true },
-  { label: "AI assistant", free: "1 trial message", pro: "Unlimited" },
-  { label: "White-label sender (no King E Forms footer)", free: false, pro: true },
-  { label: "CSV lead export", free: false, pro: true },
-  { label: "Analytics dashboard", free: false, pro: true },
-  { label: "Priority deliverability (SMTP fallback rotation)", free: false, pro: true },
-  { label: "Data retention", free: "30 days", pro: "Unlimited" },
+const FAQ = [
+  {
+    q: "What happens if I go over my submission or email quota?",
+    a: "Your leads are never lost. Submissions keep being stored in your dashboard even over quota — only outgoing emails pause until the next day or an upgrade. Losing a lead over a billing limit is not acceptable to us.",
+  },
+  {
+    q: "Why is there an emails-per-day limit?",
+    a: "Every submission can trigger up to two emails (your notification + the branded auto-reply). Daily caps keep delivery fast and reputable for everyone. Higher tiers get dramatically more throughput.",
+  },
+  {
+    q: "Can I switch plans anytime?",
+    a: "Yes — upgrades apply immediately, downgrades at the end of the cycle. Your forms, submissions and settings are never touched by a plan change.",
+  },
+  {
+    q: "Is the free plan really free forever?",
+    a: "Yes. Three forms, 50 submissions a month, full anti-spam. It is enough to run a real site — most developers upgrade when they add their second or third client, not because we squeezed them.",
+  },
 ];
 
-const jsonLd = {
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
+const productJsonLd = {
   "@context": "https://schema.org",
   "@type": "Product",
   name: "King E Forms",
   description: "Self-hosted form backend for all your websites.",
   brand: { "@type": "Brand", name: "King E Forms" },
-  offers: [
-    { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD" },
-    { "@type": "Offer", name: "Pro", price: "19", priceCurrency: "USD" },
-  ],
+  offers: Object.values(PLANS).map((p) => ({
+    "@type": "Offer",
+    name: p.name,
+    price: String(p.priceMonthly),
+    priceCurrency: "USD",
+  })),
 };
+
+type Row = { label: string; values: (string | boolean)[] };
+const fmt = (n: number) => n.toLocaleString("en-US");
+const P = PLANS;
+const ROWS: Row[] = [
+  { label: "Forms", values: [String(P.free.formLimit), String(P.solo.formLimit), "Unlimited", "Unlimited"] },
+  {
+    label: "Submissions / month",
+    values: [fmt(P.free.submissionsPerMonth), fmt(P.solo.submissionsPerMonth), fmt(P.pro.submissionsPerMonth), fmt(P.max.submissionsPerMonth)],
+  },
+  { label: "Emails / day", values: [fmt(P.free.emailsPerDay), fmt(P.solo.emailsPerDay), fmt(P.pro.emailsPerDay), fmt(P.max.emailsPerDay)] },
+  { label: "Spam protection (honeypot + PoW + NLP)", values: [true, true, true, true] },
+  { label: "Branded auto-reply emails", values: [true, true, true, true] },
+  { label: "AI assistant", values: ["1 trial message", "100 / month", "Unlimited", "Unlimited"] },
+  { label: "CSV export", values: [false, true, true, true] },
+  { label: "Analytics dashboard", values: [false, true, true, true] },
+  { label: "White-label sender (no King E footer)", values: [false, false, true, true] },
+  { label: "Priority deliverability (SMTP rotation)", values: [false, false, true, true] },
+  { label: "Data retention", values: ["30 days", "1 year", "Unlimited", "Unlimited"] },
+  { label: "Priority support", values: [false, false, false, true] },
+  { label: "Dedicated sending-domain setup (DKIM/SPF)", values: [false, false, false, true] },
+];
 
 function Cell({ v }: { v: string | boolean }) {
   if (v === true) return <Check className="h-5 w-5 text-emerald-600" aria-label="Included" />;
@@ -46,110 +86,208 @@ function Cell({ v }: { v: string | boolean }) {
   return <span className="text-sm text-slate-700">{v}</span>;
 }
 
+function PlanCard({
+  name,
+  price,
+  blurb,
+  features,
+  cta,
+  href,
+  highlight = false,
+  external = false,
+}: {
+  name: string;
+  price: number;
+  blurb: string;
+  features: string[];
+  cta: string;
+  href: string;
+  highlight?: boolean;
+  external?: boolean;
+}) {
+  const inner = (
+    <>
+      {cta} <ArrowRight className="h-4 w-4" />
+    </>
+  );
+  const btnClass = highlight
+    ? "mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-medium text-slate-900 hover:bg-slate-100 transition-colors"
+    : "mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-slate-300 px-5 text-sm font-medium text-slate-800 hover:border-slate-400 transition-colors";
+  return (
+    <div
+      className={
+        highlight
+          ? "relative flex flex-col rounded-3xl border-2 border-slate-900 bg-slate-950 p-7 text-white shadow-xl"
+          : "flex flex-col rounded-3xl border border-slate-200 bg-white p-7"
+      }
+    >
+      {highlight && (
+        <div className="absolute -top-3.5 left-7 inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
+          <Sparkles className="h-3 w-3" /> Most popular
+        </div>
+      )}
+      <h2 className="text-base font-bold">{name}</h2>
+      <div className="mt-4 flex items-baseline gap-1.5">
+        <span className="text-4xl font-extrabold tracking-tight">${price}</span>
+        <span className={highlight ? "text-sm text-slate-400" : "text-sm text-slate-500"}>/ month</span>
+      </div>
+      <p className={`mt-2 text-sm ${highlight ? "text-slate-400" : "text-slate-500"}`}>{blurb}</p>
+      <ul className={`mt-5 flex-1 space-y-2.5 text-sm ${highlight ? "text-slate-200" : "text-slate-700"}`}>
+        {features.map((t) => (
+          <li key={t} className="flex items-start gap-2.5">
+            <Check className={`mt-0.5 h-4 w-4 shrink-0 ${highlight ? "text-emerald-400" : "text-emerald-600"}`} />
+            {t}
+          </li>
+        ))}
+      </ul>
+      {external ? (
+        <a href={href} className={btnClass}>{inner}</a>
+      ) : (
+        <Link href={href} className={btnClass}>{inner}</Link>
+      )}
+    </div>
+  );
+}
+
 export default function PricingPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([productJsonLd, faqJsonLd]) }}
+      />
       <div className="min-h-screen bg-white text-slate-900 font-sans">
         <NavBar />
 
         <header className="mx-auto max-w-3xl px-6 pt-16 pb-10 text-center lg:pt-24">
           <h1 className="text-balance text-4xl font-extrabold tracking-tight sm:text-6xl">
-            Simple pricing. <span className="bg-gradient-to-r from-blue-600 to-slate-900 bg-clip-text text-transparent">Own your data.</span>
+            Pay for leads, <span className="bg-gradient-to-r from-blue-600 to-slate-900 bg-clip-text text-transparent">not per form.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-600">
-            Start free in two minutes. Upgrade when your leads do. No per-form pricing games.
+            One backend for every site you build. Start free in two minutes — upgrade
+            only when your lead volume does.
           </p>
         </header>
 
-        {/* Plans */}
-        <section className="mx-auto grid max-w-4xl gap-6 px-6 pb-16 md:grid-cols-2">
-          {/* Free */}
-          <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-8">
-            <h2 className="text-lg font-bold">Free</h2>
-            <p className="mt-1 text-sm text-slate-500">Everything you need to stop losing leads.</p>
-            <div className="mt-5 flex items-baseline gap-1.5">
-              <span className="text-5xl font-extrabold tracking-tight">$0</span>
-              <span className="text-sm text-slate-500">/ month</span>
-            </div>
-            <ul className="mt-6 space-y-2.5 text-sm text-slate-700">
-              {["3 forms, 100 submissions / month", "Full anti-spam stack", "Branded auto-reply emails", "1 AI assistant trial message"].map((t) => (
-                <li key={t} className="flex items-start gap-2.5">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> {t}
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/client/signup"
-              className="mt-8 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-slate-300 px-6 text-sm font-medium text-slate-800 hover:border-slate-400 transition-colors"
-            >
-              Start free <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          {/* Pro */}
-          <div className="relative flex flex-col rounded-3xl border-2 border-slate-900 bg-slate-950 p-8 text-white shadow-xl">
-            <div className="absolute -top-3.5 left-8 inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold">
-              <Sparkles className="h-3 w-3" /> Most popular
-            </div>
-            <h2 className="text-lg font-bold">Pro</h2>
-            <p className="mt-1 text-sm text-slate-400">For agencies and multi-site builders.</p>
-            <div className="mt-5 flex items-baseline gap-1.5">
-              <span className="text-5xl font-extrabold tracking-tight">$19</span>
-              <span className="text-sm text-slate-400">/ month</span>
-            </div>
-            <ul className="mt-6 space-y-2.5 text-sm text-slate-200">
-              {[
-                "Unlimited forms, 10,000 submissions / month",
-                "Unlimited AI assistant",
-                "White-label sender — your brand only",
-                "CSV export + analytics dashboard",
-                "Priority deliverability (SMTP rotation)",
-                "Unlimited data retention",
-              ].map((t) => (
-                <li key={t} className="flex items-start gap-2.5">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" /> {t}
-                </li>
-              ))}
-            </ul>
-            <a
-              href={UPGRADE_MAILTO}
-              className="mt-8 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-medium text-slate-900 hover:bg-slate-100 transition-colors"
-            >
-              Upgrade to Pro <ArrowRight className="h-4 w-4" />
-            </a>
-            <p className="mt-3 text-center text-xs text-slate-500">
-              Self-serve checkout is coming — upgrades are activated same-day by email.
-            </p>
-          </div>
+        {/* Plans — Good / Better / Best (+ anchor) */}
+        <section className="mx-auto grid max-w-6xl gap-5 px-6 pb-14 md:grid-cols-2 xl:grid-cols-4">
+          <PlanCard
+            name="Free"
+            price={0}
+            blurb="Prove it works. Run a real site on it."
+            features={[
+              `${P.free.formLimit} forms · ${P.free.submissionsPerMonth} submissions/mo`,
+              `${P.free.emailsPerDay} emails/day`,
+              "Full anti-spam stack",
+              "Branded auto-replies",
+              "1 AI trial message",
+            ]}
+            cta="Start free"
+            href="/client/signup"
+          />
+          <PlanCard
+            name="Solo"
+            price={P.solo.priceMonthly}
+            blurb="For a freelancer with a handful of sites."
+            features={[
+              `${P.solo.formLimit} forms · ${fmt(P.solo.submissionsPerMonth)} submissions/mo`,
+              `${P.solo.emailsPerDay} emails/day`,
+              "CSV export + analytics",
+              "AI assistant — 100/month",
+              "1-year data retention",
+            ]}
+            cta="Choose Solo"
+            href={UPGRADE_MAILTO("Solo")}
+            external
+          />
+          <PlanCard
+            name="Pro"
+            price={P.pro.priceMonthly}
+            blurb="For agencies. Unlimited forms, your brand only."
+            highlight
+            features={[
+              `Unlimited forms · ${fmt(P.pro.submissionsPerMonth)} submissions/mo`,
+              `${P.pro.emailsPerDay} emails/day`,
+              "White-label sender — no King E footer",
+              "Unlimited AI assistant",
+              "Priority deliverability (SMTP rotation)",
+              "Unlimited data retention",
+            ]}
+            cta="Upgrade to Pro"
+            href={UPGRADE_MAILTO("Pro")}
+            external
+          />
+          <PlanCard
+            name="Max"
+            price={P.max.priceMonthly}
+            blurb="High-volume studios that live on leads."
+            features={[
+              `Unlimited forms · ${fmt(P.max.submissionsPerMonth)} submissions/mo`,
+              `${fmt(P.max.emailsPerDay)} emails/day`,
+              "Everything in Pro",
+              "Priority support",
+              "Dedicated sending-domain setup (DKIM/SPF)",
+            ]}
+            cta="Go Max"
+            href={UPGRADE_MAILTO("Max")}
+            external
+          />
         </section>
 
-        {/* Comparison table */}
-        <section className="mx-auto max-w-4xl px-6 pb-20">
-          <h2 className="mb-6 text-center text-2xl font-bold tracking-tight">Compare plans</h2>
+        <p className="mx-auto -mt-6 max-w-2xl px-6 pb-12 text-center text-xs text-slate-400">
+          Self-serve checkout is coming — paid upgrades are activated same-day by email.
+          Over quota? Your leads keep being stored; only outgoing email pauses.
+        </p>
+
+        {/* Full comparison */}
+        <section className="mx-auto max-w-5xl px-6 pb-16">
+          <h2 className="mb-6 text-center text-2xl font-bold tracking-tight">Compare everything</h2>
           <div className="overflow-x-auto rounded-2xl border border-slate-200">
-            <table className="w-full min-w-[560px] text-left text-sm">
+            <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="bg-slate-50 text-slate-500">
                 <tr>
-                  <th className="px-6 py-4 font-medium">Capability</th>
-                  <th className="px-6 py-4 font-medium">Free</th>
-                  <th className="px-6 py-4 font-semibold text-slate-900">Pro</th>
+                  <th className="px-5 py-4 font-medium">Capability</th>
+                  <th className="px-5 py-4 font-medium">Free</th>
+                  <th className="px-5 py-4 font-medium">Solo $9</th>
+                  <th className="px-5 py-4 font-semibold text-slate-900">Pro $19</th>
+                  <th className="px-5 py-4 font-medium">Max $49</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {ROWS.map((r) => (
                   <tr key={r.label}>
-                    <td className="px-6 py-4 font-medium text-slate-800">{r.label}</td>
-                    <td className="px-6 py-4"><Cell v={r.free} /></td>
-                    <td className="px-6 py-4"><Cell v={r.pro} /></td>
+                    <td className="px-5 py-3.5 font-medium text-slate-800">{r.label}</td>
+                    {r.values.map((v, i) => (
+                      <td key={i} className={`px-5 py-3.5 ${i === 2 ? "bg-blue-50/40" : ""}`}>
+                        <Cell v={v} />
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
           <p className="mt-6 text-center text-sm text-slate-500">
-            Both plans are self-hosted on your own infrastructure — your data never belongs to us.
+            Every plan is self-hosted on your own infrastructure — your data never belongs to us.
           </p>
+        </section>
+
+        {/* Pricing FAQ */}
+        <section className="border-t border-slate-100 bg-slate-50/60 py-16">
+          <div className="mx-auto max-w-3xl px-6">
+            <h2 className="mb-8 text-center text-2xl font-bold tracking-tight">Pricing questions</h2>
+            <div className="space-y-3">
+              {FAQ.map((f) => (
+                <details key={f.q} className="group rounded-2xl border border-slate-200 bg-white p-5 open:shadow-sm">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-slate-900">
+                    {f.q}
+                    <ArrowRight className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" />
+                  </summary>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
         </section>
 
         <AiChat />

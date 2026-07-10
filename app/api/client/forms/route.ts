@@ -3,13 +3,12 @@ import { cookies } from 'next/headers';
 import { supabase } from '@/lib/supabase';
 import { verifyJWT } from '@/lib/jwt';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
+import { getPlan } from '@/lib/plans';
 
 /**
  * Self-serve form creation for signed-in clients (tenants).
- * Free plan: up to 3 forms (matches /pricing). Pro: unlimited.
+ * Form limits come from lib/plans (single source of truth with /pricing).
  */
-
-const FREE_FORM_LIMIT = 3;
 
 async function authedClientId(): Promise<string | null> {
   const jar = await cookies();
@@ -41,17 +40,17 @@ export async function POST(req: Request) {
       );
     }
 
-    // Plan-aware limit (free = 3, as promised on /pricing).
+    // Plan-aware limit (values shared with /pricing via lib/plans).
     const [{ data: client }, { count }] = await Promise.all([
       supabase.from('clients').select('plan').eq('id', clientId).maybeSingle(),
       supabase.from('forms').select('id', { count: 'exact', head: true }).eq('client_id', clientId),
     ]);
-    const isPro = client?.plan === 'pro';
-    if (!isPro && (count ?? 0) >= FREE_FORM_LIMIT) {
+    const plan = getPlan(client?.plan);
+    if (plan.formLimit !== null && (count ?? 0) >= plan.formLimit) {
       return NextResponse.json(
         {
           success: false,
-          error: `The free plan includes ${FREE_FORM_LIMIT} forms. Upgrade to Pro for unlimited forms.`,
+          error: `The ${plan.name} plan includes ${plan.formLimit} forms. Upgrade for more.`,
           paywall: true,
           upgradeUrl: '/pricing',
         },

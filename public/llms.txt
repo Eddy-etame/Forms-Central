@@ -44,6 +44,14 @@ sender (e.g., via Brevo); a custom domain improves deliverability.
 Q: Which frameworks does it support? A: Any browser JavaScript environment — Astro,
 Next.js, Nuxt, Vue, Svelte, or static HTML.
 
+## Plans (monthly, USD)
+Free $0 (3 forms, 50 submissions/mo, 20 emails/day) . Solo $9 (10 forms,
+500 submissions/mo, 100 emails/day, CSV + analytics) . Pro $19 (unlimited forms,
+2,500 submissions/mo, 300 emails/day, white-label, unlimited AI) . Max $49
+(10,000 submissions/mo, 1,000 emails/day, priority support, dedicated sending
+domain). Over quota, leads keep being stored - only outgoing email pauses.
+
 ## Links
 - Home: https://forms-central-h1ee.vercel.app/
 - Docs: https://forms-central-h1ee.vercel.app/docs
+- Pricing: https://forms-central-h1ee.vercel.app/pricing

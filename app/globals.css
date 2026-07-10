@@ -66,6 +66,15 @@ body {
   .fade-up { animation: none; }
 }
 
+/* Anchor navigation glides instead of jumping */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem; /* keep targets clear of the sticky nav */
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
 /* Keyboard focus: visible, branded, never a browser-default blue box */
 :focus-visible {
   outline: 2px solid #2563eb;

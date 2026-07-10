@@ -49,10 +49,18 @@ FORM_ID (a form's UUID from the admin). Submission flow:
    _gotcha honeypot field (leave it empty).
 No SMTP, no email library required on the consumer side.
 
-PLANS
-- Free: create forms and receive submissions; 1 trial message with this AI assistant.
-- Pro (paid): unlimited AI assistant, higher submission volume, priority email
-  deliverability, CSV export, white-label sender, and analytics.
+PLANS (monthly, USD)
+- Free ($0): 3 forms, 50 submissions/month, 20 emails/day, full anti-spam,
+  branded auto-replies, 1 AI trial message, 30-day retention.
+- Solo ($9): 10 forms, 500 submissions/month, 100 emails/day, CSV export,
+  analytics, AI assistant 100 messages/month, 1-year retention.
+- Pro ($19, most popular): unlimited forms, 2,500 submissions/month,
+  300 emails/day, white-label sender, unlimited AI, priority deliverability
+  (SMTP rotation), unlimited retention.
+- Max ($49): everything in Pro, 10,000 submissions/month, 1,000 emails/day,
+  priority support, dedicated sending-domain setup (DKIM/SPF).
+- Over quota: submissions keep being stored (leads are never lost); only
+  outgoing emails pause until the next day or an upgrade.
 
 COMPARISONS (be honest)
 - vs Formspree / Basin: King E Forms is self-hosted (you own the data),

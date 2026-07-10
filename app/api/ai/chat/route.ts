@@ -3,18 +3,18 @@ import { cookies, headers } from 'next/headers';
 import { supabase } from '@/lib/supabase';
 import { verifyJWT } from '@/lib/jwt';
 import { askAI, type ChatMessage } from '@/lib/ai';
+import { getPlan, type Plan } from '@/lib/plans';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const FREE_LIMIT = 1;            // free + anonymous: lifetime trial messages
-const PRO_BURST_LIMIT = 30;      // pro: max messages per rolling minute (abuse guard)
+const ANON_LIMIT = 1;            // anonymous visitors: lifetime trial messages
+const BURST_LIMIT = 30;          // unlimited tiers: max messages per rolling minute
 const MAX_MESSAGES = 20;         // conversation history cap accepted per request
 const MAX_CHARS = 8000;          // total payload cap
 
 type Caller =
-  | { kind: 'pro'; clientId: string }
-  | { kind: 'free'; clientId: string }
+  | { kind: 'client'; clientId: string; plan: Plan }
   | { kind: 'anon'; anonId: string; fresh: boolean };
 
 async function identify(): Promise<Caller> {
@@ -26,7 +26,7 @@ async function identify(): Promise<Caller> {
     const clientId = payload?.clientId as string | undefined;
     if (clientId) {
       const { data } = await supabase.from('clients').select('plan').eq('id', clientId).maybeSingle();
-      return { kind: data?.plan === 'pro' ? 'pro' : 'free', clientId };
+      return { kind: 'client', clientId, plan: getPlan(data?.plan) };
     }
   }
 
@@ -62,28 +62,51 @@ export async function POST(req: Request) {
     const hdrs = await headers();
     const ip = (hdrs.get('x-forwarded-for') || '').split(',')[0].trim() || null;
 
-    // ---- Quota / paywall (server-enforced) ----
-    if (caller.kind === 'pro') {
+    // ---- Quota / paywall (server-enforced, plan-aware via lib/plans) ----
+    if (caller.kind === 'anon') {
+      const { count } = await supabase
+        .from('ai_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('ok', true)
+        .eq('anon_id', caller.anonId);
+      if ((count ?? 0) >= ANON_LIMIT) {
+        return NextResponse.json(
+          {
+            error: 'You have used your free message. Create an account or upgrade for more AI assistance.',
+            paywall: true,
+            upgradeUrl: '/pricing',
+          },
+          { status: 402 }
+        );
+      }
+    } else if (caller.plan.aiMessages === null) {
+      // Unlimited tier — burst guard only.
       const since = new Date(Date.now() - 60_000).toISOString();
       const { count } = await supabase
         .from('ai_messages')
         .select('id', { count: 'exact', head: true })
         .eq('client_id', caller.clientId)
         .gte('created_at', since);
-      if ((count ?? 0) >= PRO_BURST_LIMIT) {
+      if ((count ?? 0) >= BURST_LIMIT) {
         return NextResponse.json({ error: 'Rate limit — slow down a moment.' }, { status: 429 });
       }
     } else {
-      // free client OR anonymous -> lifetime free trial
-      const q = supabase.from('ai_messages').select('id', { count: 'exact', head: true }).eq('ok', true);
+      // Metered tier: free = lifetime allowance, paid tiers = per calendar month.
+      const q = supabase
+        .from('ai_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('ok', true)
+        .eq('client_id', caller.clientId);
+      const monthStart = new Date();
+      monthStart.setUTCDate(1);
+      monthStart.setUTCHours(0, 0, 0, 0);
       const { count } =
-        caller.kind === 'free'
-          ? await q.eq('client_id', caller.clientId)
-          : await q.eq('anon_id', caller.anonId);
-      if ((count ?? 0) >= FREE_LIMIT) {
+        caller.plan.id === 'free' ? await q : await q.gte('created_at', monthStart.toISOString());
+      if ((count ?? 0) >= caller.plan.aiMessages) {
+        const scope = caller.plan.id === 'free' ? 'free message' : `${caller.plan.aiMessages} monthly messages`;
         return NextResponse.json(
           {
-            error: 'You have used your free message. Upgrade to Pro for unlimited AI assistance.',
+            error: `You have used your ${scope}. Upgrade for unlimited AI assistance.`,
             paywall: true,
             upgradeUrl: '/pricing',
           },

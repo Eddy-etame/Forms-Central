@@ -279,11 +279,13 @@ export async function POST(
     );
   }
 
+  // maybeSingle: a missing form must resolve to a clean 404 below, not a 500 —
+  // .single() reports "no rows" as a query error and would mask FORM_NOT_FOUND.
   const { data: form, error: formError } = await supabase
     .from('forms')
     .select('name, is_active, allowed_origins, notify_email, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, client_id, clients(name, email, logo_url, primary_color, font_family, plan)')
     .eq('id', formId)
-    .single();
+    .maybeSingle();
 
   if (form && form.success_url && form.success_url.trim() !== '') {
     redirectUrl = form.success_url;

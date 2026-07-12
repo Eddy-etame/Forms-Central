@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:submit": "node scripts/test-submit.mjs",
+    "test:mcp": "node scripts/test-mcp.mjs",
+    "test:portals": "node scripts/test-portals.mjs",
+    "test:reset": "node scripts/test-password-reset.mjs",
+    "test:all": "node scripts/test-submit.mjs && node scripts/test-mcp.mjs && node scripts/test-portals.mjs && node scripts/test-password-reset.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",

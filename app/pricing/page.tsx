@@ -72,6 +72,15 @@ const ROWS: Row[] = [
   { label: "Branded auto-reply emails", values: [true, true, true, true] },
   { label: "AI assistant", values: ["1 trial message", "100 / month", "Unlimited", "Unlimited"] },
   { label: "API + MCP server (your AI runs your forms)", values: [false, true, true, true] },
+  {
+    label: "Client portals (white-label end-client logins)",
+    values: [
+      false,
+      `${P.solo.endClientLimit} end-clients`,
+      `${P.pro.endClientLimit} end-clients`,
+      "Unlimited",
+    ],
+  },
   { label: "CSV export", values: [false, true, true, true] },
   { label: "Analytics dashboard", values: [false, true, true, true] },
   { label: "White-label sender (no Formdock footer)", values: [false, false, true, true] },

@@ -30,6 +30,8 @@ export interface Plan {
   priorityDeliverability: boolean;
   retentionDays: number | null;    // null = unlimited
   apiAccess: boolean;              // API keys + MCP server
+  clientPortals: boolean;          // white-label end-client login portals
+  endClientLimit: number | null;   // max end-clients; null = unlimited
 }
 
 export const PLANS: Record<PlanId, Plan> = {
@@ -47,6 +49,8 @@ export const PLANS: Record<PlanId, Plan> = {
     priorityDeliverability: false,
     retentionDays: 30,
     apiAccess: false,
+    clientPortals: false,
+    endClientLimit: 0,
   },
   solo: {
     id: 'solo',
@@ -62,6 +66,8 @@ export const PLANS: Record<PlanId, Plan> = {
     priorityDeliverability: false,
     retentionDays: 365,
     apiAccess: true,
+    clientPortals: true,
+    endClientLimit: 3,
   },
   pro: {
     id: 'pro',
@@ -77,6 +83,8 @@ export const PLANS: Record<PlanId, Plan> = {
     priorityDeliverability: true,
     retentionDays: null,
     apiAccess: true,
+    clientPortals: true,
+    endClientLimit: 25,
   },
   max: {
     id: 'max',
@@ -92,6 +100,8 @@ export const PLANS: Record<PlanId, Plan> = {
     priorityDeliverability: true,
     retentionDays: null,
     apiAccess: true,
+    clientPortals: true,
+    endClientLimit: null,
   },
 };
 

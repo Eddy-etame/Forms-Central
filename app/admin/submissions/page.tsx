@@ -19,7 +19,7 @@ interface Submission {
 }
 
 function formatPayloadPreview(payload: Record<string, string>): string {
-  if (!payload || Object.keys(payload).length === 0) return 'Aucune donnée';
+  if (!payload || Object.keys(payload).length === 0) return 'No data';
   
   const entries = Object.entries(payload)
     .filter(([k]) => k !== '_gotcha')
@@ -64,10 +64,10 @@ export default function SubmissionsPage() {
     submissions.forEach(sub => Object.keys(sub.payload).forEach(k => allKeys.add(k)));
     const keysArray = Array.from(allKeys).filter(k => k !== '_gotcha');
     
-    const headers = ['Date', 'Formulaire', 'IP', ...keysArray];
+    const headers = ['Date', 'Form', 'IP', ...keysArray];
     
     const rows = submissions.map(sub => {
-      const date = new Date(sub.created_at).toLocaleString('fr-FR');
+      const date = new Date(sub.created_at).toLocaleString('en-GB');
       const formName = sub.forms ? sub.forms.name : 'Inconnu';
       const ip = sub.ip_address || '';
       
@@ -105,8 +105,8 @@ export default function SubmissionsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Leads / Soumissions</h2>
-          <p className="text-sm text-slate-500">Historique complet des messages reçus via l&apos;ensemble de vos formulaires.</p>
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Leads / Submissions</h2>
+          <p className="text-sm text-slate-500">Every message received across all your forms.</p>
         </div>
         <Button 
           onClick={handleExportCSV} 
@@ -123,7 +123,7 @@ export default function SubmissionsPage() {
         {submissions.length === 0 ? (
           <div className="py-12 text-center flex flex-col items-center justify-center">
             <FileText className="h-10 w-10 text-slate-300" />
-            <span className="text-sm font-medium text-slate-400 mt-2">Aucun lead reçu.</span>
+            <span className="text-sm font-medium text-slate-400 mt-2">No leads yet.</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -131,9 +131,9 @@ export default function SubmissionsPage() {
               <thead className="bg-slate-50 text-xs font-bold text-slate-700 uppercase border-b border-slate-100">
                 <tr>
                   <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Formulaire</th>
+                  <th className="px-4 py-3">Form</th>
                   <th className="px-4 py-3">IP</th>
-                  <th className="px-4 py-3">Aperçu des données</th>
+                  <th className="px-4 py-3">Data preview</th>
                   <th className="px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
@@ -141,7 +141,7 @@ export default function SubmissionsPage() {
                 {submissions.map((sub) => (
                   <tr key={sub.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs">
-                      {new Date(sub.created_at).toLocaleDateString('fr-FR', {
+                      {new Date(sub.created_at).toLocaleDateString('en-GB', {
                         day: 'numeric',
                         month: 'short',
                         hour: '2-digit',
@@ -160,7 +160,7 @@ export default function SubmissionsPage() {
                         onClick={() => setSelectedSub(sub)}
                         className="inline-flex items-center gap-1 text-xs text-slate-900 font-semibold hover:opacity-85"
                       >
-                        <Eye className="h-3.5 w-3.5" /> Détail
+                        <Eye className="h-3.5 w-3.5" /> Details
                       </button>
                     </td>
                   </tr>
@@ -176,7 +176,7 @@ export default function SubmissionsPage() {
         <Modal
           isOpen={!!selectedSub}
           onClose={() => setSelectedSub(null)}
-          title="Détails du lead"
+          title="Lead details"
         >
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2 text-xs border-b border-slate-100 pb-3 text-slate-400 font-medium">
@@ -204,7 +204,7 @@ export default function SubmissionsPage() {
             </div>
 
             <div className="flex justify-end pt-4 border-t border-slate-100 mt-6">
-              <Button onClick={() => setSelectedSub(null)}>Fermer</Button>
+              <Button onClick={() => setSelectedSub(null)}>Close</Button>
             </div>
           </div>
         </Modal>

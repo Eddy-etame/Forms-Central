@@ -58,7 +58,7 @@ export default function LogsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Logs & Échecs</h2>
-          <p className="text-sm text-slate-500">Tracez les échecs SMTP, les déclenchements de Honeypot et les blocages Anti-Spam.</p>
+          <p className="text-sm text-slate-500">Track SMTP failures, honeypot triggers and anti-spam blocks.</p>
         </div>
         
         <button
@@ -82,7 +82,7 @@ export default function LogsPage() {
                 <tr>
                   <th className="px-6 py-4">Horodatage</th>
                   <th className="px-6 py-4">Type d'Erreur</th>
-                  <th className="px-6 py-4">Formulaire</th>
+                  <th className="px-6 py-4">Form</th>
                   <th className="px-6 py-4">Message</th>
                 </tr>
               </thead>
@@ -90,7 +90,7 @@ export default function LogsPage() {
                 {loading && logs.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
-                      Chargement des logs...
+                      Loading logs…
                     </td>
                   </tr>
                 ) : logs.length === 0 ? (
@@ -98,7 +98,7 @@ export default function LogsPage() {
                     <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
                       <div className="flex flex-col items-center justify-center">
                         <Activity className="w-8 h-8 mb-2 text-slate-300" />
-                        Aucun échec enregistré.
+                        No failures logged.
                       </div>
                     </td>
                   </tr>
@@ -106,7 +106,7 @@ export default function LogsPage() {
                   logs.map((log) => (
                     <tr key={log.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-slate-500">
-                        {new Date(log.created_at).toLocaleString('fr-FR')}
+                        {new Date(log.created_at).toLocaleString('en-GB')}
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${

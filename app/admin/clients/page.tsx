@@ -115,7 +115,7 @@ export default function ClientsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce client et tous ses formulaires associés ?')) {
+    if (!confirm('Delete this client and all their forms?')) {
       return;
     }
 
@@ -150,18 +150,18 @@ export default function ClientsPage() {
       if (res.success && res.password) {
         setVisiblePasswords(prev => ({ ...prev, [id]: res.password }));
       } else {
-        alert(res.error || "Impossible de récupérer le mot de passe");
+        alert(res.error || "Could not retrieve the password");
       }
     } catch (err) {
       console.error(err);
-      alert("Erreur réseau");
+      alert("Network error");
     } finally {
       setLoadingPassword(prev => ({ ...prev, [id]: false }));
     }
   };
 
   const handleResetPassword = async (id: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir réinitialiser le mot de passe de ce client ? Un nouvel email lui sera envoyé.')) {
+    if (!confirm("Reset this client's password? A new email will be sent to them.")) {
       return;
     }
 
@@ -169,7 +169,7 @@ export default function ClientsPage() {
     try {
       const res = await triggerPasswordReset(id);
       if (res.success) {
-        alert('Mot de passe réinitialisé et envoyé au client avec succès !');
+        alert('Password reset and emailed to the client.');
         // Hide password if it was visible, as it's no longer valid
         setVisiblePasswords(prev => {
           const next = { ...prev };
@@ -177,11 +177,11 @@ export default function ClientsPage() {
           return next;
         });
       } else {
-        alert(res.error || "Erreur lors de la réinitialisation");
+        alert(res.error || "Could not reset the password");
       }
     } catch (err) {
       console.error(err);
-      alert("Erreur réseau");
+      alert("Network error");
     } finally {
       setResettingPassword(prev => ({ ...prev, [id]: false }));
     }
@@ -201,10 +201,10 @@ export default function ClientsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Clients</h2>
-          <p className="text-sm text-slate-500">Gérez les destinataires qui recevront les notifications de formulaires.</p>
+          <p className="text-sm text-slate-500">Manage the recipients who get form notifications.</p>
         </div>
         <Button onClick={openCreateModal} className="flex items-center gap-1.5 px-3 py-2 bg-slate-900 text-white font-medium hover:bg-slate-800 rounded-lg">
-          <Plus className="h-4 w-4" /> Nouveau client
+          <Plus className="h-4 w-4" /> New client
         </Button>
       </div>
 
@@ -212,7 +212,7 @@ export default function ClientsPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {clients.length === 0 ? (
           <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center">
-            <span className="text-sm font-medium text-slate-400">Aucun client configuré.</span>
+            <span className="text-sm font-medium text-slate-400">No clients yet.</span>
           </div>
         ) : (
           clients.map((client) => (
@@ -259,7 +259,7 @@ export default function ClientsPage() {
                       variant="ghost" 
                       onClick={() => handleResetPassword(client.id)}
                       disabled={resettingPassword[client.id]}
-                      title="Réinitialiser le mot de passe"
+                      title="Reset password"
                       className="h-7 w-7 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
                     >
                       <RefreshCw className={`h-3.5 w-3.5 ${resettingPassword[client.id] ? 'animate-spin' : ''}`} />
@@ -273,14 +273,14 @@ export default function ClientsPage() {
                   onClick={() => openEditModal(client)}
                   className="px-2 py-1.5 text-slate-500 hover:text-slate-900 text-xs gap-1"
                 >
-                  <Edit2 className="h-3.5 w-3.5" /> Modifier
+                  <Edit2 className="h-3.5 w-3.5" /> Edit
                 </Button>
                 <Button 
                   variant="ghost" 
                   onClick={() => handleDelete(client.id)}
                   className="px-2 py-1.5 text-red-500 hover:bg-red-50 text-xs gap-1"
                 >
-                  <Trash2 className="h-3.5 w-3.5" /> Supprimer
+                  <Trash2 className="h-3.5 w-3.5" /> Delete
                 </Button>
               </div>
             </div>
@@ -292,7 +292,7 @@ export default function ClientsPage() {
       <Modal 
         isOpen={modalOpen} 
         onClose={() => setModalOpen(false)} 
-        title={editClient ? "Modifier le client" : "Créer un client"}
+        title={editClient ? "Edit client" : "Create a client"}
       >
         <form onSubmit={handleSave} className="space-y-4">
           {formError && (
@@ -302,10 +302,10 @@ export default function ClientsPage() {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Nom du client</label>
+            <label className="text-xs font-semibold text-slate-700">Client name</label>
             <Input 
               type="text" 
-              placeholder="Ex: Acme Corp" 
+              placeholder="e.g. Acme Corp" 
               value={name} 
               onChange={e => setName(e.target.value)} 
               required
@@ -317,7 +317,7 @@ export default function ClientsPage() {
             <label className="text-xs font-semibold text-slate-700">Adresse Email</label>
             <Input 
               type="email" 
-              placeholder="Ex: contact@acme.com" 
+              placeholder="e.g. contact@acme.com" 
               value={email} 
               onChange={e => setEmail(e.target.value)} 
               required
@@ -326,10 +326,10 @@ export default function ClientsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Numéro de téléphone (SMS)</label>
+            <label className="text-xs font-semibold text-slate-700">Phone number (SMS)</label>
             <Input 
               type="text" 
-              placeholder="Ex: +33612345678" 
+              placeholder="e.g. +1 555 123 4567" 
               value={phone} 
               onChange={e => setPhone(e.target.value)}
               disabled={saving}
@@ -353,7 +353,7 @@ export default function ClientsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700">Couleur Principale</label>
+                  <label className="text-xs font-semibold text-slate-700">Primary color</label>
                   <div className="flex items-center gap-2">
                     <input 
                       type="color" 
@@ -374,14 +374,14 @@ export default function ClientsPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700">Police de caractères</label>
+                  <label className="text-xs font-semibold text-slate-700">Font family</label>
                   <select
                     value={fontFamily}
                     onChange={e => setFontFamily(e.target.value)}
                     disabled={saving}
                     className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="sans-serif">Sans-serif (Défaut)</option>
+                    <option value="sans-serif">Sans-serif (default)</option>
                     <option value="serif">Serif (Classique)</option>
                     <option value="monospace">Monospace (Code)</option>
                   </select>
@@ -395,7 +395,7 @@ export default function ClientsPage() {
               Annuler
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? "Sauvegarde..." : "Enregistrer"}
+              {saving ? "Saving…" : "Save"}
             </Button>
           </div>
         </form>

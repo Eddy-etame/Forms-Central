@@ -39,6 +39,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   poweredByHeader: false,
+  // Pin the workspace root — a stray lockfile in the home dir was making Next
+  // infer the wrong root.
+  outputFileTracingRoot: process.cwd(),
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

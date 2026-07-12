@@ -1,19 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, FileText, Users, ShieldAlert, LogOut } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { LayoutDashboard, FileText, Users, ScrollText, ShieldAlert, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { LogoBadge } from '@/components/Logo';
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-    { name: 'Formulaires', href: '/admin/forms', icon: FileText },
+    { name: 'Forms', href: '/admin/forms', icon: FileText },
     { name: 'Clients', href: '/admin/clients', icon: Users },
-    { name: 'Logs & Échecs', href: '/admin/logs', icon: ShieldAlert },
+    { name: 'Logs & failures', href: '/admin/logs', icon: ScrollText },
     { name: 'Blacklist', href: '/admin/blacklist', icon: ShieldAlert },
   ];
 
@@ -30,12 +30,10 @@ export function Sidebar() {
     <div className="flex h-full w-64 flex-col border-r border-slate-100 bg-white px-4 py-6">
       {/* Brand */}
       <div className="flex items-center gap-3 px-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-white font-bold text-base shadow-sm">
-          M
-        </div>
+        <LogoBadge className="h-9 w-9 rounded-lg" />
         <div>
-          <h1 className="text-sm font-bold text-slate-900 leading-none">mwcrea</h1>
-          <span className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">Form Service</span>
+          <h1 className="text-sm font-bold text-slate-900 leading-none">Inlet</h1>
+          <span className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">Admin</span>
         </div>
       </div>
 
@@ -68,7 +66,7 @@ export function Sidebar() {
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors"
         >
           <LogOut className="h-4.5 w-4.5" />
-          Se déconnecter
+          Sign out
         </button>
       </div>
     </div>

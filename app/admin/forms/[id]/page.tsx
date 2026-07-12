@@ -65,7 +65,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
       setSubmissions(data.submissions || []);
       if (fetchedForm) {
         setAutoReplyEnabled(fetchedForm.auto_reply_enabled || false);
-        setAutoReplySubject(fetchedForm.auto_reply_subject || 'Confirmation de réception');
+        setAutoReplySubject(fetchedForm.auto_reply_subject || 'We received your message');
         setAutoReplyMessage(fetchedForm.auto_reply_message || '');
         setSuccessUrl(fetchedForm.success_url || '');
         setCorsInput((fetchedForm.allowed_origins || ['*']).join(', '));
@@ -105,7 +105,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
         return;
       }
       setForm({ ...form, auto_reply_enabled: autoReplyEnabled, auto_reply_subject: autoReplySubject, auto_reply_message: autoReplyMessage, success_url: successUrl });
-      alert('Paramètres mis à jour avec succès !');
+      alert('Settings updated.');
     } catch (err: any) {
       console.error('Error updating form settings:', err);
       alert('Erreur lors de la sauvegarde: ' + (err.message || String(err)));
@@ -130,7 +130,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
         ...form,
         allowed_origins: newOrigins.length > 0 ? newOrigins : ['*']
       });
-      alert('Domaines CORS mis à jour !');
+      alert('CORS domains updated.');
     } catch (err: any) {
       console.error('Error updating CORS:', err);
       alert('Erreur: ' + (err.message || String(err)));
@@ -158,9 +158,9 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
   if (!form) {
     return (
       <div className="text-center py-12">
-        <h3 className="text-lg font-bold text-slate-800">Formulaire introuvable</h3>
+        <h3 className="text-lg font-bold text-slate-800">Form not found</h3>
         <Link href="/admin/forms" className="text-sm text-slate-600 underline mt-2 block">
-          Retour à la liste
+          Back to list
         </Link>
       </div>
     );
@@ -173,7 +173,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
         href="/admin/forms"
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
       >
-        <ArrowLeft className="h-3.5 w-3.5" /> Retour aux formulaires
+        <ArrowLeft className="h-3.5 w-3.5" /> Back to forms
       </Link>
 
       {/* Header section */}
@@ -190,7 +190,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
             className="text-xs py-2 px-4 shadow-sm"
             background={form.is_active ? '#64748b' : '#0f172a'}
           >
-            {form.is_active ? 'Désactiver le formulaire' : 'Activer le formulaire'}
+            {form.is_active ? 'Deactivate form' : 'Activate form'}
           </ShimmerButton>
         </div>
       </div>
@@ -202,7 +202,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
           <BlurFade delay={0.1}>
           <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs space-y-4 relative overflow-hidden group">
             <BorderBeam size={250} duration={12} delay={9} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" colorFrom="#0ea5e9" colorTo="#3b82f6" />
-            <h3 className="font-bold text-slate-900 text-sm relative z-10">Intégration HTML Directe</h3>
+            <h3 className="font-bold text-slate-900 text-sm relative z-10">Direct HTML integration</h3>
             <p className="text-xs text-slate-500 relative z-10">
               Copiez cette URL dans l&apos;attribut `action` de votre formulaire HTML standard.
             </p>
@@ -226,7 +226,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
   
   <input type="email" name="email" required />
   <textarea name="message" required></textarea>
-  <button type="submit">Envoyer</button>
+  <button type="submit">Send</button>
 </form>`}
               </pre>
             </div>
@@ -236,33 +236,33 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
           {/* Auto-Reply panel */}
           <BlurFade delay={0.15}>
           <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs space-y-4">
-            <h3 className="font-bold text-slate-900 text-sm">Paramètres Avancés & Auto-Réponse</h3>
+            <h3 className="font-bold text-slate-900 text-sm">Advanced settings & auto-reply</h3>
             <p className="text-xs text-slate-500">
-              Configurez la page de redirection et l'email de confirmation automatique envoyé au prospect.
+              Configure the redirect page and the automatic confirmation email sent to the prospect.
             </p>
             
             <form onSubmit={handleSaveSettings} className="space-y-5 pt-2">
               <div className="space-y-1.5 border-b border-slate-50 pb-4">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  URL de redirection (Succès)
+                  Redirect URL (success)
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: https://monsite.com/merci"
+                  placeholder="e.g. https://yoursite.com/thanks"
                   value={successUrl}
                   onChange={(e) => setSuccessUrl(e.target.value)}
                   disabled={updatingSettings}
                   className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
                 />
                 <span className="text-[9px] text-slate-400 block font-medium">
-                  Force la redirection vers cette page après soumission (remplace la configuration frontend). Laissez vide pour utiliser celle du code.
+                  Forces a redirect to this page after submission (overrides your frontend config). Leave empty to use the one in your code.
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-xs font-semibold text-slate-900">Activer l'Auto-Réponse</h4>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Envoie un email de confirmation à l'adresse renseignée.</p>
+                  <h4 className="text-xs font-semibold text-slate-900">Enable auto-reply</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Sends a confirmation email to the address provided.</p>
                 </div>
                 <input
                   id="detail-auto-reply"
@@ -282,7 +282,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                     </label>
                     <input
                       type="text"
-                      placeholder="Confirmation de réception"
+                      placeholder="We received your message"
                       value={autoReplySubject}
                       onChange={(e) => setAutoReplySubject(e.target.value)}
                       disabled={updatingSettings}
@@ -296,7 +296,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                       Message (Texte brut)
                     </label>
                     <textarea
-                      placeholder="Ex: Bonjour {{name}}, nous avons bien reçu votre demande..."
+                      placeholder="e.g. Hi {{name}}, we received your request…"
                       value={autoReplyMessage}
                       onChange={(e) => setAutoReplyMessage(e.target.value)}
                       disabled={updatingSettings}
@@ -304,7 +304,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                       className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
                     />
                     <span className="text-[9px] text-slate-500 block font-medium">
-                      Utilisez <code className="bg-slate-100 text-slate-700 px-1 py-0.5 rounded text-[8px] font-mono">{"{{name}}"}</code> ou <code className="bg-slate-100 text-slate-700 px-1 py-0.5 rounded text-[8px] font-mono">{"{{nom}}"}</code> pour inclure dynamiquement le nom de l'expéditeur. Laissez vide pour utiliser le message par défaut.
+                      Use <code className="bg-slate-100 text-slate-700 px-1 py-0.5 rounded text-[8px] font-mono">{"{{name}}"}</code> or <code className="bg-slate-100 text-slate-700 px-1 py-0.5 rounded text-[8px] font-mono">{"{{nom}}"}</code> to dynamically include the sender's name. Leave empty to use the default message.
                     </span>
                   </div>
                 </div>
@@ -315,7 +315,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                 disabled={updatingSettings}
                 className="w-full text-xs py-2 mt-2"
               >
-                {updatingSettings ? 'Enregistrement...' : 'Enregistrer les paramètres'}
+                {updatingSettings ? 'Saving…' : 'Save settings'}
               </Button>
             </form>
           </div>
@@ -323,16 +323,16 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
 
           <BlurFade delay={0.2}>
           <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs space-y-4">
-            <h3 className="font-bold text-slate-900 text-sm">Domaines CORS configurés</h3>
+            <h3 className="font-bold text-slate-900 text-sm">Configured CORS domains</h3>
             <p className="text-xs text-slate-500">
-              Spécifiez les domaines autorisés (séparés par des virgules). Utilisez `*` pour tout autoriser.
+              Specify allowed domains (comma-separated). Use `*` to allow all.
             </p>
             
             <form onSubmit={handleSaveCors} className="space-y-4 pt-2">
               <div className="space-y-1.5">
                 <input
                   type="text"
-                  placeholder="https://monsite.com, https://autre.com"
+                  placeholder="https://yoursite.com, https://other.com"
                   value={corsInput}
                   onChange={(e) => setCorsInput(e.target.value)}
                   disabled={updatingCors}
@@ -357,7 +357,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                 disabled={updatingCors}
                 className="w-full text-xs py-2"
               >
-                {updatingCors ? 'Enregistrement...' : 'Mettre à jour CORS'}
+                {updatingCors ? 'Saving…' : 'Update CORS'}
               </Button>
             </form>
           </div>
@@ -368,11 +368,11 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
         <div className="lg:col-span-2 space-y-6">
           <BlurFade delay={0.25}>
           <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs">
-            <h3 className="font-bold text-slate-900 text-base mb-6">Leads reçus ({submissions.length})</h3>
+            <h3 className="font-bold text-slate-900 text-base mb-6">Leads received ({submissions.length})</h3>
 
             {submissions.length === 0 ? (
               <div className="py-12 text-center">
-                <span className="text-sm font-medium text-slate-400">Aucune soumission enregistrée.</span>
+                <span className="text-sm font-medium text-slate-400">No submissions yet.</span>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -381,7 +381,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                     <tr>
                       <th className="px-4 py-3">Date</th>
                       <th className="px-4 py-3">IP</th>
-                      <th className="px-4 py-3">Aperçu</th>
+                      <th className="px-4 py-3">Preview</th>
                       <th className="px-4 py-3 text-right">Action</th>
                     </tr>
                   </thead>
@@ -389,7 +389,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                     {submissions.map((sub) => (
                       <tr key={sub.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="px-4 py-3.5 whitespace-nowrap text-xs">
-                          {new Date(sub.created_at).toLocaleDateString('fr-FR', {
+                          {new Date(sub.created_at).toLocaleDateString('en-GB', {
                             day: 'numeric',
                             month: 'short',
                             hour: '2-digit',
@@ -407,7 +407,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                             onClick={() => setSelectedSub(sub)}
                             className="inline-flex items-center gap-1 text-xs text-slate-900 font-semibold hover:opacity-85"
                           >
-                            <Eye className="h-3.5 w-3.5" /> Détail
+                            <Eye className="h-3.5 w-3.5" /> Details
                           </button>
                         </td>
                       </tr>
@@ -426,7 +426,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
         <Modal
           isOpen={!!selectedSub}
           onClose={() => setSelectedSub(null)}
-          title="Détails de la soumission"
+          title="Submission details"
         >
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2 text-xs border-b border-slate-100 pb-3 text-slate-400 font-medium">
@@ -448,7 +448,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
             </div>
 
             <div className="flex justify-end pt-4 border-t border-slate-100 mt-6">
-              <Button onClick={() => setSelectedSub(null)}>Fermer</Button>
+              <Button onClick={() => setSelectedSub(null)}>Close</Button>
             </div>
           </div>
         </Modal>

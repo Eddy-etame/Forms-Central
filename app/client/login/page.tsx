@@ -84,9 +84,14 @@ export default function ClientLoginPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="password" className="text-xs font-semibold text-slate-700">
-              Password
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="text-xs font-semibold text-slate-700">
+                Password
+              </label>
+              <Link href="/client/forgot-password" className="text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors">
+                Forgot password?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"

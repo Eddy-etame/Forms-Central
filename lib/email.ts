@@ -252,3 +252,43 @@ export async function sendClientWelcomeEmail(
 
   return result.success;
 }
+
+/**
+ * Password reset email (English, self-contained). The link carries a single-use
+ * token that expires in one hour.
+ */
+export async function sendPasswordResetEmail(toEmail: string, resetUrl: string): Promise<boolean> {
+  const text =
+    `Reset your Inlet password:\n${resetUrl}\n\n` +
+    `This link expires in 1 hour and can be used once. ` +
+    `If you didn't request a reset, you can safely ignore this email.`;
+
+  const html = `
+  <div style="background:#f6f7f9;padding:32px 0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
+    <div style="max-width:480px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;">
+      <div style="background:#0f172a;padding:20px 28px;color:#fff;font-weight:700;font-size:16px;">Inlet</div>
+      <div style="padding:28px;color:#0f172a;">
+        <h1 style="margin:0 0 12px;font-size:20px;">Reset your password</h1>
+        <p style="margin:0 0 20px;color:#475569;font-size:14px;line-height:1.6;">
+          We received a request to reset your Inlet password. Click the button below to choose a new one.
+          This link expires in <strong>1 hour</strong> and can be used once.
+        </p>
+        <a href="${resetUrl}" style="display:inline-block;background:#0f172a;color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600;font-size:14px;">Reset password</a>
+        <p style="margin:22px 0 0;color:#94a3b8;font-size:12px;line-height:1.6;">
+          If you didn't request this, ignore this email — your password stays unchanged.<br/>
+          Or paste this link into your browser:<br/>
+          <span style="color:#2563eb;word-break:break-all;">${resetUrl}</span>
+        </p>
+      </div>
+    </div>
+  </div>`;
+
+  const result = await sendWithFallback({
+    from: getSenderAddress('Inlet'),
+    to: toEmail,
+    subject: 'Reset your Inlet password',
+    text,
+    html,
+  });
+  return result.success;
+}

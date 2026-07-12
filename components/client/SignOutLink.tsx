@@ -1,12 +1,18 @@
 'use client';
 
 /** Sign-out that actually destroys the session before navigating. */
-export default function SignOutLink({ className }: { className?: string }) {
+export default function SignOutLink({
+  className,
+  redirectTo = '/client/login',
+}: {
+  className?: string;
+  redirectTo?: string;
+}) {
   return (
     <button
       onClick={async () => {
         try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {}
-        window.location.href = '/client/login';
+        window.location.href = redirectTo;
       }}
       className={className}
     >

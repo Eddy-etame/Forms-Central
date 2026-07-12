@@ -31,5 +31,7 @@ export async function POST(request: NextRequest) {
   response.cookies.delete('refresh_token');
   // Client (tenant) session — without this, client sign-out never actually signed out.
   response.cookies.delete('client_access_token');
+  // End-client portal session.
+  response.cookies.delete('portal_access_token');
   return response;
 }

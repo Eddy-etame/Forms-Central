@@ -6,7 +6,7 @@ import SignOutLink from '@/components/client/SignOutLink';
 
 /**
  * End-client portal shell. White-labeled to the developer's brand
- * (name, logo, accent color). The Formdock byline only appears when the
+ * (name, logo, accent color). The Inlet byline only appears when the
  * developer's plan does NOT include white-label.
  */
 export default async function PortalProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -48,7 +48,7 @@ export default async function PortalProtectedLayout({ children }: { children: Re
 
       {!whiteLabel && (
         <footer className="mx-auto max-w-6xl px-6 pb-8 text-center text-xs text-slate-400">
-          Powered by Formdock
+          Powered by Inlet
         </footer>
       )}
     </div>

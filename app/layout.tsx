@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 // Swap this to your custom domain when you buy it — every canonical, OG, and
 // sitemap URL derives from it.
 const SITE_URL = "https://forms-central-h1ee.vercel.app";
-const SITE_NAME = "Formdock";
+const SITE_NAME = "Inlet";
 const TAGLINE = "One form backend for all your websites";
 const DESCRIPTION =
   "The self-hosted form backend that centralizes submissions from all your sites into one dashboard — no SMTP, no per-site setup. White-labeled auto-reply emails, AI + proof-of-work spam blocking, CSV exports. A privacy-first alternative to Formspree, Jotform and Basin.";

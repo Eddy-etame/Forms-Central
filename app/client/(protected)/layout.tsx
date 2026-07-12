@@ -27,9 +27,9 @@ export default async function ClientProtectedLayout({ children }: { children: Re
       <header className="lg:hidden sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white font-bold text-sm">
-            F
+            I
           </div>
-          <span className="font-bold text-slate-900">Formdock</span>
+          <span className="font-bold text-slate-900">Inlet</span>
         </div>
         <SignOutLink className="text-sm font-medium text-red-600 hover:text-red-700" />
       </header>

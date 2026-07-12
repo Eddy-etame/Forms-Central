@@ -16,7 +16,7 @@ const user = process.env.SMTP_USER;
  * and attaches the custom display name if provided.
  */
 function getSenderAddress(displayName?: string): string {
-  const envFrom = process.env.SMTP_FROM || '"Formdock" <devv80@outlook.com>';
+  const envFrom = process.env.SMTP_FROM || '"Inlet" <devv80@outlook.com>';
   const match = envFrom.match(/<([^>]+)>/);
   const email = match ? match[1].trim() : envFrom.trim();
   

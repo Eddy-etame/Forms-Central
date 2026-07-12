@@ -14,9 +14,9 @@ export default function ClientSidebar({ forms }: { forms: { id: string, name: st
       {/* Mobile/Tablet hidden header inside sidebar for standalone feel on desktop */}
       <div className="hidden lg:flex h-16 w-full items-center border-b border-slate-200 px-6 shrink-0">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white font-bold text-sm">
-          F
+          I
         </div>
-        <span className="font-bold text-slate-900 ml-3">Formdock</span>
+        <span className="font-bold text-slate-900 ml-3">Inlet</span>
       </div>
 
       <div className="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-6">

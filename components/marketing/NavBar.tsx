@@ -7,8 +7,8 @@ export function NavBar() {
     <nav className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 font-bold text-white shadow-sm">F</div>
-          <span className="font-semibold tracking-tight text-slate-900">Formdock</span>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 font-bold text-white shadow-sm">I</div>
+          <span className="font-semibold tracking-tight text-slate-900">Inlet</span>
         </Link>
         <div className="hidden items-center gap-8 text-sm text-slate-600 md:flex">
           <Link href="/#features" className="hover:text-slate-900 transition-colors">Features</Link>
@@ -34,8 +34,8 @@ export function SiteFooter() {
     <footer className="border-t border-slate-200 bg-white py-12">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 text-sm text-slate-500 sm:flex-row lg:px-8">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white">F</div>
-          <span className="font-semibold text-slate-800">Formdock</span>
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white">I</div>
+          <span className="font-semibold text-slate-800">Inlet</span>
         </div>
         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
           <Link href="/#features" className="hover:text-slate-900 transition-colors">Features</Link>
@@ -46,7 +46,7 @@ export function SiteFooter() {
           <Link href="/client/login" className="hover:text-slate-900 transition-colors">Sign in</Link>
         </nav>
         <p>
-          &copy; {new Date().getFullYear()} Formdock
+          &copy; {new Date().getFullYear()} Inlet
           <span className="ml-2 text-slate-300">&middot;</span>
           <span className="ml-2 text-xs text-slate-400">by King_E</span>
         </p>

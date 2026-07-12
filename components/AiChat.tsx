@@ -72,7 +72,7 @@ export default function AiChat() {
       {/* Launcher */}
       <button
         onClick={() => setOpen((o) => !o)}
-        aria-label={open ? 'Close assistant' : 'Ask the Formdock assistant'}
+        aria-label={open ? 'Close assistant' : 'Ask the Inlet assistant'}
         className="fixed bottom-5 right-5 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-white shadow-xl transition-transform hover:scale-105 active:scale-95"
       >
         {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
@@ -82,7 +82,7 @@ export default function AiChat() {
       {open && (
         <div
           role="dialog"
-          aria-label="Formdock AI assistant"
+          aria-label="Inlet AI assistant"
           className="fixed bottom-24 right-5 z-[60] flex h-[540px] w-[min(400px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl"
         >
           {/* Header */}
@@ -91,7 +91,7 @@ export default function AiChat() {
               <Sparkles className="h-4.5 w-4.5 text-blue-400" />
             </div>
             <div>
-              <p className="text-sm font-semibold leading-tight">Formdock Assistant</p>
+              <p className="text-sm font-semibold leading-tight">Inlet Assistant</p>
               <p className="text-xs text-slate-400">Integration help, answered instantly</p>
             </div>
           </div>
@@ -101,7 +101,7 @@ export default function AiChat() {
             {messages.length === 0 && !paywalled && (
               <div className="space-y-3">
                 <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-slate-100 px-4 py-3 text-sm text-slate-800">
-                  Hi! Ask me anything about Formdock — integration, spam protection, plans.
+                  Hi! Ask me anything about Inlet — integration, spam protection, plans.
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {STARTERS.map((s) => (

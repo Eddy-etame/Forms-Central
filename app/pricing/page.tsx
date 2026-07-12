@@ -8,12 +8,12 @@ import { PLANS } from "@/lib/plans";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Formdock pricing — Free, Solo ($9), Pro ($19) and Max ($49). Self-hosted form backend with white-label emails, AI assistance, anti-spam and CSV exports. Start free, upgrade when your leads do.",
+    "Inlet pricing — Free, Solo ($9), Pro ($19) and Max ($49). Self-hosted form backend with white-label emails, AI assistance, anti-spam and CSV exports. Start free, upgrade when your leads do.",
   alternates: { canonical: "/pricing" },
 };
 
 const UPGRADE_MAILTO = (plan: string) =>
-  `mailto:eddy.eetame@gmail.com?subject=King%20E%20Forms%20${plan}%20upgrade&body=Hi%2C%20I%27d%20like%20to%20upgrade%20my%20King%20E%20Forms%20account%20to%20${plan}.%20My%20account%20email%20is%3A%20`;
+  `mailto:eddy.eetame@gmail.com?subject=Inlet%20${plan}%20upgrade&body=Hi%2C%20I%27d%20like%20to%20upgrade%20my%20Inlet%20account%20to%20${plan}.%20My%20account%20email%20is%3A%20`;
 
 const FAQ = [
   {
@@ -47,9 +47,9 @@ const faqJsonLd = {
 const productJsonLd = {
   "@context": "https://schema.org",
   "@type": "Product",
-  name: "Formdock",
+  name: "Inlet",
   description: "Self-hosted form backend for all your websites.",
-  brand: { "@type": "Brand", name: "Formdock" },
+  brand: { "@type": "Brand", name: "Inlet" },
   offers: Object.values(PLANS).map((p) => ({
     "@type": "Offer",
     name: p.name,
@@ -83,7 +83,7 @@ const ROWS: Row[] = [
   },
   { label: "CSV export", values: [false, true, true, true] },
   { label: "Analytics dashboard", values: [false, true, true, true] },
-  { label: "White-label sender (no Formdock footer)", values: [false, false, true, true] },
+  { label: "White-label sender (no Inlet footer)", values: [false, false, true, true] },
   { label: "Priority deliverability (SMTP rotation)", values: [false, false, true, true] },
   { label: "Data retention", values: ["30 days", "1 year", "Unlimited", "Unlimited"] },
   { label: "Priority support", values: [false, false, false, true] },
@@ -218,7 +218,7 @@ export default function PricingPage() {
             features={[
               `Unlimited forms · ${fmt(P.pro.submissionsPerMonth)} submissions/mo`,
               `${P.pro.emailsPerDay} emails/day`,
-              "White-label sender — no Formdock footer",
+              "White-label sender — no Inlet footer",
               "Unlimited AI assistant",
               "Priority deliverability (SMTP rotation)",
               "Unlimited data retention",

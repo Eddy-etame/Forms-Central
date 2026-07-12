@@ -128,8 +128,8 @@ try {
     // initialize handshake
     {
       const { status, json } = await mcpCall(apiKey, initMsg);
-      check('MCP initialize returns serverInfo formdock',
-        status === 200 && json?.result?.serverInfo?.name === 'formdock',
+      check('MCP initialize returns serverInfo inlet',
+        status === 200 && json?.result?.serverInfo?.name === 'inlet',
         `got ${status} ${JSON.stringify(json?.result?.serverInfo ?? json?.error ?? '')}`);
     }
     // tools/list

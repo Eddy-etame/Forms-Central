@@ -10,7 +10,7 @@ import CopyButton from "@/components/CopyButton";
 import Reveal from "@/components/Reveal";
 
 const SITE_URL = "https://forms-central-h1ee.vercel.app";
-const SITE_NAME = "Formdock";
+const SITE_NAME = "Inlet";
 
 /* ---------------------------------------------------------------- FAQ data
    Single source of truth: rendered in the page AND in FAQPage JSON-LD.

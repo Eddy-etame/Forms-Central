@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'Formdock — One form backend for all your websites';
+export const alt = 'Inlet — One form backend for all your websites';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -49,10 +49,10 @@ export default function OgImage() {
               fontWeight: 800,
             }}
           >
-            F
+            I
           </div>
           <div style={{ display: 'flex', color: '#e2e8f0', fontSize: 38, fontWeight: 700 }}>
-            Formdock
+            Inlet
           </div>
         </div>
 

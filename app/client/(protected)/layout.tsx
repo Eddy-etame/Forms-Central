@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { verifyJWT } from '@/lib/jwt';
 import { getClientForms } from '@/lib/actions';
 import ClientSidebar from '@/components/client/ClientSidebar';
+import { LogoBadge } from '@/components/Logo';
 import SignOutLink from '@/components/client/SignOutLink';
 
 export default async function ClientProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -26,9 +27,7 @@ export default async function ClientProtectedLayout({ children }: { children: Re
       {/* Mobile Header (Hidden on large screens where Sidebar handles logo) */}
       <header className="lg:hidden sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white font-bold text-sm">
-            I
-          </div>
+          <LogoBadge className="h-8 w-8 rounded-lg" />
           <span className="font-bold text-slate-900">Inlet</span>
         </div>
         <SignOutLink className="text-sm font-medium text-red-600 hover:text-red-700" />

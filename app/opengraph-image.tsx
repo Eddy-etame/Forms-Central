@@ -40,16 +40,18 @@ export default function OgImage() {
               width: 72,
               height: 72,
               borderRadius: 18,
-              background: '#ffffff',
-              color: '#0f172a',
+              background: 'linear-gradient(150deg, #1E293B 0%, #0F172A 62%, #0B1220 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 44,
-              fontWeight: 800,
+              boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
             }}
           >
-            I
+            <svg width="44" height="44" viewBox="0 0 64 64" fill="none">
+              <path d="M32 13 L32 34" stroke="#fff" strokeWidth="6.5" strokeLinecap="round" />
+              <path d="M21 25 L32 36 L43 25" stroke="#fff" strokeWidth="6.5" strokeLinecap="round" strokeLinejoin="round" />
+              <rect x="18" y="45" width="28" height="6.5" rx="3.25" fill="#3B82F6" />
+            </svg>
           </div>
           <div style={{ display: 'flex', color: '#e2e8f0', fontSize: 38, fontWeight: 700 }}>
             Inlet

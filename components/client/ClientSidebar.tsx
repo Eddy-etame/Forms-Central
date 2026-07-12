@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { LayoutDashboard, FileText, KeyRound, Users, LogOut, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { LogoBadge } from '@/components/Logo';
 
 export default function ClientSidebar({ forms }: { forms: { id: string, name: string }[] }) {
   const pathname = usePathname();
@@ -13,9 +14,7 @@ export default function ClientSidebar({ forms }: { forms: { id: string, name: st
     <aside className="w-64 border-r border-slate-200 bg-white flex-shrink-0 flex flex-col h-[calc(100vh-4rem)] lg:h-screen sticky top-0 lg:top-0 z-20">
       {/* Mobile/Tablet hidden header inside sidebar for standalone feel on desktop */}
       <div className="hidden lg:flex h-16 w-full items-center border-b border-slate-200 px-6 shrink-0">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white font-bold text-sm">
-          I
-        </div>
+        <LogoBadge className="h-8 w-8 rounded-lg" />
         <span className="font-bold text-slate-900 ml-3">Inlet</span>
       </div>
 

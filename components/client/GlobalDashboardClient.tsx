@@ -5,6 +5,7 @@ import { BarChart3, TrendingUp, Users, FileText, CalendarDays, Download, Search,
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import NewFormButton from './NewFormButton';
+import OnboardingChecklist from './OnboardingChecklist';
 
 interface DashboardStats {
   allTime: number;
@@ -15,7 +16,7 @@ interface DashboardStats {
   formPerformance: { name: string, count: number }[];
 }
 
-export default function GlobalDashboardClient({ stats }: { stats: DashboardStats }) {
+export default function GlobalDashboardClient({ stats, forms = [] }: { stats: DashboardStats; forms?: { id: string; name: string }[] }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
 
@@ -64,6 +65,11 @@ export default function GlobalDashboardClient({ stats }: { stats: DashboardStats
       String(val).toLowerCase().includes(searchLower)
     );
   }) || [];
+
+  // First-run: guide new users to their first lead instead of a dead, all-zero dashboard.
+  if (!stats || stats.allTime === 0) {
+    return <OnboardingChecklist formsCount={stats?.formsCount ?? 0} forms={forms} />;
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">

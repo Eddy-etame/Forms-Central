@@ -4,6 +4,7 @@ import {
   FileDown, RefreshCw, Terminal, Globe, Lock, Sparkles,
 } from "lucide-react";
 import { NavBar } from "@/components/marketing/NavBar";
+import HeroPreview from "@/components/marketing/HeroPreview";
 import AiChat from "@/components/AiChat";
 import LazyDemoFlow from "@/components/LazyDemoFlow";
 import CopyButton from "@/components/CopyButton";
@@ -135,6 +136,9 @@ export default function Home() {
             </div>
             <p className="mt-5 text-xs text-slate-400">No credit card · no SMTP config · integrate in 2 minutes</p>
           </div>
+
+          {/* Product preview */}
+          <HeroPreview />
 
           {/* Framework strip */}
           <div className="mx-auto max-w-3xl px-6 pb-16 fade-up" style={{ animationDelay: "120ms" }}>

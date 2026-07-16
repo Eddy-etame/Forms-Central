@@ -243,78 +243,96 @@ export default function Home() {
         </section>
 
         {/* ---------------- How it works ---------------- */}
-        <section id="how" className="border-y border-slate-100 bg-slate-50/60 py-20">
-          <div className="mx-auto max-w-6xl px-6 lg:px-8">
-            <Reveal className="mb-14 max-w-2xl">
+        <section id="how" className="relative overflow-hidden border-y border-slate-100 bg-gradient-to-b from-slate-50 to-white py-24">
+          <div aria-hidden className="pointer-events-none absolute right-[18%] top-8 h-72 w-72 rounded-full bg-blue-400/10 blur-[110px]" />
+          <div aria-hidden className="pointer-events-none absolute left-[12%] bottom-8 h-56 w-56 rounded-full bg-violet-400/10 blur-[110px]" />
+          <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
+            <Reveal className="mb-16 max-w-2xl">
+              <div className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-600"><Zap className="h-4 w-4" /> Fast path</div>
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Live in three steps</h2>
               <p className="mt-4 text-lg text-slate-600">From zero to receiving branded lead emails — in minutes.</p>
             </Reveal>
-            <div className="grid gap-8 md:grid-cols-3">
+            <div className="relative grid gap-8 md:grid-cols-3">
+              <div aria-hidden className="pointer-events-none absolute left-[16%] right-[16%] top-6 hidden h-px bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 md:block" />
               {[
-                { n: "01", t: "Create a form", d: "Add a form in the admin, pick its brand, copy its unique ID." },
+                { n: "01", t: "Create a form", d: "Add a form in the dashboard, pick its brand, copy its unique ID." },
                 { n: "02", t: "Paste the snippet", d: "Drop the two env values and the submit helper into any site." },
-                { n: "03", t: "Receive & manage", d: "Owner gets a notification, submitter gets a branded auto-reply, you see it live." },
-              ].map((s) => (
-                <div key={s.n} className="rounded-3xl border border-slate-200 bg-white p-7">
-                  <div className="font-mono text-sm font-semibold text-blue-600">{s.n}</div>
-                  <div className="mt-2 h-px w-10 bg-slate-200" />
-                  <h3 className="mt-5 text-xl font-bold text-slate-900">{s.t}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{s.d}</p>
-                </div>
+                { n: "03", t: "Receive & manage", d: "Owner gets a notification, submitter gets a branded auto-reply, you watch it live." },
+              ].map((s, i) => (
+                <Reveal key={s.n} delay={i * 0.08}>
+                  <div className="group relative rounded-3xl border border-slate-200 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-xl">
+                    <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 font-mono text-sm font-bold text-white shadow-lg shadow-blue-500/25">{s.n}</div>
+                    <h3 className="mt-5 text-xl font-bold text-slate-900">{s.t}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{s.d}</p>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
         </section>
 
         {/* ---------------- Comparison ---------------- */}
-        <section id="compare" className="mx-auto max-w-5xl px-6 py-20 lg:px-8">
+        <section id="compare" className="mx-auto max-w-5xl px-6 py-24 lg:px-8">
           <Reveal className="mb-12 text-center">
             <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Why teams switch</h2>
             <p className="mt-4 text-lg text-slate-600">Self-hosted, multi-tenant, and developer-first.</p>
           </Reveal>
-          <div className="overflow-x-auto rounded-2xl border border-slate-200">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500">
-                <tr>
-                  <th className="px-6 py-4 font-medium">Capability</th>
-                  <th className="px-6 py-4 font-semibold text-slate-900">{SITE_NAME}</th>
-                  <th className="px-6 py-4 font-medium">Formspree / Basin</th>
-                  <th className="px-6 py-4 font-medium">Jotform</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {[
-                  ["Self-hosted, own your data", true, false, false],
-                  ["No SMTP in your sites", true, true, false],
-                  ["Multi-tenant white-label emails", true, false, false],
-                  ["Proof-of-work + NLP anti-spam", true, false, false],
-                  ["Developer-first integration", true, true, false],
-                  ["One backend for many sites", true, false, false],
-                ].map(([label, a, b, c]) => (
-                  <tr key={label as string}>
-                    <td className="px-6 py-4 font-medium text-slate-800">{label}</td>
-                    {[a, b, c].map((v, i) => (
-                      <td key={i} className="px-6 py-4">
-                        {v ? <Check className="h-5 w-5 text-emerald-600" /> : <X className="h-5 w-5 text-slate-300" />}
-                      </td>
-                    ))}
+          <Reveal>
+            <div className="overflow-x-auto rounded-3xl border border-slate-200 shadow-sm">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="px-6 py-5 font-medium text-slate-400">Capability</th>
+                    <th className="bg-blue-50/50 px-6 py-5 text-center">
+                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-3 py-1 text-xs font-bold text-white shadow-sm">{SITE_NAME}</span>
+                    </th>
+                    <th className="px-6 py-5 text-center font-medium text-slate-500">Formspree / Basin</th>
+                    <th className="px-6 py-5 text-center font-medium text-slate-500">Jotform</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {[
+                    ["Self-hosted, own your data", true, false, false],
+                    ["No SMTP in your sites", true, true, false],
+                    ["Multi-tenant white-label emails", true, false, false],
+                    ["Proof-of-work + NLP anti-spam", true, false, false],
+                    ["Developer-first integration", true, true, false],
+                    ["One backend for many sites", true, false, false],
+                  ].map(([label, a, b, c]) => (
+                    <tr key={label as string} className="transition-colors hover:bg-slate-50/60">
+                      <td className="px-6 py-4 font-medium text-slate-800">{label}</td>
+                      <td className="bg-blue-50/40 px-6 py-4 text-center">
+                        {a ? <Check className="mx-auto h-5 w-5 text-blue-600" strokeWidth={2.5} /> : <X className="mx-auto h-5 w-5 text-slate-300" />}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {b ? <Check className="mx-auto h-5 w-5 text-emerald-600" /> : <X className="mx-auto h-5 w-5 text-slate-300" />}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {c ? <Check className="mx-auto h-5 w-5 text-emerald-600" /> : <X className="mx-auto h-5 w-5 text-slate-300" />}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Reveal>
         </section>
 
         {/* ---------------- FAQ ---------------- */}
-        <section id="faq" className="border-t border-slate-100 bg-slate-50/60 py-20">
+        <section id="faq" className="border-t border-slate-100 bg-gradient-to-b from-white to-slate-50 py-24">
           <div className="mx-auto max-w-3xl px-6 lg:px-8">
-            <h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Frequently asked</h2>
+            <Reveal className="mb-12 text-center">
+              <div className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-600"><Sparkles className="h-4 w-4" /> Answers</div>
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Frequently asked</h2>
+            </Reveal>
             <div className="space-y-3">
               {FAQ.map((f) => (
-                <details key={f.q} className="group rounded-2xl border border-slate-200 bg-white p-5 open:shadow-sm">
+                <details key={f.q} className="group rounded-2xl border border-slate-200 bg-white p-5 transition-colors open:border-blue-200 open:shadow-md hover:border-slate-300">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-slate-900">
                     {f.q}
-                    <ArrowRight className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" />
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-all group-open:bg-blue-600 group-open:text-white">
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" />
+                    </span>
                   </summary>
                   <p className="mt-3 text-sm leading-relaxed text-slate-600">{f.a}</p>
                 </details>

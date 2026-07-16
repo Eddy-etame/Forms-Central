@@ -112,8 +112,13 @@ export default function Home() {
 
         {/* ---------------- Hero ---------------- */}
         <header className="relative overflow-hidden">
-          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:22px_22px]" />
-          <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-blue-500/15 blur-[120px]" />
+          {/* Animated aurora background */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:22px_22px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_55%,transparent_100%)]" />
+            <div className="aurora-a absolute -top-28 left-[22%] h-[380px] w-[380px] rounded-full bg-blue-500/25 blur-[120px]" />
+            <div className="aurora-b absolute -top-20 right-[22%] h-[340px] w-[340px] rounded-full bg-violet-500/20 blur-[120px]" />
+            <div className="aurora-a absolute -top-10 left-1/2 h-[280px] w-[560px] -translate-x-1/2 rounded-full bg-cyan-400/10 blur-[130px]" />
+          </div>
 
           <div className="mx-auto max-w-4xl px-6 pt-20 pb-16 text-center lg:pt-28 fade-up">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-medium text-slate-600 shadow-sm">
@@ -121,7 +126,7 @@ export default function Home() {
               Self-hosted form backend · you own the data
             </div>
             <h1 className="text-balance text-5xl font-extrabold tracking-tight text-slate-900 sm:text-7xl">
-              One form backend for <span className="bg-gradient-to-r from-blue-600 to-slate-900 bg-clip-text text-transparent">all your websites.</span>
+              One form backend for <span className="shimmer-text bg-gradient-to-r from-blue-600 via-violet-500 to-blue-600 bg-clip-text text-transparent">all your websites.</span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-balance text-lg leading-8 text-slate-600">
               Centralize submissions from every site into one dashboard — with <strong className="text-slate-900">no SMTP and no per-site setup</strong>. Branded auto-reply emails, AI + proof-of-work spam blocking, CSV exports. The privacy-first alternative to Formspree and Jotform.
@@ -138,7 +143,9 @@ export default function Home() {
           </div>
 
           {/* Product preview */}
-          <HeroPreview />
+          <div className="animate-float">
+            <HeroPreview />
+          </div>
 
           {/* Framework strip */}
           <div className="mx-auto max-w-3xl px-6 pb-16 fade-up" style={{ animationDelay: "120ms" }}>
@@ -186,31 +193,37 @@ export default function Home() {
         {/* ---------------- Animated demo ---------------- */}
         <LazyDemoFlow />
 
-        {/* ---------------- Features ---------------- */}
-        <section id="features" className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
-          <Reveal className="mb-14 max-w-2xl">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Built for deliverability and scale</h2>
-            <p className="mt-4 text-lg text-slate-600">One backend, many client sites — each with its own branding, all protected and centralized.</p>
-          </Reveal>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3 auto-rows-[240px]">
-            {[
-              { icon: Inbox, title: "Centralized inbox", desc: "Every submission from every site lands in one dashboard with live status.", cls: "md:col-span-2", color: "text-blue-600", bg: "bg-blue-50" },
-              { icon: Shield, title: "AI + PoW anti-spam", desc: "Honeypot, proof-of-work, NLP filter, reverse-DNS VPN block.", cls: "", color: "text-emerald-600", bg: "bg-emerald-50" },
-              { icon: Palette, title: "White-label emails", desc: "Auto-reply emails adapt to each client's logo, colors and name.", cls: "", color: "text-purple-600", bg: "bg-purple-50" },
-              { icon: BarChart3, title: "Client analytics", desc: "Per-client dashboards so each site owner tracks their own leads and conversion in real time.", cls: "md:col-span-2", color: "text-indigo-600", bg: "bg-indigo-50" },
-              { icon: FileDown, title: "CSV export", desc: "One click flattens dynamic fields into clean columns.", cls: "", color: "text-slate-700", bg: "bg-slate-100" },
-              { icon: RefreshCw, title: "SMTP fallback", desc: "Rotates through backup credentials so a lead is never lost.", cls: "", color: "text-amber-600", bg: "bg-amber-50" },
-              { icon: Globe, title: "Any framework", desc: "Astro, Next, Nuxt, Vue, Svelte, or plain HTML.", cls: "", color: "text-cyan-600", bg: "bg-cyan-50" },
-            ].map((f) => (
-              <div key={f.title} className={`group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-7 transition-shadow hover:shadow-xl ${f.cls}`}>
-                <div className={`mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl ${f.bg}`}>
-                  <f.icon className={`h-5 w-5 ${f.color}`} />
+        {/* ---------------- Features (dark band) ---------------- */}
+        <section id="features" className="relative overflow-hidden bg-slate-950 py-24 text-white">
+          <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-64 w-[820px] -translate-x-1/2 rounded-full bg-blue-500/15 blur-[130px]" />
+          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_40%,transparent_100%)]" />
+          <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
+            <Reveal className="mb-14 max-w-2xl">
+              <div className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-400"><Shield className="h-4 w-4" /> Built to scale</div>
+              <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">Everything a lead needs to arrive — nothing you have to run.</h2>
+              <p className="mt-4 text-lg text-slate-400">One backend, many client sites — each branded, all protected, all centralized.</p>
+            </Reveal>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-3 auto-rows-[240px]">
+              {[
+                { icon: Inbox, title: "Centralized inbox", desc: "Every submission from every site lands in one dashboard with live status.", cls: "md:col-span-2", color: "text-blue-400", bg: "bg-blue-500/15", glow: "rgba(59,130,246,0.16)" },
+                { icon: Shield, title: "AI + PoW anti-spam", desc: "Honeypot, proof-of-work, NLP filter, reverse-DNS VPN block.", cls: "", color: "text-emerald-400", bg: "bg-emerald-500/15", glow: "rgba(16,185,129,0.16)" },
+                { icon: Palette, title: "White-label emails", desc: "Auto-reply emails adapt to each client's logo, colors and name.", cls: "", color: "text-violet-400", bg: "bg-violet-500/15", glow: "rgba(139,92,246,0.16)" },
+                { icon: BarChart3, title: "Client analytics", desc: "Per-client dashboards so each site owner tracks their own leads and conversion in real time.", cls: "md:col-span-2", color: "text-indigo-400", bg: "bg-indigo-500/15", glow: "rgba(99,102,241,0.16)" },
+                { icon: FileDown, title: "CSV export", desc: "One click flattens dynamic fields into clean columns.", cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)" },
+                { icon: RefreshCw, title: "SMTP fallback", desc: "Rotates across backup accounts so a lead is never lost.", cls: "", color: "text-amber-400", bg: "bg-amber-500/15", glow: "rgba(245,158,11,0.16)" },
+                { icon: Globe, title: "Any framework", desc: "Astro, Next, Nuxt, Vue, Svelte, or plain HTML.", cls: "", color: "text-cyan-400", bg: "bg-cyan-500/15", glow: "rgba(34,211,238,0.16)" },
+              ].map((f) => (
+                <div key={f.title} className={`group relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/50 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-slate-700 hover:bg-slate-900 ${f.cls}`}>
+                  <div aria-hidden className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: `radial-gradient(420px circle at 30% 0%, ${f.glow}, transparent 70%)` }} />
+                  <div className={`relative mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl ${f.bg} ring-1 ring-inset ring-white/10`}>
+                    <f.icon className={`h-5 w-5 ${f.color}`} />
+                  </div>
+                  <h3 className="relative mb-1.5 text-lg font-bold">{f.title}</h3>
+                  <p className="relative max-w-sm text-sm leading-relaxed text-slate-400">{f.desc}</p>
+                  <f.icon className="pointer-events-none absolute -bottom-10 -right-10 h-40 w-40 text-white opacity-[0.04] transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110" />
                 </div>
-                <h3 className="mb-1.5 text-lg font-bold text-slate-900">{f.title}</h3>
-                <p className="max-w-sm text-sm leading-relaxed text-slate-600">{f.desc}</p>
-                <f.icon className="pointer-events-none absolute -bottom-10 -right-10 h-40 w-40 text-slate-900 opacity-[0.03] transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110" />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 

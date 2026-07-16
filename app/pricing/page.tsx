@@ -123,26 +123,20 @@ function PlanCard({
   const btnClass = highlight
     ? "mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-medium text-slate-900 hover:bg-slate-100 transition-colors"
     : "mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-slate-300 px-5 text-sm font-medium text-slate-800 hover:border-slate-400 transition-colors";
-  return (
-    <div
-      className={
-        highlight
-          ? "relative flex flex-col rounded-3xl border-2 border-slate-900 bg-slate-950 p-7 text-white shadow-xl"
-          : "flex flex-col rounded-3xl border border-slate-200 bg-white p-7"
-      }
-    >
+  const content = (
+    <>
       {highlight && (
-        <div className="absolute -top-3.5 left-7 inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
+        <div className="absolute -top-3.5 left-7 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-500 to-violet-600 px-3 py-1 text-xs font-semibold text-white shadow-lg shadow-blue-500/30">
           <Sparkles className="h-3 w-3" /> Most popular
         </div>
       )}
-      <h2 className="text-base font-bold">{name}</h2>
-      <div className="mt-4 flex items-baseline gap-1.5">
+      <h2 className="relative text-base font-bold">{name}</h2>
+      <div className="relative mt-4 flex items-baseline gap-1.5">
         <span className="text-4xl font-extrabold tracking-tight">${price}</span>
         <span className={highlight ? "text-sm text-slate-400" : "text-sm text-slate-500"}>/ month</span>
       </div>
-      <p className={`mt-2 text-sm ${highlight ? "text-slate-400" : "text-slate-500"}`}>{blurb}</p>
-      <ul className={`mt-5 flex-1 space-y-2.5 text-sm ${highlight ? "text-slate-200" : "text-slate-700"}`}>
+      <p className={`relative mt-2 text-sm ${highlight ? "text-slate-400" : "text-slate-500"}`}>{blurb}</p>
+      <ul className={`relative mt-5 flex-1 space-y-2.5 text-sm ${highlight ? "text-slate-200" : "text-slate-700"}`}>
         {features.map((t) => (
           <li key={t} className="flex items-start gap-2.5">
             <Check className={`mt-0.5 h-4 w-4 shrink-0 ${highlight ? "text-emerald-400" : "text-emerald-600"}`} />
@@ -155,6 +149,22 @@ function PlanCard({
       ) : (
         <Link href={href} className={btnClass}>{inner}</Link>
       )}
+    </>
+  );
+
+  if (highlight) {
+    return (
+      <div className="relative rounded-3xl bg-gradient-to-b from-blue-500 to-violet-600 p-px shadow-2xl shadow-blue-500/20 xl:-my-2">
+        <div className="relative flex h-full flex-col overflow-hidden rounded-[23px] bg-slate-950 p-7 text-white">
+          <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-48 w-64 -translate-x-1/2 rounded-full bg-blue-500/25 blur-[90px]" />
+          {content}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-7 transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg">
+      {content}
     </div>
   );
 }
@@ -169,14 +179,20 @@ export default function PricingPage() {
       <div className="min-h-screen bg-white text-slate-900 font-sans">
         <NavBar />
 
-        <header className="mx-auto max-w-3xl px-6 pt-16 pb-10 text-center lg:pt-24">
-          <h1 className="text-balance text-4xl font-extrabold tracking-tight sm:text-6xl">
-            Pay for leads, <span className="bg-gradient-to-r from-blue-600 to-slate-900 bg-clip-text text-transparent">not per form.</span>
-          </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-600">
-            One backend for every site you build. Start free in two minutes — upgrade
-            only when your lead volume does.
-          </p>
+        <header className="relative overflow-hidden">
+          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+            <div className="aurora-a absolute -top-20 left-1/3 h-72 w-72 rounded-full bg-blue-500/15 blur-[110px]" />
+            <div className="aurora-b absolute -top-8 right-1/3 h-64 w-64 rounded-full bg-violet-500/12 blur-[110px]" />
+          </div>
+          <div className="mx-auto max-w-3xl px-6 pt-16 pb-10 text-center lg:pt-24">
+            <h1 className="text-balance text-4xl font-extrabold tracking-tight sm:text-6xl">
+              Pay for leads, <span className="shimmer-text bg-gradient-to-r from-blue-600 via-violet-500 to-blue-600 bg-clip-text text-transparent">not per form.</span>
+            </h1>
+            <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-600">
+              One backend for every site you build. Start free in two minutes — upgrade
+              only when your lead volume does.
+            </p>
+          </div>
         </header>
 
         {/* Plans — Good / Better / Best (+ anchor) */}

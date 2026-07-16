@@ -113,53 +113,29 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
       )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-        >
-          <div className="absolute -right-4 -top-4 rounded-full bg-blue-50 p-8">
-            <Users className="h-8 w-8 text-blue-500" />
-          </div>
-          <p className="text-sm font-medium text-slate-500">Total leads</p>
-          <h3 className="mt-2 text-4xl font-bold text-slate-900">{stats?.allTime || 0}</h3>
-          <div className="mt-4 flex items-center text-sm text-blue-600 font-medium">
-            <TrendingUp className="mr-1 h-4 w-4" /> All-time volume
-          </div>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-        >
-          <div className="absolute -right-4 -top-4 rounded-full bg-emerald-50 p-8">
-            <BarChart3 className="h-8 w-8 text-emerald-500" />
-          </div>
-          <p className="text-sm font-medium text-slate-500">Last 7 days</p>
-          <h3 className="mt-2 text-4xl font-bold text-slate-900">{stats?.past7Days || 0}</h3>
-          <div className="mt-4 flex items-center text-sm text-emerald-600 font-medium">
-            <CalendarDays className="mr-1 h-4 w-4" /> Recent momentum
-          </div>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-        >
-          <div className="absolute -right-4 -top-4 rounded-full bg-purple-50 p-8">
-            <FileText className="h-8 w-8 text-purple-500" />
-          </div>
-          <p className="text-sm font-medium text-slate-500">Active forms</p>
-          <h3 className="mt-2 text-4xl font-bold text-slate-900">{stats?.formsCount || 0}</h3>
-          <div className="mt-4 flex items-center text-sm text-purple-600 font-medium">
-            <FileText className="mr-1 h-4 w-4" /> Conversion sources
-          </div>
-        </motion.div>
+        {[
+          { label: "Total leads", value: stats?.allTime || 0, icon: Users, hint: "All-time volume", trend: TrendingUp, tone: "text-blue-600", tile: "bg-blue-50 text-blue-600", glow: "from-blue-500/15" },
+          { label: "Last 7 days", value: stats?.past7Days || 0, icon: CalendarDays, hint: "Recent momentum", trend: TrendingUp, tone: "text-emerald-600", tile: "bg-emerald-50 text-emerald-600", glow: "from-emerald-500/15" },
+          { label: "Active forms", value: stats?.formsCount || 0, icon: FileText, hint: "Conversion sources", trend: FileText, tone: "text-violet-600", tile: "bg-violet-50 text-violet-600", glow: "from-violet-500/15" },
+        ].map((c, i) => (
+          <motion.div
+            key={c.label}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 + i * 0.08 }}
+            className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <div aria-hidden className={`pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br ${c.glow} to-transparent blur-2xl`} />
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-slate-500">{c.label}</p>
+              <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${c.tile}`}><c.icon className="h-[18px] w-[18px]" /></span>
+            </div>
+            <h3 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 tabular-nums">{(c.value as number).toLocaleString("en-US")}</h3>
+            <div className={`mt-3 flex items-center gap-1 text-sm font-medium ${c.tone}`}>
+              <c.trend className="h-4 w-4" /> {c.hint}
+            </div>
+          </motion.div>
+        ))}
       </div>
 
       {stats && stats.allTime >= 15 ? (
@@ -170,16 +146,28 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
             transition={{ delay: 0.4 }}
             className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
           >
-            <h3 className="font-bold text-slate-900 mb-6">Submission trend (last 30 days)</h3>
+            <div className="mb-6 flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><BarChart3 className="h-[18px] w-[18px]" /></span>
+              <div>
+                <h3 className="font-bold leading-tight text-slate-900">Submission trend</h3>
+                <p className="text-xs text-slate-500">Last 30 days</p>
+              </div>
+            </div>
             <div className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats?.dailyTrends || []}>
+                  <defs>
+                    <linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#6366f1" />
+                      <stop offset="100%" stopColor="#3b82f6" />
+                    </linearGradient>
+                  </defs>
                   <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip 
+                  <Tooltip
                     cursor={{fill: '#f1f5f9'}}
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.12)', fontSize: '12px' }}
                   />
-                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="count" fill="url(#barFill)" radius={[5, 5, 0, 0]} maxBarSize={38} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -191,7 +179,13 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
             transition={{ delay: 0.5 }}
             className="lg:col-span-1 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col"
           >
-            <h3 className="font-bold text-slate-900 mb-6">Top forms</h3>
+            <div className="mb-6 flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600"><FileText className="h-[18px] w-[18px]" /></span>
+              <div>
+                <h3 className="font-bold leading-tight text-slate-900">Top forms</h3>
+                <p className="text-xs text-slate-500">By share of leads</p>
+              </div>
+            </div>
             <div className="flex-1 space-y-4 overflow-y-auto">
               {stats?.formPerformance.length === 0 ? (
                 <p className="text-sm text-slate-500 text-center mt-10">No data yet.</p>
@@ -201,13 +195,16 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
                   const percentage = Math.round((form.count / total) * 100);
                   return (
                     <div key={idx} className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="font-medium text-slate-700 truncate pr-4">{form.name}</span>
-                        <span className="font-bold text-slate-900">{form.count}</span>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex min-w-0 items-center gap-2 pr-4">
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-100 text-[11px] font-bold text-slate-500 tabular-nums">{idx + 1}</span>
+                          <span className="truncate font-medium text-slate-700">{form.name}</span>
+                        </span>
+                        <span className="shrink-0 font-bold text-slate-900 tabular-nums">{form.count}</span>
                       </div>
-                      <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-blue-500 rounded-full" 
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-blue-500 to-violet-500 transition-[width] duration-500"
                           style={{ width: `${percentage}%` }}
                         />
                       </div>

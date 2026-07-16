@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { LogoBadge } from '@/components/Logo';
+import { AuthShell } from '@/components/auth/AuthShell';
 
 export default function ClientSignupPage() {
   const [name, setName] = useState('');
@@ -41,16 +41,10 @@ export default function ClientSignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="absolute top-4 left-4">
-        <Link href="/" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
-          &larr; Back to site
-        </Link>
-      </div>
-      <div className="w-full max-w-md rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
-        <div className="flex flex-col items-center justify-center text-center">
-          <LogoBadge className="h-12 w-12 rounded-xl" markClassName="h-[58%] w-[58%]" />
-          <h2 className="mt-6 text-2xl font-bold text-slate-900 tracking-tight">Create your account</h2>
+    <AuthShell>
+      <div className="w-full max-w-sm">
+        <div className="text-center lg:text-left">
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Create your account</h2>
           <p className="mt-1.5 text-sm text-slate-500">
             Start free — one form backend for all your websites.
           </p>
@@ -114,6 +108,6 @@ export default function ClientSignupPage() {
           </p>
         </form>
       </div>
-    </div>
+    </AuthShell>
   );
 }

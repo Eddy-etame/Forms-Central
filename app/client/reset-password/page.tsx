@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { LogoBadge } from '@/components/Logo';
+import { AuthShell } from '@/components/auth/AuthShell';
 
 function ResetForm() {
   const token = useSearchParams().get('token') ?? '';
@@ -39,10 +39,9 @@ function ResetForm() {
   };
 
   return (
-    <div className="w-full max-w-md rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
-      <div className="flex flex-col items-center justify-center text-center">
-        <LogoBadge className="h-12 w-12 rounded-xl" markClassName="h-[58%] w-[58%]" />
-        <h1 className="mt-6 text-2xl font-bold text-slate-900 tracking-tight">
+    <div className="w-full max-w-sm">
+      <div className="text-center lg:text-left">
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
           {done ? 'Password updated' : 'Choose a new password'}
         </h1>
         <p className="mt-1.5 text-sm text-slate-500">
@@ -86,15 +85,10 @@ function ResetForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="absolute top-4 left-4">
-        <Link href="/client/login" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
-          &larr; Back to sign in
-        </Link>
-      </div>
+    <AuthShell>
       <Suspense fallback={<p className="text-sm text-slate-400">Loading…</p>}>
         <ResetForm />
       </Suspense>
-    </div>
+    </AuthShell>
   );
 }

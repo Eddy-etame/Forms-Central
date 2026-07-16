@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Users, ScrollText, ShieldAlert, BarChart3, Briefcase, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, ScrollText, ShieldAlert, BarChart3, DollarSign, Briefcase, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LogoBadge } from '@/components/Logo';
 
@@ -12,6 +12,7 @@ export function Sidebar() {
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+    { name: 'Revenue', href: '/admin/revenue', icon: DollarSign },
     { name: 'Forms', href: '/admin/forms', icon: FileText },
     { name: 'Clients', href: '/admin/clients', icon: Users },
     { name: 'Logs & failures', href: '/admin/logs', icon: ScrollText },

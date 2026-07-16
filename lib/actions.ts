@@ -3,6 +3,7 @@
 import { supabase } from './supabase';
 import { encryptPassword, decryptPassword, generateRandomPassword } from './crypto';
 import { sendClientWelcomeEmail } from './email';
+import { PLANS, getPlan } from './plans';
 
 // Helper: Ensure the request is authenticated via cookies (read on the server)
 async function verifyAdminAuth() {
@@ -642,4 +643,62 @@ export async function getTrafficStats() {
       path: r.path, referrer: r.referrer, device: r.device, browser: r.browser, country: r.country, created_at: r.created_at,
     })),
   };
+}
+
+// ==================== REVENUE / SUBSCRIBERS (super-admin) ====================
+
+export async function getRevenueStats() {
+  await verifyAdminAuth();
+
+  const { data: clientsData } = await supabase
+    .from('clients')
+    .select('id, email, plan, plan_updated_at, created_at');
+  const rows = (clientsData as any[]) || [];
+
+  const paidPlans = ['solo', 'pro', 'max'];
+  const counts: Record<string, number> = { free: 0, solo: 0, pro: 0, max: 0 };
+  let mrr = 0;
+  for (const c of rows) {
+    const p = c.plan && p_in(counts, c.plan) ? c.plan : 'free';
+    counts[p] = (counts[p] || 0) + 1;
+    if (paidPlans.includes(p)) mrr += getPlan(p).priceMonthly;
+  }
+  function p_in(obj: Record<string, number>, k: string) { return Object.prototype.hasOwnProperty.call(obj, k); }
+
+  const total = rows.length;
+  const paid = counts.solo + counts.pro + counts.max;
+  const conversion = total ? paid / total : 0;
+  const arpu = paid ? mrr / paid : 0;
+
+  // last 6 months of signups + upgrades
+  const now = new Date();
+  const months: { key: string; label: string; signups: number; upgrades: number }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ key: d.toISOString().slice(0, 7), label: d.toLocaleString('en-US', { month: 'short' }), signups: 0, upgrades: 0 });
+  }
+  const mIndex: Record<string, number> = Object.fromEntries(months.map((m, i) => [m.key, i]));
+  for (const c of rows) {
+    const sk = String(c.created_at).slice(0, 7);
+    if (sk in mIndex) months[mIndex[sk]].signups++;
+    if (paidPlans.includes(c.plan) && c.plan_updated_at) {
+      const uk = String(c.plan_updated_at).slice(0, 7);
+      if (uk in mIndex) months[mIndex[uk]].upgrades++;
+    }
+  }
+
+  const planBreakdown = [
+    { name: 'Free', count: counts.free, price: 0 },
+    { name: 'Solo', count: counts.solo, price: PLANS.solo.priceMonthly },
+    { name: 'Pro', count: counts.pro, price: PLANS.pro.priceMonthly },
+    { name: 'Max', count: counts.max, price: PLANS.max.priceMonthly },
+  ];
+
+  const recentUpgrades = rows
+    .filter((c) => paidPlans.includes(c.plan))
+    .sort((a, b) => String(b.plan_updated_at || b.created_at).localeCompare(String(a.plan_updated_at || a.created_at)))
+    .slice(0, 12)
+    .map((c) => ({ email: c.email, plan: c.plan, when: c.plan_updated_at || c.created_at }));
+
+  return { total, paid, free: counts.free, mrr, arpu, conversion, planBreakdown, months, recentUpgrades };
 }

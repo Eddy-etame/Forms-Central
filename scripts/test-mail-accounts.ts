@@ -43,6 +43,17 @@ console.log('\n== SMTP account rotation ==');
   ck('no SMTP_3 -> only 2 accounts', a.length === 2 && a[1].label === 'account-2');
 }
 
+// a suspended account can be cleanly disabled without deleting its creds
+{
+  const a = getMailAccounts({ SMTP_HOST: 'h', SMTP_USER: 'u1', SMTP_PASS: 'k1', SMTP_2_USER: 'u2', SMTP_2_PASS: 'k2', SMTP_2_DISABLED: 'true', SMTP_3_USER: 'u3', SMTP_3_PASS: 'k3' });
+  const labels = a.map((x) => x.label);
+  ck('SMTP_2_DISABLED removes account-2, keeps 1 & 3', !labels.includes('account-2') && labels.includes('account-1') && labels.includes('account-3'));
+}
+{
+  const a = getMailAccounts({ SMTP_HOST: 'h', SMTP_USER: 'u1', SMTP_PASS: 'k1', SMTP_DISABLED: 'true', SMTP_2_USER: 'u2', SMTP_2_PASS: 'k2' });
+  ck('SMTP_DISABLED removes the primary account', a.length === 1 && a[0].label === 'account-2');
+}
+
 // SMTP_n_FROM omitted, no SMTP_FROM -> defaults to that account's user
 {
   const a = getMailAccounts({ SMTP_HOST: 'h', SMTP_USER: 'u1', SMTP_PASS: 'k1', SMTP_2_USER: 'u2@x.com', SMTP_2_PASS: 'k2' });

@@ -28,10 +28,17 @@ function logSmtpFailure(errorType: string, label: string, user: string, message:
     .then(() => {}, () => {});
 }
 
+// Circuit breaker: after an account fails, skip it for a cooldown window so we
+// stop hammering a suspended/blocked provider. Self-heals — it re-enters the
+// pool once the cooldown lapses. In-memory (per instance); worst case an
+// account is retried once per instance per window.
+const accountCooldownUntil = new Map<string, number>();
+const SMTP_COOLDOWN_MS = 30 * 60 * 1000;
+
 /**
- * Sends via nodemailer, rotating across every configured account (and each
- * account's keys). The caller's display name is re-homed onto whichever
- * account's verified sender is used, so authentication always matches.
+ * Sends via nodemailer, rotating across healthy accounts (and each account's
+ * keys). The caller's display name is re-homed onto whichever account's
+ * verified sender is used, so authentication always matches.
  */
 async function sendWithFallback(mailOptions: nodemailer.SendMailOptions): Promise<{ success: boolean; messageId?: string }> {
   const accounts = getMailAccounts();
@@ -42,12 +49,16 @@ async function sendWithFallback(mailOptions: nodemailer.SendMailOptions): Promis
 
   const displayName = extractDisplayName(mailOptions.from as string | undefined);
 
-  // Round-robin: start at a random account each send so load spreads evenly
-  // across all providers (warming every sender), then fall through the rest on
-  // failure/quota. Stateless — safe across serverless instances.
-  const start = Math.floor(Math.random() * accounts.length);
-  for (let a = 0; a < accounts.length; a++) {
-    const acc = accounts[(start + a) % accounts.length];
+  // Prefer accounts not in cooldown; if every account is cooling down, try them
+  // all anyway (better to attempt than to never send).
+  const now = Date.now();
+  const healthy = accounts.filter((a) => (accountCooldownUntil.get(a.label) ?? 0) <= now);
+  const pool = healthy.length > 0 ? healthy : accounts;
+
+  // Round-robin: random start so load spreads evenly across the healthy pool.
+  const start = Math.floor(Math.random() * pool.length);
+  for (let a = 0; a < pool.length; a++) {
+    const acc = pool[(start + a) % pool.length];
     if (!acc.host || !acc.user) continue;
     for (let i = 0; i < acc.passwords.length; i++) {
       const transporter = nodemailer.createTransport({
@@ -61,13 +72,17 @@ async function sendWithFallback(mailOptions: nodemailer.SendMailOptions): Promis
           ...mailOptions,
           from: applyDisplayName(acc.from, displayName),
         });
+        accountCooldownUntil.delete(acc.label); // healthy again
         console.log(`[SMTP] Sent via ${acc.label} (key ${i + 1}): ${info.messageId}`);
         return { success: true, messageId: info.messageId };
       } catch (err) {
-        // Any failure (auth, connection, or daily-quota) -> signal it and rotate.
+        // Any failure (auth, connection, suspension, or daily-quota): cool the
+        // account down, signal it, and rotate to the next.
         const msg = (err as Error)?.message || 'unknown error';
-        console.warn(`[SMTP] ${acc.label} key ${i + 1} failed, rotating…`, msg);
+        accountCooldownUntil.set(acc.label, Date.now() + SMTP_COOLDOWN_MS);
+        console.warn(`[SMTP] ${acc.label} key ${i + 1} failed, cooling down + rotating…`, msg);
         logSmtpFailure('SMTP_ACCOUNT_FAILED', acc.label, acc.user, msg);
+        break; // move to the next account (don't try more keys on a dead account)
       }
     }
   }

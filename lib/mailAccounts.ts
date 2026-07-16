@@ -52,8 +52,9 @@ export function getMailAccounts(env: NodeJS.ProcessEnv = process.env): MailAccou
   const basePort = parseInt(env.SMTP_PORT || '587', 10);
   const baseSecure = env.SMTP_SECURE === 'true';
 
-  // Account 1 — primary (backward compatible with the old single-account setup).
-  if (env.SMTP_USER && (env.SMTP_PASS || env.SMTP_PASS_FALLBACK)) {
+  // Account 1 — primary (backward compatible). Skip if explicitly disabled
+  // (e.g. the account was suspended by the provider).
+  if (env.SMTP_USER && (env.SMTP_PASS || env.SMTP_PASS_FALLBACK) && env.SMTP_DISABLED !== 'true') {
     const pw: string[] = [];
     if (env.SMTP_PASS) pw.push(env.SMTP_PASS);
     if (env.SMTP_PASS_FALLBACK) pw.push(env.SMTP_PASS_FALLBACK);
@@ -72,11 +73,12 @@ export function getMailAccounts(env: NodeJS.ProcessEnv = process.env): MailAccou
     });
   }
 
-  // Accounts 2..N — independent providers.
+  // Accounts 2..N — independent providers. SMTP_<n>_DISABLED=true cleanly
+  // removes a suspended account without deleting its credentials.
   for (let n = 2; n <= 20; n++) {
     const u = env[`SMTP_${n}_USER`];
     const p = env[`SMTP_${n}_PASS`];
-    if (!u || !p) continue;
+    if (!u || !p || env[`SMTP_${n}_DISABLED`] === 'true') continue;
     accounts.push({
       host: env[`SMTP_${n}_HOST`] || baseHost,
       port: parseInt(env[`SMTP_${n}_PORT`] || String(basePort), 10),

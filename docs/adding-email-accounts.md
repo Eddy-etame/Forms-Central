@@ -101,6 +101,18 @@ SMTP_3_FROM="Inlet" <hello@inbox-three.com>
   actually sends**, so authentication always matches that account's verified
   sender.
 - Server logs show which account sent: `[SMTP] Sent via account-2 (key 1): …`.
+- **Circuit breaker:** if an account fails (suspended, blocked, or over quota)
+  it's skipped for 30 minutes, then automatically retried. Failures are logged
+  to the super-admin **/admin/logs** page (`SMTP_ACCOUNT_FAILED`) so you can see
+  exactly which account went bad.
+- **Disable a suspended account** without deleting its keys: set
+  `SMTP_<n>_DISABLED=true` (or `SMTP_DISABLED=true` for the primary). It's
+  removed from rotation until you flip it back.
+
+> Important: creating many **free** accounts on one provider to beat a daily cap
+> violates most providers' terms (Brevo included) and wrecks deliverability once
+> they link them. For real volume, upgrade **one** account to a paid plan, or
+> add a **second provider** (e.g. Resend / SES) as a genuine independent account.
 
 ---
 

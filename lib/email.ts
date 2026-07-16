@@ -4,93 +4,55 @@ import * as React from 'react';
 import LeadNotificationEmail from '@/emails/LeadNotification';
 import AutoReplyEmail from '@/emails/AutoReply';
 import ClientWelcomeEmail from '@/emails/ClientWelcome';
-
-const host = process.env.SMTP_HOST;
-const port = parseInt(process.env.SMTP_PORT || '465', 10);
-const secure = process.env.SMTP_SECURE === 'true';
-const user = process.env.SMTP_USER;
+import { getMailAccounts, applyDisplayName, extractDisplayName } from './mailAccounts';
 
 /**
- * Resolves the final From header.
- * Extracts the email address from the SMTP_FROM environment variable,
- * and attaches the custom display name if provided.
+ * Resolves the primary From header from SMTP_FROM, attaching a custom display
+ * name when provided. (Kept for callers; sendWithFallback re-homes per account.)
  */
 function getSenderAddress(displayName?: string): string {
   const envFrom = process.env.SMTP_FROM || '"Inlet" <devv80@outlook.com>';
-  const match = envFrom.match(/<([^>]+)>/);
-  const email = match ? match[1].trim() : envFrom.trim();
-  
-  if (displayName) {
-    const sanitizedName = displayName.replace(/["\\]/g, '');
-    return `"${sanitizedName}" <${email}>`;
-  }
-  return envFrom;
+  return applyDisplayName(envFrom, displayName);
 }
 
 /**
- * Collects all SMTP passwords from environment variables.
- * Looks for SMTP_PASS, SMTP_PASS_FALLBACK, SMTP_PASS_FALLBACK_1, etc.
- */
-function getSmtpPasswords(): string[] {
-  const passwords: string[] = [];
-  if (process.env.SMTP_PASS) passwords.push(process.env.SMTP_PASS);
-  if (process.env.SMTP_PASS_FALLBACK) passwords.push(process.env.SMTP_PASS_FALLBACK);
-  // Support numbered fallbacks: SMTP_PASS_FALLBACK_1, SMTP_PASS_FALLBACK_2, etc.
-  for (let i = 1; i <= 10; i++) {
-    const envKey = `SMTP_PASS_FALLBACK_${i}`;
-    if (process.env[envKey]) passwords.push(process.env[envKey]!);
-  }
-  return passwords;
-}
-
-/**
- * Sends an email using nodemailer with automatic password fallback rotation.
- * Tries each configured SMTP password until one succeeds or all fail.
+ * Sends via nodemailer, rotating across every configured account (and each
+ * account's keys). The caller's display name is re-homed onto whichever
+ * account's verified sender is used, so authentication always matches.
  */
 async function sendWithFallback(mailOptions: nodemailer.SendMailOptions): Promise<{ success: boolean; messageId?: string }> {
-  const passwords = getSmtpPasswords();
-
-  if (!host || !user || passwords.length === 0) {
-    console.error('[SMTP] Credentials missing in env. Email sending aborted.');
+  const accounts = getMailAccounts();
+  if (accounts.length === 0) {
+    console.error('[SMTP] No sending accounts configured. Email aborted.');
     return { success: false };
   }
 
-  for (let i = 0; i < passwords.length; i++) {
-    const currentPass = passwords[i];
-    const label = i === 0 ? 'primary' : `fallback-${i}`;
-    
-    const transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure,
-      auth: {
-        user,
-        pass: currentPass,
-      },
-    });
+  const displayName = extractDisplayName(mailOptions.from as string | undefined);
 
-    try {
-      const info = await transporter.sendMail(mailOptions);
-      console.log(`[SMTP] Email sent successfully using ${label} password: ${info.messageId}`);
-      return { success: true, messageId: info.messageId };
-    } catch (err: unknown) {
-      const isAuthError = err instanceof Error && (
-        (err as { code?: string }).code === 'EAUTH' ||
-        err.message.includes('Authentication unsuccessful') ||
-        err.message.includes('Invalid login')
-      );
-
-      if (isAuthError && i < passwords.length - 1) {
-        console.warn(`[SMTP] Auth failed with ${label} password, trying next fallback...`);
-        continue;
+  for (const acc of accounts) {
+    if (!acc.host || !acc.user) continue;
+    for (let i = 0; i < acc.passwords.length; i++) {
+      const transporter = nodemailer.createTransport({
+        host: acc.host,
+        port: acc.port,
+        secure: acc.secure,
+        auth: { user: acc.user, pass: acc.passwords[i] },
+      });
+      try {
+        const info = await transporter.sendMail({
+          ...mailOptions,
+          from: applyDisplayName(acc.from, displayName),
+        });
+        console.log(`[SMTP] Sent via ${acc.label} (key ${i + 1}): ${info.messageId}`);
+        return { success: true, messageId: info.messageId };
+      } catch (err) {
+        // Any failure (auth, connection, or daily-quota) -> rotate to the next.
+        console.warn(`[SMTP] ${acc.label} key ${i + 1} failed, rotating…`, (err as Error)?.message);
       }
-
-      // Either not an auth error (some other issue) or we've exhausted all passwords
-      console.error(`[SMTP] Failed to send email with ${label} password:`, err);
-      return { success: false };
     }
   }
 
+  console.error('[SMTP] All accounts exhausted — email not sent.');
   return { success: false };
 }
 

@@ -5,6 +5,7 @@ import LeadNotificationEmail from '@/emails/LeadNotification';
 import AutoReplyEmail from '@/emails/AutoReply';
 import ClientWelcomeEmail from '@/emails/ClientWelcome';
 import { getMailAccounts, applyDisplayName, extractDisplayName } from './mailAccounts';
+import { supabase } from './supabase';
 
 /**
  * Resolves the primary From header from SMTP_FROM, attaching a custom display
@@ -13,6 +14,18 @@ import { getMailAccounts, applyDisplayName, extractDisplayName } from './mailAcc
 function getSenderAddress(displayName?: string): string {
   const envFrom = process.env.SMTP_FROM || '"Inlet" <devv80@outlook.com>';
   return applyDisplayName(envFrom, displayName);
+}
+
+/**
+ * Records an SMTP account failure so it surfaces on the super-admin
+ * Logs page (a blocked/quota'd Brevo account becomes visible immediately).
+ * Fire-and-forget — never blocks sending.
+ */
+function logSmtpFailure(errorType: string, label: string, user: string, message: string): void {
+  supabase
+    .from('failures_log')
+    .insert([{ form_id: null, error_type: errorType, error_message: `${label} (${user}): ${message}`.slice(0, 500), payload: {} }])
+    .then(() => {}, () => {});
 }
 
 /**
@@ -51,12 +64,15 @@ async function sendWithFallback(mailOptions: nodemailer.SendMailOptions): Promis
         console.log(`[SMTP] Sent via ${acc.label} (key ${i + 1}): ${info.messageId}`);
         return { success: true, messageId: info.messageId };
       } catch (err) {
-        // Any failure (auth, connection, or daily-quota) -> rotate to the next.
-        console.warn(`[SMTP] ${acc.label} key ${i + 1} failed, rotating…`, (err as Error)?.message);
+        // Any failure (auth, connection, or daily-quota) -> signal it and rotate.
+        const msg = (err as Error)?.message || 'unknown error';
+        console.warn(`[SMTP] ${acc.label} key ${i + 1} failed, rotating…`, msg);
+        logSmtpFailure('SMTP_ACCOUNT_FAILED', acc.label, acc.user, msg);
       }
     }
   }
 
+  logSmtpFailure('SMTP_ALL_ACCOUNTS_FAILED', 'all', `${accounts.length} accounts`, 'Every sending account failed — no account had capacity.');
   console.error('[SMTP] All accounts exhausted — email not sent.');
   return { success: false };
 }

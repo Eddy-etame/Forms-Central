@@ -138,6 +138,14 @@ html {
 @keyframes spin-slow { to { transform: rotate(360deg); } }
 .animate-spin-slow { animation: spin-slow 26s linear infinite; }
 
+/* Infinite marquee (logos/stack strip) — track holds two copies, slides -50% */
+@keyframes marquee-x { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.animate-marquee { animation: marquee-x 26s linear infinite; }
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+          mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .aurora-a, .aurora-b, .animate-float, .shimmer-text, .animate-spin-slow { animation: none !important; }
+  .aurora-a, .aurora-b, .animate-float, .shimmer-text, .animate-spin-slow, .animate-marquee { animation: none !important; }
 }

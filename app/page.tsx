@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { NavBar } from "@/components/marketing/NavBar";
 import HeroPreview from "@/components/marketing/HeroPreview";
+import { LogoBadge } from "@/components/Logo";
 import AiChat from "@/components/AiChat";
 import LazyDemoFlow from "@/components/LazyDemoFlow";
 import CopyButton from "@/components/CopyButton";
@@ -147,11 +148,19 @@ export default function Home() {
             <HeroPreview />
           </div>
 
-          {/* Framework strip */}
-          <div className="mx-auto max-w-3xl px-6 pb-16 fade-up" style={{ animationDelay: "120ms" }}>
-            <p className="mb-4 text-center text-xs font-semibold uppercase tracking-widest text-slate-400">Drop into any stack</p>
-            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-medium text-slate-500">
-              <span>Astro</span><span>Next.js</span><span>Nuxt</span><span>Vue</span><span>Svelte</span><span>Plain HTML</span>
+          {/* Framework marquee */}
+          <div className="mx-auto max-w-5xl px-6 pb-16 fade-up" style={{ animationDelay: "120ms" }}>
+            <p className="mb-5 text-center text-xs font-semibold uppercase tracking-widest text-slate-400">Drops into any stack</p>
+            <div className="marquee-mask relative overflow-hidden">
+              <div className="flex w-max animate-marquee gap-3">
+                {[...Array(2)].flatMap((_, copy) =>
+                  ["Astro", "Next.js", "Nuxt", "Vue", "Svelte", "SvelteKit", "Remix", "React", "Solid", "Qwik", "Angular", "Plain HTML"].map((s) => (
+                    <span key={`${copy}-${s}`} className="inline-flex shrink-0 items-center rounded-full border border-slate-200 bg-white/70 px-4 py-2 text-sm font-medium text-slate-600 shadow-sm backdrop-blur">
+                      {s}
+                    </span>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </header>
@@ -213,14 +222,20 @@ export default function Home() {
                 { icon: RefreshCw, title: "SMTP fallback", desc: "Rotates across backup accounts so a lead is never lost.", cls: "", color: "text-amber-400", bg: "bg-amber-500/15", glow: "rgba(245,158,11,0.16)" },
                 { icon: Globe, title: "Any framework", desc: "Astro, Next, Nuxt, Vue, Svelte, or plain HTML.", cls: "", color: "text-cyan-400", bg: "bg-cyan-500/15", glow: "rgba(34,211,238,0.16)" },
               ].map((f) => (
-                <div key={f.title} className={`group relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/50 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-slate-700 hover:bg-slate-900 ${f.cls}`}>
-                  <div aria-hidden className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: `radial-gradient(420px circle at 30% 0%, ${f.glow}, transparent 70%)` }} />
-                  <div className={`relative mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl ${f.bg} ring-1 ring-inset ring-white/10`}>
-                    <f.icon className={`h-5 w-5 ${f.color}`} />
+                <div
+                  key={f.title}
+                  className={`group relative rounded-3xl p-px transition-transform duration-300 hover:-translate-y-1 ${f.cls}`}
+                  style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.16), rgba(255,255,255,0.02) 42%, transparent)" }}
+                >
+                  <div className="relative flex h-full flex-col overflow-hidden rounded-[23px] bg-slate-900/70 p-7 transition-colors duration-300 group-hover:bg-slate-900">
+                    <div aria-hidden className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: `radial-gradient(440px circle at 30% 0%, ${f.glow}, transparent 70%)` }} />
+                    <div className={`relative mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl ${f.bg} ring-1 ring-inset ring-white/10`}>
+                      <f.icon className={`h-5 w-5 ${f.color}`} />
+                    </div>
+                    <h3 className="relative mb-1.5 text-lg font-bold">{f.title}</h3>
+                    <p className="relative max-w-sm text-sm leading-relaxed text-slate-400">{f.desc}</p>
+                    <f.icon className="pointer-events-none absolute -bottom-10 -right-10 h-40 w-40 text-white opacity-[0.04] transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110" />
                   </div>
-                  <h3 className="relative mb-1.5 text-lg font-bold">{f.title}</h3>
-                  <p className="relative max-w-sm text-sm leading-relaxed text-slate-400">{f.desc}</p>
-                  <f.icon className="pointer-events-none absolute -bottom-10 -right-10 h-40 w-40 text-white opacity-[0.04] transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110" />
                 </div>
               ))}
             </div>
@@ -329,7 +344,7 @@ export default function Home() {
         <footer className="border-t border-slate-200 bg-white py-12">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 text-sm text-slate-500 sm:flex-row lg:px-8">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white">F</div>
+              <LogoBadge className="h-7 w-7 rounded-lg" />
               <span className="font-semibold text-slate-800">{SITE_NAME}</span>
             </div>
             <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">

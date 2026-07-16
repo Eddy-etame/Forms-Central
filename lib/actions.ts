@@ -566,3 +566,80 @@ export async function getClientSingleFormStats(formId: string) {
     dailyTrends
   };
 }
+
+// ==================== TRAFFIC ANALYTICS (super-admin) ====================
+
+export async function getTrafficStats() {
+  await verifyAdminAuth();
+
+  // Graceful when migration_v11 hasn't run yet.
+  const probe = await supabase.from('pageviews').select('id', { count: 'exact', head: true });
+  const empty = {
+    available: false,
+    totals: { all: 0, today: 0, week: 0 },
+    unique: { today: 0, week: 0 },
+    dailyTrends: [] as { date: string; views: number; visitors: number }[],
+    topPaths: [] as { name: string; count: number }[],
+    topReferrers: [] as { name: string; count: number }[],
+    devices: [] as { name: string; count: number }[],
+    countries: [] as { name: string; count: number }[],
+    recent: [] as any[],
+  };
+  if (probe.error) return empty;
+
+  const now = Date.now();
+  const dayAgo = new Date(now - 24 * 3600 * 1000).toISOString();
+  const weekAgo = new Date(now - 7 * 24 * 3600 * 1000).toISOString();
+  const monthAgo = new Date(now - 30 * 24 * 3600 * 1000).toISOString();
+
+  const [totalRes, todayRes, weekRes, rowsRes] = await Promise.all([
+    supabase.from('pageviews').select('id', { count: 'exact', head: true }),
+    supabase.from('pageviews').select('id', { count: 'exact', head: true }).gte('created_at', dayAgo),
+    supabase.from('pageviews').select('id', { count: 'exact', head: true }).gte('created_at', weekAgo),
+    supabase
+      .from('pageviews')
+      .select('path, referrer, session_id, device, browser, country, created_at')
+      .gte('created_at', monthAgo)
+      .order('created_at', { ascending: false })
+      .limit(5000),
+  ]);
+
+  const rows = (rowsRes.data as any[]) || [];
+  const uniqToday = new Set(rows.filter((r) => r.created_at >= dayAgo).map((r) => r.session_id)).size;
+  const uniqWeek = new Set(rows.filter((r) => r.created_at >= weekAgo).map((r) => r.session_id)).size;
+
+  // 30-day daily trend
+  const days: Record<string, { date: string; views: number; visitors: Set<string> }> = {};
+  for (let i = 29; i >= 0; i--) {
+    const k = new Date(now - i * 86400000).toISOString().slice(0, 10);
+    days[k] = { date: k, views: 0, visitors: new Set() };
+  }
+  for (const r of rows) {
+    const k = String(r.created_at).slice(0, 10);
+    if (days[k]) { days[k].views++; days[k].visitors.add(r.session_id); }
+  }
+  const dailyTrends = Object.values(days).map((d) => ({ date: d.date, views: d.views, visitors: d.visitors.size }));
+
+  const tally = (key: string) => {
+    const m: Record<string, number> = {};
+    for (const r of rows) {
+      const kk = (r as any)[key] || (key === 'referrer' ? 'Direct' : key === 'country' ? '—' : 'Unknown');
+      m[kk] = (m[kk] || 0) + 1;
+    }
+    return Object.entries(m).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([name, count]) => ({ name, count }));
+  };
+
+  return {
+    available: true,
+    totals: { all: totalRes.count || 0, today: todayRes.count || 0, week: weekRes.count || 0 },
+    unique: { today: uniqToday, week: uniqWeek },
+    dailyTrends,
+    topPaths: tally('path'),
+    topReferrers: tally('referrer'),
+    devices: tally('device'),
+    countries: tally('country'),
+    recent: rows.slice(0, 25).map((r) => ({
+      path: r.path, referrer: r.referrer, device: r.device, browser: r.browser, country: r.country, created_at: r.created_at,
+    })),
+  };
+}

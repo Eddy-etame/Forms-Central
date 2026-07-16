@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Users, ScrollText, ShieldAlert, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, ScrollText, ShieldAlert, BarChart3, Briefcase, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LogoBadge } from '@/components/Logo';
 
@@ -11,6 +11,7 @@ export function Sidebar() {
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     { name: 'Forms', href: '/admin/forms', icon: FileText },
     { name: 'Clients', href: '/admin/clients', icon: Users },
     { name: 'Logs & failures', href: '/admin/logs', icon: ScrollText },
@@ -59,8 +60,17 @@ export function Sidebar() {
         })}
       </nav>
 
+      {/* My Atelier — the owner's own subscriber workspace */}
+      <Link
+        href="/client/dashboard"
+        className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-900 px-3 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
+      >
+        <Briefcase className="h-4.5 w-4.5" />
+        My Atelier
+      </Link>
+
       {/* Logout */}
-      <div className="border-t border-slate-100 pt-4">
+      <div className="mt-4 border-t border-slate-100 pt-4">
         <button
           onClick={handleLogout}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors"

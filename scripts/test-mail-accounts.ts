@@ -43,10 +43,16 @@ console.log('\n== SMTP account rotation ==');
   ck('no SMTP_3 -> only 2 accounts', a.length === 2 && a[1].label === 'account-2');
 }
 
-// SMTP_n_FROM omitted -> defaults to that account's user
+// SMTP_n_FROM omitted, no SMTP_FROM -> defaults to that account's user
 {
   const a = getMailAccounts({ SMTP_HOST: 'h', SMTP_USER: 'u1', SMTP_PASS: 'k1', SMTP_2_USER: 'u2@x.com', SMTP_2_PASS: 'k2' });
-  ck('account-2 from defaults to its user', a[1].from === '"Inlet" <u2@x.com>');
+  ck('account-2 from defaults to its user (no shared SMTP_FROM)', a[1].from === '"Inlet" <u2@x.com>');
+}
+
+// SMTP_FROM set -> new accounts inherit the shared free-user sender
+{
+  const a = getMailAccounts({ SMTP_HOST: 'h', SMTP_USER: 'u1', SMTP_PASS: 'k1', SMTP_FROM: '"Inlet" <inlet.forms@gmail.com>', SMTP_2_USER: 'u2', SMTP_2_PASS: 'k2', SMTP_3_USER: 'u3', SMTP_3_PASS: 'k3' });
+  ck('accounts 2 & 3 inherit shared SMTP_FROM', a[1].from === '"Inlet" <inlet.forms@gmail.com>' && a[2].from === '"Inlet" <inlet.forms@gmail.com>');
 }
 
 // display-name re-homing (so a client's name authenticates on any account's sender)

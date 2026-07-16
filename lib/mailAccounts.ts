@@ -83,7 +83,9 @@ export function getMailAccounts(env: NodeJS.ProcessEnv = process.env): MailAccou
       secure: (env[`SMTP_${n}_SECURE`] ?? String(baseSecure)) === 'true',
       user: u,
       passwords: [p],
-      from: env[`SMTP_${n}_FROM`] || `"Inlet" <${u}>`,
+      // Inherit the shared free-user sender (SMTP_FROM) unless this account
+      // overrides it — so adding an account only needs USER + PASS.
+      from: env[`SMTP_${n}_FROM`] || env.SMTP_FROM || `"Inlet" <${u}>`,
       label: `account-${n}`,
     });
   }

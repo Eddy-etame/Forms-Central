@@ -89,17 +89,18 @@ SMTP_3_FROM="Inlet" <hello@inbox-three.com>
 
 ## How rotation behaves
 
-- Accounts are tried **in order**: account-1 first, then account-2, then
-  account-3 … Only on a failure (auth error, connection error, or the account
-  being over its daily quota) does it fall through to the next.
+- **Even spread (round-robin):** each send starts at a *random* account, so load
+  is distributed across all providers — every sender stays warm. On a failure
+  (auth error, connection error, or the account being over its daily quota) it
+  falls through to the remaining accounts, so a send never fails while any
+  account still has capacity.
+- `SMTP_<n>_FROM` is **optional** — accounts inherit the shared `SMTP_FROM`
+  sender (e.g. `inlet.forms@gmail.com`), so adding an account is just **USER +
+  PASS**. Only set `SMTP_<n>_FROM` if that account should use a different sender.
 - A client's white-label display name is **re-homed onto whichever account
   actually sends**, so authentication always matches that account's verified
   sender.
 - Server logs show which account sent: `[SMTP] Sent via account-2 (key 1): …`.
-
-> Note: this is **failover** ordering (account-1 is exhausted before account-2
-> is used). If you'd rather spread load evenly (round-robin) to warm all senders
-> equally, that's a small enhancement — ask and it's a one-line change.
 
 ---
 

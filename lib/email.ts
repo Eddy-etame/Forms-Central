@@ -29,7 +29,12 @@ async function sendWithFallback(mailOptions: nodemailer.SendMailOptions): Promis
 
   const displayName = extractDisplayName(mailOptions.from as string | undefined);
 
-  for (const acc of accounts) {
+  // Round-robin: start at a random account each send so load spreads evenly
+  // across all providers (warming every sender), then fall through the rest on
+  // failure/quota. Stateless — safe across serverless instances.
+  const start = Math.floor(Math.random() * accounts.length);
+  for (let a = 0; a < accounts.length; a++) {
+    const acc = accounts[(start + a) % accounts.length];
     if (!acc.host || !acc.user) continue;
     for (let i = 0; i < acc.passwords.length; i++) {
       const transporter = nodemailer.createTransport({

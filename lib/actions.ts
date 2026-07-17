@@ -4,6 +4,7 @@ import { supabase } from './supabase';
 import { encryptPassword, decryptPassword, generateRandomPassword } from './crypto';
 import { sendClientWelcomeEmail } from './email';
 import { PLANS, getPlan } from './plans';
+import { getConfiguredAccountSlots } from './mailAccounts';
 
 // Helper: Ensure the request is authenticated via cookies (read on the server)
 async function verifyAdminAuth() {
@@ -372,6 +373,92 @@ export async function getFailuresLogs() {
     return { success: true, data: data || [] };
   } catch (err: any) {
     console.error('Error in getFailuresLogs:', err);
+    return { success: false, error: err.message || String(err) };
+  }
+}
+
+// ==================== EMAIL HEALTH ====================
+
+/** Mask an SMTP login so full credentials never render in the admin DOM. */
+function maskLogin(u: string): string {
+  if (!u) return '—';
+  const at = u.indexOf('@');
+  if (at > 0) {
+    const local = u.slice(0, at);
+    const shown = local.slice(0, Math.min(4, local.length));
+    return `${shown}${local.length > 4 ? '…' : ''}${u.slice(at)}`;
+  }
+  return u.slice(0, 4) + (u.length > 4 ? '…' : '');
+}
+
+/**
+ * Per-account email health for the super-admin. Cross-references the configured
+ * account slots (incl. disabled) with the last 24h of SMTP failures logged by
+ * lib/email.ts, so a suspended/blocked Brevo account is visible immediately.
+ * Status: disabled | failing (failed within the 30-min cooldown) | degraded
+ * (failed in last 24h but recovering) | healthy.
+ */
+export async function getEmailHealth() {
+  try {
+    await verifyAdminAuth();
+
+    const slots = getConfiguredAccountSlots();
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    const { data: fails } = await supabase
+      .from('failures_log')
+      .select('error_type, error_message, created_at')
+      .like('error_type', 'SMTP%')
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(500);
+
+    const rows = fails || [];
+    const now = Date.now();
+    const COOLDOWN_MS = 30 * 60 * 1000;
+
+    const accounts = slots.map((slot) => {
+      // Failures are logged as "<label> (<user>): <message>" — the trailing
+      // " (" disambiguates account-1 from account-10/11/…
+      const mine = rows.filter((f) => (f.error_message || '').startsWith(`${slot.label} (`));
+      const last = mine[0];
+      const lastMs = last ? new Date(last.created_at).getTime() : 0;
+      const recentlyFailing = last ? now - lastMs < COOLDOWN_MS : false;
+
+      let status: 'disabled' | 'failing' | 'degraded' | 'healthy';
+      if (slot.disabled) status = 'disabled';
+      else if (recentlyFailing) status = 'failing';
+      else if (mine.length > 0) status = 'degraded';
+      else status = 'healthy';
+
+      return {
+        label: slot.label,
+        user: maskLogin(slot.user),
+        from: slot.from,
+        disabled: slot.disabled,
+        status,
+        failures24h: mine.length,
+        lastFailureAt: last?.created_at || null,
+        lastError: last ? (last.error_message || '').replace(`${slot.label} `, '') : null,
+      };
+    });
+
+    // Total-outage events (every account failed at once).
+    const outages = rows.filter((f) => f.error_type === 'SMTP_ALL_ACCOUNTS_FAILED');
+
+    return {
+      success: true,
+      data: {
+        accounts,
+        totalConfigured: accounts.length,
+        // "Active" = able to send now (healthy or recovering, not disabled/failing).
+        activeCount: accounts.filter((a) => a.status === 'healthy' || a.status === 'degraded').length,
+        outages24h: outages.length,
+        lastOutageAt: outages[0]?.created_at || null,
+      },
+    };
+  } catch (err: any) {
+    console.error('Error in getEmailHealth:', err);
     return { success: false, error: err.message || String(err) };
   }
 }

@@ -2,7 +2,7 @@
  * Unit test for SMTP account rotation parsing.
  * Run: node --experimental-strip-types scripts/test-mail-accounts.ts
  */
-import { getMailAccounts, applyDisplayName, extractDisplayName } from '../lib/mailAccounts.ts';
+import { getMailAccounts, getConfiguredAccountSlots, applyDisplayName, extractDisplayName } from '../lib/mailAccounts.ts';
 
 let pass = 0, fail = 0;
 const failures: string[] = [];
@@ -69,6 +69,25 @@ console.log('\n== SMTP account rotation ==');
 // display-name re-homing (so a client's name authenticates on any account's sender)
 ck('extractDisplayName', extractDisplayName('"Acme Corp" <x@y.com>') === 'Acme Corp');
 ck('applyDisplayName re-homes onto account sender', applyDisplayName('"Inlet" <b@two.com>', 'Acme Corp') === '"Acme Corp" <b@two.com>');
+
+console.log('\n== Configured account slots (health panel — includes disabled) ==');
+
+// disabled accounts are LISTED (unlike getMailAccounts which drops them)
+{
+  const s = getConfiguredAccountSlots({ SMTP_HOST: 'h', SMTP_USER: 'u1', SMTP_PASS: 'k1', SMTP_2_USER: 'u2', SMTP_2_PASS: 'k2', SMTP_2_DISABLED: 'true' });
+  ck('slots include disabled account-2', s.length === 2 && s[1].label === 'account-2' && s[1].disabled === true);
+  ck('slot account-1 is not disabled', s[0].disabled === false);
+}
+// a disabled primary is still listed as a slot (but flagged)
+{
+  const s = getConfiguredAccountSlots({ SMTP_HOST: 'h', SMTP_USER: 'u1', SMTP_PASS: 'k1', SMTP_DISABLED: 'true', SMTP_2_USER: 'u2', SMTP_2_PASS: 'k2' });
+  ck('disabled primary still appears as a slot', s.length === 2 && s[0].label === 'account-1' && s[0].disabled === true);
+}
+// a slot with no password is not a real slot
+{
+  const s = getConfiguredAccountSlots({ SMTP_HOST: 'h', SMTP_USER: 'u1', SMTP_PASS: 'k1', SMTP_2_USER: 'u2' });
+  ck('slot without password is skipped', s.length === 1);
+}
 
 console.log(`\n== RESULT: ${pass} passed, ${fail} failed ==`);
 if (failures.length) { console.log('Failures:', failures.join(' | ')); process.exit(1); }

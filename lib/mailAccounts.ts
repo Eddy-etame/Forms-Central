@@ -32,6 +32,46 @@ export function extractDisplayName(from?: string): string | undefined {
   return name || undefined;
 }
 
+/** One configured account slot — includes disabled ones (for the health panel). */
+export interface AccountSlot {
+  label: string;
+  user: string;
+  from: string;
+  disabled: boolean;
+}
+
+/**
+ * Every configured account slot, INCLUDING disabled ones — so the super-admin
+ * Email-health panel can show a suspended/turned-off account rather than
+ * silently omitting it (which is what getMailAccounts does for the send path).
+ */
+export function getConfiguredAccountSlots(env: NodeJS.ProcessEnv = process.env): AccountSlot[] {
+  const slots: AccountSlot[] = [];
+
+  if (env.SMTP_USER && (env.SMTP_PASS || env.SMTP_PASS_FALLBACK)) {
+    slots.push({
+      label: 'account-1',
+      user: env.SMTP_USER,
+      from: env.SMTP_FROM || `"Inlet" <${env.SMTP_USER}>`,
+      disabled: env.SMTP_DISABLED === 'true',
+    });
+  }
+
+  for (let n = 2; n <= 20; n++) {
+    const u = env[`SMTP_${n}_USER`];
+    const p = env[`SMTP_${n}_PASS`];
+    if (!u || !p) continue;
+    slots.push({
+      label: `account-${n}`,
+      user: u,
+      from: env[`SMTP_${n}_FROM`] || env.SMTP_FROM || `"Inlet" <${u}>`,
+      disabled: env[`SMTP_${n}_DISABLED`] === 'true',
+    });
+  }
+
+  return slots;
+}
+
 /**
  * Ordered list of sending accounts for rotation.
  *

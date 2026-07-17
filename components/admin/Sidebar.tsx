@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Users, ScrollText, ShieldAlert, BarChart3, DollarSign, Briefcase, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, ScrollText, ShieldAlert, BarChart3, DollarSign, Briefcase, Mail, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LogoBadge } from '@/components/Logo';
 
@@ -15,6 +15,7 @@ export function Sidebar() {
     { name: 'Revenue', href: '/admin/revenue', icon: DollarSign },
     { name: 'Forms', href: '/admin/forms', icon: FileText },
     { name: 'Clients', href: '/admin/clients', icon: Users },
+    { name: 'Email health', href: '/admin/email', icon: Mail },
     { name: 'Logs & failures', href: '/admin/logs', icon: ScrollText },
     { name: 'Blacklist', href: '/admin/blacklist', icon: ShieldAlert },
   ];

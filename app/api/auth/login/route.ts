@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { signJWT } from '@/lib/jwt';
-import { supabase } from '@/lib/supabase';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 import { logSecurityEvent, SEC } from '@/lib/securityEvents';
+import { issueAdminSession } from '@/lib/adminSession';
 
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -39,63 +38,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
     }
 
-    // 1. Generate Custom Access Token (JWT) - 15 minutes expiration
-    const accessExp = Math.floor(Date.now() / 1000) + 15 * 60;
-    const accessToken = await signJWT(
-      { sub: 'admin', iat: Math.floor(Date.now() / 1000), exp: accessExp },
-      JWT_SECRET
-    );
-
-    // 2. Generate Refresh Token - 7 days expiration
-    const refreshExp = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60;
-    const rawRefreshToken = crypto.randomUUID();
-    const refreshTokenHash = crypto.createHash('sha256').update(rawRefreshToken).digest('hex');
-
-    const refreshToken = await signJWT(
-      { sub: 'admin', token_id: rawRefreshToken, iat: Math.floor(Date.now() / 1000), exp: refreshExp },
-      JWT_SECRET
-    );
-
-    // Insert Refresh Token hash in Supabase to track session
-    const { error: dbError } = await supabase
-      .from('refresh_tokens')
-      .insert([
-        {
-          token_hash: refreshTokenHash,
-          expires_at: new Date(refreshExp * 1000).toISOString(),
-        },
-      ]);
-
-    if (dbError) {
-      console.error('Failed to store refresh token hash:', dbError);
-      return NextResponse.json({ error: 'Database session error' }, { status: 500 });
+    // Password correct. If ADMIN_2FA_EMAIL is set, require the emailed code
+    // before issuing any session — the super-admin is the crown jewels.
+    const twoFaEmail = process.env.ADMIN_2FA_EMAIL;
+    if (twoFaEmail) {
+      try {
+        const { createOtpChallenge } = await import('@/lib/otp');
+        const { sendOtpEmail } = await import('@/lib/email');
+        const { challengeId, code } = await createOtpChallenge('admin', 'admin');
+        await sendOtpEmail(twoFaEmail, code);
+        return NextResponse.json({ success: true, require2fa: true, challengeId });
+      } catch (otpErr) {
+        console.error('Admin 2FA challenge error:', otpErr);
+        return NextResponse.json({ error: 'Could not start two-factor verification. Try again.' }, { status: 500 });
+      }
     }
 
     logSecurityEvent({ type: SEC.ADMIN_LOGIN_OK, severity: 'info', actor: 'admin', ip });
-
-    const response = NextResponse.json({ success: true });
-
-    // Set secure Access Token Cookie (15 min). httpOnly: the token is only ever
-    // read server-side (verifyAdminAuth + proxy.ts), never by client JS — so
-    // keep it out of reach of any XSS to prevent session-token theft.
-    response.cookies.set('access_token', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60,
-      path: '/',
-    });
-
-    // Set secure httpOnly Refresh Token Cookie (7 days)
-    response.cookies.set('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60,
-      path: '/',
-    });
-
-    return response;
+    return await issueAdminSession();
   } catch (error) {
     console.error('Login auth error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

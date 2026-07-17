@@ -77,6 +77,10 @@ export function validateSecurityConfig(env: NodeJS.ProcessEnv = process.env): Se
     warnings.push('NEXT_PUBLIC_SUPABASE_URL is not set — Supabase client calls will fail.');
   }
 
+  if (!env.ADMIN_2FA_EMAIL) {
+    warnings.push('ADMIN_2FA_EMAIL is not set — admin login has no second factor. Set it to require an emailed code on every admin sign-in.');
+  }
+
   return { ok: fatal.length === 0, fatal, warnings };
 }
 

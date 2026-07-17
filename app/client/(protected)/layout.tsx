@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { verifyJWT } from '@/lib/jwt';
 import { getClientForms } from '@/lib/actions';
 import ClientSidebar from '@/components/client/ClientSidebar';
+import CommandPalette from '@/components/client/CommandPalette';
 import { LogoBadge } from '@/components/Logo';
 import SignOutLink from '@/components/client/SignOutLink';
 
@@ -42,6 +43,9 @@ export default async function ClientProtectedLayout({ children }: { children: Re
       <main className="flex-1 p-6 w-full max-w-[1400px] mx-auto overflow-x-hidden min-h-screen">
         {children}
       </main>
+
+      {/* ⌘K — keyboard-first navigation across the whole workspace */}
+      <CommandPalette forms={forms} />
     </div>
   );
 }

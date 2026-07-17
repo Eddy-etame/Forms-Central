@@ -153,6 +153,14 @@ html {
 @keyframes flow-dash { to { stroke-dashoffset: -24; } }
 .flow-dash { stroke-dasharray: 6 6; animation: flow-dash 0.9s linear infinite; }
 
+/* First-lead celebration confetti (client dashboard) */
+@keyframes confetti-fall {
+  0%   { transform: translateY(-120%) rotate(0deg); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translateY(520%) rotate(320deg); opacity: 0; }
+}
+.confetti { top: -12%; animation: confetti-fall 2.8s linear infinite; }
+
 /* Shine sweep: a light band crosses the button on hover */
 .btn-shine { position: relative; overflow: hidden; }
 .btn-shine::after {
@@ -195,7 +203,7 @@ html {
 .btn-shine:hover .cta-arrow, .group:hover .cta-arrow { transform: translateX(4px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .aurora-a, .aurora-b, .animate-float, .shimmer-text, .animate-spin-slow, .animate-marquee, .flow-dash { animation: none !important; }
+  .aurora-a, .aurora-b, .animate-float, .shimmer-text, .animate-spin-slow, .animate-marquee, .flow-dash, .confetti { animation: none !important; }
   .btn-shine::after { display: none; }
   .link-underline::after { transition: none; }
   .cta-arrow { transition: none; }

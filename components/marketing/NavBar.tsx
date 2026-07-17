@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { LogoBadge } from "@/components/Logo";
 import { Magnetic } from "@/components/marketing/Interactive";
+import { MobileMenu } from "@/components/marketing/MobileMenu";
 
 /** Shared marketing nav — used by every public page (multi-page site). */
 export function NavBar() {
@@ -22,10 +23,11 @@ export function NavBar() {
         <div className="flex items-center gap-3">
           <Link href="/client/login" className="link-underline hidden text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors sm:block">Sign in</Link>
           <Magnetic strength={0.2}>
-            <Link href="/client/signup" className="btn-shine inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-300 hover:bg-slate-800 hover:shadow-md hover:shadow-blue-500/20">
+            <Link href="/client/signup" className="btn-shine hidden items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-300 hover:bg-slate-800 hover:shadow-md hover:shadow-blue-500/20 sm:inline-flex">
               Get started <ArrowRight className="cta-arrow h-3.5 w-3.5" />
             </Link>
           </Magnetic>
+          <MobileMenu />
         </div>
       </div>
     </nav>

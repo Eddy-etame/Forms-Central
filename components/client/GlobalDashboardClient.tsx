@@ -92,6 +92,38 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
         </div>
       </div>
 
+      {/* The moment that matters: their very first lead = "my integration works" */}
+      {stats?.allTime === 1 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative rounded-2xl bg-gradient-to-r from-blue-600 via-violet-600 to-cyan-500 p-px"
+        >
+          <div className="relative overflow-hidden rounded-[15px] bg-slate-950 px-6 py-5 text-white">
+            <div aria-hidden className="pointer-events-none absolute inset-0">
+              {[...Array(14)].map((_, i) => (
+                <span
+                  key={i}
+                  className="confetti absolute block h-2 w-1 rounded-sm"
+                  style={{
+                    left: `${(i * 7 + 3) % 100}%`,
+                    background: ['#60a5fa', '#a78bfa', '#22d3ee', '#34d399', '#fbbf24'][i % 5],
+                    animationDelay: `${(i % 7) * 0.35}s`,
+                  }}
+                />
+              ))}
+            </div>
+            <div className="relative flex flex-wrap items-center gap-4">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-xl">🎉</span>
+              <div>
+                <p className="text-base font-bold">Your first lead just landed.</p>
+                <p className="text-sm text-slate-300">The integration works — every submission from here on arrives exactly like this.</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {stats?.formsCount === 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}

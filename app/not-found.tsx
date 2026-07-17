@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
+import { Magnetic } from "@/components/marketing/Interactive";
 
 export default function NotFound() {
   return (
@@ -16,10 +17,12 @@ export default function NotFound() {
           Let&apos;s get you back to solid ground.
         </p>
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
-          <Link href="/" className="inline-flex h-11 items-center gap-2 rounded-full bg-slate-900 px-6 text-sm font-medium text-white hover:bg-slate-800 transition-colors">
-            Back home <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link href="/docs" className="inline-flex h-11 items-center rounded-full border border-slate-200 px-6 text-sm font-medium text-slate-800 hover:border-slate-300 transition-colors">
+          <Magnetic>
+            <Link href="/" className="btn-shine inline-flex h-11 items-center gap-2 rounded-full bg-slate-900 px-6 text-sm font-medium text-white transition-all duration-300 hover:bg-slate-800 hover:shadow-lg hover:shadow-blue-500/20">
+              Back home <ArrowRight className="cta-arrow h-4 w-4" />
+            </Link>
+          </Magnetic>
+          <Link href="/docs" className="link-underline inline-flex h-11 items-center px-2 text-sm font-medium text-slate-800">
             Read the docs
           </Link>
         </div>

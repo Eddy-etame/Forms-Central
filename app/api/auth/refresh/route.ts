@@ -88,9 +88,10 @@ export async function POST(request: NextRequest) {
 
   const response = NextResponse.json({ success: true });
 
-  // Update cookies
+  // Update cookies. httpOnly to match the login route — the token is read
+  // server-side only, so keep it out of reach of any XSS.
   response.cookies.set('access_token', newAccessToken, {
-    httpOnly: false,
+    httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     maxAge: 15 * 60,

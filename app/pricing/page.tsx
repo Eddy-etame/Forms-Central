@@ -70,6 +70,8 @@ const ROWS: Row[] = [
   { label: "Emails / day", values: [fmt(P.free.emailsPerDay), fmt(P.solo.emailsPerDay), fmt(P.pro.emailsPerDay), fmt(P.max.emailsPerDay)] },
   { label: "Spam protection (honeypot + PoW + NLP)", values: [true, true, true, true] },
   { label: "Branded auto-reply emails", values: [true, true, true, true] },
+  { label: "Custom email sender (name + reply-to)", values: [P.free.customSender, P.solo.customSender, P.pro.customSender, P.max.customSender] },
+  { label: "Two-factor sign-in (email OTP)", values: [true, true, true, true] },
   { label: "AI assistant", values: ["1 trial message", "100 / month", "Unlimited", "Unlimited"] },
   { label: "API + MCP server (your AI runs your forms)", values: [false, true, true, true] },
   {
@@ -219,6 +221,7 @@ export default function PricingPage() {
               `${P.solo.formLimit} forms · ${fmt(P.solo.submissionsPerMonth)} submissions/mo`,
               `${P.solo.emailsPerDay} emails/day`,
               "CSV export + analytics",
+              "Custom email sender + reply-to",
               "AI assistant — 100/month",
               "1-year data retention",
             ]}

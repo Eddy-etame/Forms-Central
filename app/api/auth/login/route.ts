@@ -75,9 +75,11 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({ success: true });
 
-    // Set secure Access Token Cookie (15 min)
+    // Set secure Access Token Cookie (15 min). httpOnly: the token is only ever
+    // read server-side (verifyAdminAuth + proxy.ts), never by client JS — so
+    // keep it out of reach of any XSS to prevent session-token theft.
     response.cookies.set('access_token', accessToken, {
-      httpOnly: false, // Accessible by script for authorization headers (or can be httpOnly too)
+      httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 15 * 60,

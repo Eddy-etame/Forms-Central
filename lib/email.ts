@@ -258,6 +258,43 @@ export async function sendClientWelcomeEmail(
 }
 
 /**
+ * Two-factor sign-in code (email OTP). Self-contained HTML; the 6-digit code
+ * expires in 10 minutes and can be used once.
+ */
+export async function sendOtpEmail(toEmail: string, code: string): Promise<boolean> {
+  const text =
+    `Your Inlet sign-in code is ${code}\n\n` +
+    `It expires in 10 minutes and can be used once. ` +
+    `If you didn't try to sign in, change your password.`;
+
+  const html = `
+  <div style="background:#f6f7f9;padding:32px 0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
+    <div style="max-width:480px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;">
+      <div style="background:#0f172a;padding:20px 28px;color:#fff;font-weight:700;font-size:16px;">Inlet</div>
+      <div style="padding:28px;color:#0f172a;">
+        <h1 style="margin:0 0 12px;font-size:20px;">Your sign-in code</h1>
+        <p style="margin:0 0 20px;color:#475569;font-size:14px;line-height:1.6;">
+          Enter this code to finish signing in. It expires in <strong>10 minutes</strong>.
+        </p>
+        <div style="font-size:34px;font-weight:800;letter-spacing:10px;background:#f1f5f9;border-radius:12px;padding:16px 0;text-align:center;color:#0f172a;">${code}</div>
+        <p style="margin:22px 0 0;color:#94a3b8;font-size:12px;line-height:1.6;">
+          If you didn't try to sign in, someone may have your password — change it right away.
+        </p>
+      </div>
+    </div>
+  </div>`;
+
+  const result = await sendWithFallback({
+    from: getSenderAddress('Inlet'),
+    to: toEmail,
+    subject: `${code} is your Inlet sign-in code`,
+    text,
+    html,
+  });
+  return result.success;
+}
+
+/**
  * Password reset email (English, self-contained). The link carries a single-use
  * token that expires in one hour.
  */

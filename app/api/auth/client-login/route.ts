@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     // Lookup client by email
     const { data: client, error } = await supabase
       .from('clients')
-      .select('id, encrypted_password')
+      .select('id, encrypted_password, two_factor_enabled, email, name')
       .eq('email', email.trim().toLowerCase())
       .single();
 
@@ -61,6 +61,24 @@ export async function POST(req: Request) {
         .from('clients')
         .update({ encrypted_password: hashPassword(password) })
         .eq('id', client.id);
+    }
+
+    // Password correct. If 2FA is on, DON'T issue a session yet — email a code
+    // and hand the browser a challenge id to complete on the second step.
+    if (client.two_factor_enabled) {
+      try {
+        const { createOtpChallenge } = await import('@/lib/otp');
+        const { sendOtpEmail } = await import('@/lib/email');
+        const { challengeId, code } = await createOtpChallenge('client', client.id);
+        await sendOtpEmail(client.email, code);
+        return NextResponse.json({ success: true, require2fa: true, challengeId });
+      } catch (otpErr) {
+        console.error('2FA challenge error:', otpErr);
+        return NextResponse.json(
+          { success: false, error: 'Could not start two-factor verification. Try again.' },
+          { status: 500 }
+        );
+      }
     }
 
     // Passwords match -> Generate JWT

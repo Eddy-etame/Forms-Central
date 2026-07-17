@@ -78,7 +78,8 @@ export async function saveClient(
   primary_color: string | null = '#000000',
   font_family: string | null = 'sans-serif',
   sender_name: string | null = null,
-  reply_to_email: string | null = null
+  reply_to_email: string | null = null,
+  two_factor_enabled: boolean = false
 ) {
   try {
     await verifyAdminAuth();
@@ -94,7 +95,7 @@ export async function saveClient(
     if (id) {
       const { error } = await supabase
         .from('clients')
-        .update({ name, email, phone: phone || null, logo_url, primary_color, font_family, sender_name: senderName, reply_to_email: replyTo })
+        .update({ name, email, phone: phone || null, logo_url, primary_color, font_family, sender_name: senderName, reply_to_email: replyTo, two_factor_enabled })
         .eq('id', id);
       if (error) throw error;
     } else {
@@ -113,6 +114,7 @@ export async function saveClient(
           font_family,
           sender_name: senderName,
           reply_to_email: replyTo,
+          two_factor_enabled,
           encrypted_password: encryptedPassword
         }]);
       if (error) throw error;

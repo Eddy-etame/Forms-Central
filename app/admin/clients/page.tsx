@@ -17,6 +17,7 @@ interface Client {
   font_family?: string;
   sender_name?: string;
   reply_to_email?: string;
+  two_factor_enabled?: boolean;
   plan?: string;
   created_at: string;
 }
@@ -38,6 +39,7 @@ export default function ClientsPage() {
   const [fontFamily, setFontFamily] = useState('sans-serif');
   const [senderName, setSenderName] = useState('');
   const [replyToEmail, setReplyToEmail] = useState('');
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -71,6 +73,7 @@ export default function ClientsPage() {
     setFontFamily('sans-serif');
     setSenderName('');
     setReplyToEmail('');
+    setTwoFactorEnabled(false);
     setFormError('');
     setModalOpen(true);
   };
@@ -85,6 +88,7 @@ export default function ClientsPage() {
     setFontFamily(client.font_family || 'sans-serif');
     setSenderName(client.sender_name || '');
     setReplyToEmail(client.reply_to_email || '');
+    setTwoFactorEnabled(!!client.two_factor_enabled);
     setFormError('');
     setModalOpen(true);
   };
@@ -109,7 +113,8 @@ export default function ClientsPage() {
         primaryColor || '#000000',
         fontFamily || 'sans-serif',
         senderName || null,
-        replyToEmail || null
+        replyToEmail || null,
+        twoFactorEnabled
       );
       if (res && !res.success) {
         setFormError(res.error || 'Impossible de sauvegarder le client.');
@@ -436,6 +441,25 @@ export default function ClientsPage() {
                 <p className="text-[11px] text-slate-400">Replies from their customers go here. Works today — no domain needed.</p>
               </div>
             </div>
+          </div>
+
+          <div className="pt-4 border-t border-slate-100">
+            <h4 className="text-sm font-bold text-slate-900 mb-3">Security</h4>
+            <label className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 cursor-pointer hover:bg-slate-50 transition-colors">
+              <input
+                type="checkbox"
+                checked={twoFactorEnabled}
+                onChange={e => setTwoFactorEnabled(e.target.checked)}
+                disabled={saving}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
+              />
+              <span>
+                <span className="block text-sm font-semibold text-slate-800">Require two-factor sign-in</span>
+                <span className="block text-[11px] text-slate-500">
+                  After their password, this client must enter a 6-digit code emailed to {email || 'their address'}.
+                </span>
+              </span>
+            </label>
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">

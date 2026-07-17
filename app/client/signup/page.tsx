@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { AuthShell } from '@/components/auth/AuthShell';
+import { GoogleButton } from '@/components/auth/GoogleButton';
 
 export default function ClientSignupPage() {
   const [name, setName] = useState('');
@@ -50,7 +51,11 @@ export default function ClientSignupPage() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-4" onSubmit={handleSignup}>
+        <div className="mt-8">
+          <GoogleButton label="Sign up with Google" />
+        </div>
+
+        <form className="mt-4 space-y-4" onSubmit={handleSignup}>
           {error && (
             <div className="rounded-lg bg-red-50 border border-red-100 p-3 text-xs text-red-600 font-medium">
               {error}

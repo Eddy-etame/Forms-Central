@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { AuthShell } from '@/components/auth/AuthShell';
+import { GoogleButton } from '@/components/auth/GoogleButton';
 import Link from 'next/link';
 
 export default function ClientLoginPage() {
@@ -15,6 +16,13 @@ export default function ClientLoginPage() {
   // 2FA second step
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [code, setCode] = useState('');
+
+  // Surface a failed Google sign-in redirect (?error=google).
+  useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('error') === 'google') {
+      setError('Google sign-in failed or was cancelled. Try again or use your password.');
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,7 +145,11 @@ export default function ClientLoginPage() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-4" onSubmit={handleLogin}>
+        <div className="mt-8">
+          <GoogleButton label="Sign in with Google" />
+        </div>
+
+        <form className="mt-4 space-y-4" onSubmit={handleLogin}>
           {error && (
             <div role="alert" className="rounded-lg bg-red-50 border border-red-100 p-3 text-xs text-red-600 font-medium">
               {error}

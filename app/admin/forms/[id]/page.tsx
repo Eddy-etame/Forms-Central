@@ -7,6 +7,7 @@ import { ArrowLeft, Copy, Check, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { getFormDetails, toggleFormStatus, updateFormOrigins } from '@/lib/actions';
+import { toast } from '@/components/ui/Toaster';
 import { BorderBeam } from '@/components/magicui/border-beam';
 import ShimmerButton from '@/components/magicui/shimmer-button';
 import BlurFade from '@/components/magicui/blur-fade';
@@ -83,9 +84,10 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
       const newStatus = !form.is_active;
       const res = await toggleFormStatus(form.id, newStatus);
       if (res && !res.success) {
-        alert('Erreur: ' + res.error);
+        toast.error(res.error || 'Could not update the form.');
         return;
       }
+      toast.success(newStatus ? 'Form activated.' : 'Form paused.');
       setForm({ ...form, is_active: newStatus });
     } catch (err) {
       console.error('Failed to toggle form status:', err);
@@ -101,14 +103,14 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
       const { updateFormSettings } = await import('@/lib/actions');
       const res = await updateFormSettings(form.id, autoReplyEnabled, autoReplySubject, autoReplyMessage, successUrl);
       if (res && !res.success) {
-        alert('Erreur lors de la sauvegarde: ' + res.error);
+        toast.error(res.error || 'Could not save the settings.');
         return;
       }
       setForm({ ...form, auto_reply_enabled: autoReplyEnabled, auto_reply_subject: autoReplySubject, auto_reply_message: autoReplyMessage, success_url: successUrl });
-      alert('Settings updated.');
+      toast.success('Settings updated.');
     } catch (err: any) {
       console.error('Error updating form settings:', err);
-      alert('Erreur lors de la sauvegarde: ' + (err.message || String(err)));
+      toast.error(err.message || 'Could not save the settings.');
     } finally {
       setUpdatingSettings(false);
     }
@@ -123,17 +125,17 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
       const newOrigins = corsInput.split(',').map(o => o.trim()).filter(o => o);
       const res = await updateFormOrigins(form.id, newOrigins);
       if (res && !res.success) {
-        alert('Erreur lors de la sauvegarde CORS: ' + res.error);
+        toast.error(res.error || 'Could not save the CORS domains.');
         return;
       }
       setForm({
         ...form,
         allowed_origins: newOrigins.length > 0 ? newOrigins : ['*']
       });
-      alert('CORS domains updated.');
+      toast.success('CORS domains updated.');
     } catch (err: any) {
       console.error('Error updating CORS:', err);
-      alert('Erreur: ' + (err.message || String(err)));
+      toast.error(err.message || 'Could not save the CORS domains.');
     } finally {
       setUpdatingCors(false);
     }

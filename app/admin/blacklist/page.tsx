@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { getBlacklist, addBlacklist, removeBlacklist } from '@/lib/actions';
+import { toast, confirmDialog } from '@/components/ui/Toaster';
 
 interface BlacklistEntry {
   id: string;
@@ -69,20 +70,25 @@ export default function BlacklistPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Remove this target from the blacklist?')) {
-      return;
-    }
+    const ok = await confirmDialog({
+      title: 'Remove from blacklist?',
+      body: 'This target will be able to submit forms again immediately.',
+      confirmLabel: 'Remove',
+      danger: true,
+    });
+    if (!ok) return;
 
     try {
       const res = await removeBlacklist(id);
       if (res && !res.success) {
-        alert('Error: ' + res.error);
+        toast.error(res.error || 'Could not remove the target.');
         return;
       }
+      toast.success('Target removed from the blacklist.');
       await loadBlacklist();
     } catch (err) {
       console.error('Error deleting blacklist entry:', err);
-      alert('Could not remove the target.');
+      toast.error('Could not remove the target.');
     }
   };
 

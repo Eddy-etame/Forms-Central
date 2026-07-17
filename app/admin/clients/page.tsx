@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { getClients, saveClient, deleteClient, getClientPassword, triggerPasswordReset } from '@/lib/actions';
+import { toast, confirmDialog } from '@/components/ui/Toaster';
 
 interface Client {
   id: string;
@@ -131,20 +132,25 @@ export default function ClientsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this client and all their forms?')) {
-      return;
-    }
+    const ok = await confirmDialog({
+      title: 'Delete this client?',
+      body: 'This permanently deletes the client and every form they own. Their leads stay in the database but lose their owner.',
+      confirmLabel: 'Delete client',
+      danger: true,
+    });
+    if (!ok) return;
 
     try {
       const res = await deleteClient(id);
       if (res && !res.success) {
-        alert('Erreur: ' + res.error);
+        toast.error(res.error || 'Could not delete the client.');
         return;
       }
+      toast.success('Client deleted.');
       await loadClients();
     } catch (err) {
       console.error('Error deleting client:', err);
-      alert('Erreur lors de la suppression du client.');
+      toast.error('Could not delete the client.');
     }
   };
 
@@ -166,26 +172,29 @@ export default function ClientsPage() {
       if (res.success && res.password) {
         setVisiblePasswords(prev => ({ ...prev, [id]: res.password }));
       } else {
-        alert(res.error || "Could not retrieve the password");
+        toast.error(res.error || 'Could not retrieve the password.');
       }
     } catch (err) {
       console.error(err);
-      alert("Network error");
+      toast.error('Network error.');
     } finally {
       setLoadingPassword(prev => ({ ...prev, [id]: false }));
     }
   };
 
   const handleResetPassword = async (id: string) => {
-    if (!confirm("Reset this client's password? A new email will be sent to them.")) {
-      return;
-    }
+    const ok = await confirmDialog({
+      title: 'Reset this client’s password?',
+      body: 'A new temporary password is generated and emailed to the client. Their current password stops working immediately.',
+      confirmLabel: 'Reset & email',
+    });
+    if (!ok) return;
 
     setResettingPassword(prev => ({ ...prev, [id]: true }));
     try {
       const res = await triggerPasswordReset(id);
       if (res.success) {
-        alert('Password reset and emailed to the client.');
+        toast.success('Password reset and emailed to the client.');
         // Hide password if it was visible, as it's no longer valid
         setVisiblePasswords(prev => {
           const next = { ...prev };
@@ -193,11 +202,11 @@ export default function ClientsPage() {
           return next;
         });
       } else {
-        alert(res.error || "Could not reset the password");
+        toast.error(res.error || 'Could not reset the password.');
       }
     } catch (err) {
       console.error(err);
-      alert("Network error");
+      toast.error('Network error.');
     } finally {
       setResettingPassword(prev => ({ ...prev, [id]: false }));
     }

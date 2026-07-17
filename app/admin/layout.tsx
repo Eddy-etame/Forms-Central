@@ -1,6 +1,7 @@
 'use client';
 
 import { Sidebar } from '@/components/admin/Sidebar';
+import { Toaster } from '@/components/ui/Toaster';
 import { useAntiScraping } from '@/lib/useAntiScraping';
 
 export default function AdminLayout({
@@ -17,6 +18,7 @@ export default function AdminLayout({
       <main className="flex-1 overflow-y-auto px-8 py-8">
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
+      <Toaster />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { getForms, getClients, createForm, toggleFormStatus, deleteForm } from '@/lib/actions';
+import { toast, confirmDialog } from '@/components/ui/Toaster';
 
 interface Form {
   id: string;
@@ -99,9 +100,10 @@ export default function FormsPage() {
     try {
       const res = await toggleFormStatus(id, !currentStatus);
       if (res && !res.success) {
-        alert('Erreur: ' + res.error);
+        toast.error(res.error || 'Could not update the form.');
         return;
       }
+      toast.success(!currentStatus ? 'Form activated.' : 'Form paused.');
       setForms(
         forms.map((f) => (f.id === id ? { ...f, is_active: !currentStatus } : f))
       );
@@ -111,26 +113,31 @@ export default function FormsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Permanently delete this form?')) {
-      return;
-    }
+    const ok = await confirmDialog({
+      title: 'Delete this form?',
+      body: 'The form and its settings are permanently deleted. Sites still posting to it will start receiving 404s.',
+      confirmLabel: 'Delete form',
+      danger: true,
+    });
+    if (!ok) return;
 
     try {
       const res = await deleteForm(id);
       if (res && !res.success) {
-        alert('Erreur: ' + res.error);
+        toast.error(res.error || 'Could not delete the form.');
         return;
       }
+      toast.success('Form deleted.');
       await loadFormsAndClients();
     } catch (err) {
       console.error('Error deleting form:', err);
-      alert('Erreur lors de la suppression.');
+      toast.error('Could not delete the form.');
     }
   };
 
   const openCreateModal = () => {
     if (clients.length === 0) {
-      alert('Create at least one client first.');
+      toast.info('Create at least one client first — every form belongs to a client.');
       return;
     }
     setName('');

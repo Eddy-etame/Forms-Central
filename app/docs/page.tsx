@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
 import AiChat from "@/components/AiChat";
-import { Check, Terminal, ShieldCheck, Mail } from "lucide-react";
+import { Check, Terminal, ShieldCheck, Mail, ArrowRight, Webhook, Sparkles } from "lucide-react";
 import CopyButton from "@/components/CopyButton";
+import { Magnetic, ScrollProgress } from "@/components/marketing/Interactive";
 
 export const metadata: Metadata = {
   title: "Documentation — integrate in minutes",
@@ -59,6 +60,16 @@ const LLM_PROMPT = `Read https://forms-central-h1ee.vercel.app/llm-install.md
 and integrate Inlet into this project exactly as it instructs.
 My values: FORM_API_URL=https://forms-central-h1ee.vercel.app FORM_ID=<paste yours>`;
 
+const WEBHOOK_VERIFY = `// Verify Inlet's webhook signature (Node) — read the RAW body first.
+import crypto from "node:crypto";
+
+export function verifyInletWebhook(rawBody, sigHeader, secret, toleranceSec = 300) {
+  const p = Object.fromEntries(sigHeader.split(",").map(s => s.split("=")));
+  const expected = crypto.createHmac("sha256", secret).update(\`\${p.t}.\${rawBody}\`).digest("hex");
+  const fresh = Math.abs(Date.now() / 1000 - Number(p.t)) < toleranceSec;
+  return fresh && crypto.timingSafeEqual(Buffer.from(p.v1), Buffer.from(expected));
+}`;
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "TechArticle",
@@ -67,6 +78,19 @@ const jsonLd = {
     "Integrate a form backend with no SMTP: two env values, one copy-paste helper, proof-of-work spam protection built in.",
   author: { "@type": "Organization", name: "Inlet" },
 };
+
+function SectionTitle({ n, children }: { n?: string; children: React.ReactNode }) {
+  return (
+    <h2 className="mt-14 flex items-center gap-3 text-2xl font-bold tracking-tight">
+      {n && (
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 font-mono text-xs font-bold text-white shadow-md shadow-blue-500/25">
+          {n}
+        </span>
+      )}
+      {children}
+    </h2>
+  );
+}
 
 function Code({ title, code }: { title: string; code: string }) {
   return (
@@ -86,40 +110,49 @@ export default function DocsPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="min-h-screen bg-white text-slate-900 font-sans">
+        <ScrollProgress />
         <NavBar />
 
-        <main className="mx-auto max-w-3xl px-6 py-16 lg:py-20">
+        {/* Aurora header — same identity as the landing */}
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[340px] overflow-hidden">
+          <div className="aurora-a absolute -top-24 left-[28%] h-[300px] w-[300px] rounded-full bg-blue-500/15 blur-[110px]" />
+          <div className="aurora-b absolute -top-16 right-[24%] h-[260px] w-[260px] rounded-full bg-cyan-400/12 blur-[110px]" />
+        </div>
+
+        <main className="relative mx-auto max-w-3xl px-6 py-16 lg:py-20">
           <p className="text-sm font-semibold text-blue-600">Documentation</p>
-          <h1 className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl">Integrate in minutes</h1>
+          <h1 className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
+            Integrate in <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text font-serif italic text-transparent">minutes.</span>
+          </h1>
           <p className="mt-4 text-lg leading-8 text-slate-600">
             Your website never touches SMTP. It holds two values and calls two endpoints — the service
             does delivery, spam filtering, and the branded auto-reply.
           </p>
 
           {/* The contract */}
-          <h2 className="mt-14 text-2xl font-bold tracking-tight">1 · The two-value contract</h2>
+          <SectionTitle n="1">The two-value contract</SectionTitle>
           <p className="mt-3 leading-7 text-slate-600">
             Create a form in your dashboard and copy its ID. Give your site exactly two values:
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-slate-200 p-5">
+            <div className="rounded-2xl border border-slate-200 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
               <code className="text-sm font-semibold text-slate-900">FORM_API_URL</code>
               <p className="mt-1.5 text-sm text-slate-600">The service origin — where challenges and submissions go.</p>
             </div>
-            <div className="rounded-2xl border border-slate-200 p-5">
+            <div className="rounded-2xl border border-slate-200 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
               <code className="text-sm font-semibold text-slate-900">FORM_ID</code>
               <p className="mt-1.5 text-sm text-slate-600">One form&apos;s UUID. Each site (or each form) gets its own.</p>
             </div>
           </div>
 
           {/* The helper */}
-          <h2 className="mt-14 text-2xl font-bold tracking-tight">2 · The copy-paste helper</h2>
+          <SectionTitle n="2">The copy-paste helper</SectionTitle>
           <p className="mt-3 mb-5 leading-7 text-slate-600">
             Works in Astro, Next.js, Nuxt, Vue, Svelte, or a plain <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">&lt;script type=&quot;module&quot;&gt;</code>.
           </p>
           <Code title="form-service.js" code={HELPER} />
 
-          <h2 className="mt-14 text-2xl font-bold tracking-tight">3 · Use it</h2>
+          <SectionTitle n="3">Use it</SectionTitle>
           <div className="mt-5">
             <Code title="your-form-handler.js" code={USAGE} />
           </div>
@@ -138,13 +171,39 @@ export default function DocsPage() {
           </ul>
 
           {/* LLM prompt */}
-          <h2 className="mt-14 text-2xl font-bold tracking-tight">4 · Let your AI do it</h2>
+          <SectionTitle n="4">Let your AI do it</SectionTitle>
           <p className="mt-3 mb-5 leading-7 text-slate-600">
             Using Claude, Cursor, or Copilot? We publish a machine-readable install file at{" "}
             <a href="/llm-install.md" className="font-semibold text-blue-600 hover:underline">/llm-install.md</a>{" "}
             — paste this prompt and your AI does the whole integration, correctly, on the first try:
           </p>
           <Code title="prompt.txt — paste into your AI assistant" code={LLM_PROMPT} />
+          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-violet-200 bg-violet-50/60 p-4">
+            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" />
+            <p className="text-sm leading-6 text-slate-700">
+              <strong className="text-slate-900">Claude Code users:</strong> drop our{" "}
+              <a href="/inlet-skill.md" className="font-semibold text-violet-700 hover:underline">skill file</a>{" "}
+              into <code className="rounded bg-white px-1.5 py-0.5 text-xs">.claude/skills/inlet/SKILL.md</code> and
+              Claude wires forms, honeypots and webhooks by itself in any project.
+            </p>
+          </div>
+
+          {/* Webhooks */}
+          <SectionTitle n="5">Webhooks (optional)</SectionTitle>
+          <p className="mt-3 mb-5 leading-7 text-slate-600">
+            Add a webhook URL to a form and every stored lead is POSTed to your endpoint as{" "}
+            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">submission.created</code>, signed
+            Stripe-style in the <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">X-Inlet-Signature</code>{" "}
+            header — verify it and reject replays in five lines:
+          </p>
+          <Code title="verify-webhook.js" code={WEBHOOK_VERIFY} />
+          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-slate-200 p-4">
+            <Webhook className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+            <p className="text-sm leading-6 text-slate-600">
+              Delivery is fire-and-forget with one retry — a down endpoint can never block or lose a lead.
+              Endpoints must be <strong className="text-slate-900">https</strong>.
+            </p>
+          </div>
 
           {/* What the service does */}
           <h2 className="mt-14 text-2xl font-bold tracking-tight">What happens server-side</h2>
@@ -166,14 +225,19 @@ export default function DocsPage() {
             </div>
           </div>
 
-          <div className="mt-16 rounded-3xl bg-slate-950 p-8 text-center text-white">
-            <h2 className="text-2xl font-bold">Ready to stop wiring email into every site?</h2>
-            <Link
-              href="/client/signup"
-              className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-white px-6 text-sm font-medium text-slate-900 hover:bg-slate-100 transition-colors"
-            >
-              Start free
-            </Link>
+          <div className="relative mt-16 overflow-hidden rounded-3xl bg-slate-950 p-8 text-center text-white">
+            <div aria-hidden className="pointer-events-none absolute -top-16 left-1/2 h-40 w-72 -translate-x-1/2 rounded-full bg-blue-500/25 blur-[90px]" />
+            <h2 className="relative text-2xl font-bold">Ready to stop wiring email into every site?</h2>
+            <div className="relative mt-5 flex justify-center">
+              <Magnetic>
+                <Link
+                  href="/client/signup"
+                  className="btn-shine btn-shine-soft inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-medium text-slate-900 transition-all duration-300 hover:bg-slate-100 hover:shadow-lg hover:shadow-white/10"
+                >
+                  Start free <ArrowRight className="cta-arrow h-4 w-4" />
+                </Link>
+              </Magnetic>
+            </div>
           </div>
         </main>
 

@@ -10,6 +10,7 @@ import AiChat from "@/components/AiChat";
 import LazyDemoFlow from "@/components/LazyDemoFlow";
 import CopyButton from "@/components/CopyButton";
 import Reveal from "@/components/Reveal";
+import { Magnetic, Tilt, SpotlightCard, ScrollProgress } from "@/components/marketing/Interactive";
 
 const SITE_URL = "https://forms-central-h1ee.vercel.app";
 const SITE_NAME = "Inlet";
@@ -109,6 +110,7 @@ export default function Home() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="min-h-screen bg-white text-slate-900 font-sans">
+        <ScrollProgress />
         <NavBar />
 
         {/* ---------------- Hero ---------------- */}
@@ -127,25 +129,31 @@ export default function Home() {
               Self-hosted form backend · you own the data
             </div>
             <h1 className="text-balance text-5xl font-extrabold tracking-tight text-slate-900 sm:text-7xl">
-              One form backend for <span className="shimmer-text bg-gradient-to-r from-blue-600 via-violet-500 to-blue-600 bg-clip-text text-transparent">all your websites.</span>
+              One form backend for <span className="shimmer-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text font-serif italic text-transparent">all your websites.</span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-balance text-lg leading-8 text-slate-600">
               Centralize submissions from every site into one dashboard — with <strong className="text-slate-900">no SMTP and no per-site setup</strong>. Branded auto-reply emails, AI + proof-of-work spam blocking, CSV exports. The privacy-first alternative to Formspree and Jotform.
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/client/signup" className="inline-flex h-12 items-center gap-2 rounded-full bg-slate-900 px-7 text-base font-medium text-white shadow-lg hover:bg-slate-800 transition-colors">
-                Start free <ArrowRight className="h-4 w-4" />
-              </Link>
-              <a href="#how" className="inline-flex h-12 items-center gap-2 rounded-full border border-slate-200 bg-white px-7 text-base font-medium text-slate-800 hover:border-slate-300 transition-colors">
-                See how it works
-              </a>
+              <Magnetic>
+                <Link href="/client/signup" className="btn-shine inline-flex h-12 items-center gap-2 rounded-full bg-slate-900 px-7 text-base font-medium text-white shadow-lg shadow-slate-900/20 transition-all duration-300 hover:bg-slate-800 hover:shadow-xl hover:shadow-blue-500/20">
+                  Start free <ArrowRight className="cta-arrow h-4 w-4" />
+                </Link>
+              </Magnetic>
+              <Magnetic strength={0.18}>
+                <a href="#how" className="btn-shine btn-shine-soft inline-flex h-12 items-center gap-2 rounded-full border border-slate-200 bg-white px-7 text-base font-medium text-slate-800 transition-all duration-300 hover:border-slate-300 hover:shadow-md">
+                  See how it works
+                </a>
+              </Magnetic>
             </div>
             <p className="mt-5 text-xs text-slate-400">No credit card · no SMTP config · integrate in 2 minutes</p>
           </div>
 
-          {/* Product preview */}
+          {/* Product preview — floats on idle, tilts in 3D under the cursor */}
           <div className="animate-float">
-            <HeroPreview />
+            <Tilt max={6} className="rounded-3xl">
+              <HeroPreview />
+            </Tilt>
           </div>
 
           {/* Framework marquee */}
@@ -227,15 +235,17 @@ export default function Home() {
                   className={`group relative rounded-3xl p-px transition-transform duration-300 hover:-translate-y-1 ${f.cls}`}
                   style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.16), rgba(255,255,255,0.02) 42%, transparent)" }}
                 >
-                  <div className="relative flex h-full flex-col overflow-hidden rounded-[23px] bg-slate-900/70 p-7 transition-colors duration-300 group-hover:bg-slate-900">
-                    <div aria-hidden className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: `radial-gradient(440px circle at 30% 0%, ${f.glow}, transparent 70%)` }} />
-                    <div className={`relative mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl ${f.bg} ring-1 ring-inset ring-white/10`}>
+                  <SpotlightCard
+                    glow={f.glow}
+                    className="flex h-full flex-col overflow-hidden rounded-[23px] bg-slate-900/70 p-7 transition-colors duration-300 group-hover:bg-slate-900"
+                  >
+                    <div className={`relative mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl ${f.bg} ring-1 ring-inset ring-white/10 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3`}>
                       <f.icon className={`h-5 w-5 ${f.color}`} />
                     </div>
                     <h3 className="relative mb-1.5 text-lg font-bold">{f.title}</h3>
                     <p className="relative max-w-sm text-sm leading-relaxed text-slate-400">{f.desc}</p>
                     <f.icon className="pointer-events-none absolute -bottom-10 -right-10 h-40 w-40 text-white opacity-[0.04] transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110" />
-                  </div>
+                  </SpotlightCard>
                 </div>
               ))}
             </div>
@@ -260,11 +270,14 @@ export default function Home() {
                 { n: "03", t: "Receive & manage", d: "Owner gets a notification, submitter gets a branded auto-reply, you watch it live." },
               ].map((s, i) => (
                 <Reveal key={s.n} delay={i * 0.08}>
-                  <div className="group relative rounded-3xl border border-slate-200 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-xl">
-                    <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 font-mono text-sm font-bold text-white shadow-lg shadow-blue-500/25">{s.n}</div>
-                    <h3 className="mt-5 text-xl font-bold text-slate-900">{s.t}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{s.d}</p>
-                  </div>
+                  <SpotlightCard
+                    glow="rgba(59,130,246,0.10)"
+                    className="group rounded-3xl border border-slate-200 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/10"
+                  >
+                    <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 font-mono text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">{s.n}</div>
+                    <h3 className="relative mt-5 text-xl font-bold text-slate-900">{s.t}</h3>
+                    <p className="relative mt-2 text-sm leading-relaxed text-slate-600">{s.d}</p>
+                  </SpotlightCard>
                 </Reveal>
               ))}
             </div>
@@ -348,12 +361,16 @@ export default function Home() {
             <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Ship forms today. Own them forever.</h2>
             <p className="mx-auto mt-5 max-w-xl text-lg text-slate-300">One backend for every site you build — no SMTP, no lock-in, your data.</p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/client/signup" className="inline-flex h-12 items-center gap-2 rounded-full bg-white px-7 text-base font-medium text-slate-900 hover:bg-slate-100 transition-colors">
-                Get started free <ArrowRight className="h-4 w-4" />
-              </Link>
-              <a href="#how" className="inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-7 text-base font-medium text-white hover:bg-white/10 transition-colors">
-                Read the docs
-              </a>
+              <Magnetic>
+                <Link href="/client/signup" className="btn-shine btn-shine-soft inline-flex h-12 items-center gap-2 rounded-full bg-white px-7 text-base font-medium text-slate-900 transition-all duration-300 hover:bg-slate-100 hover:shadow-lg hover:shadow-white/10">
+                  Get started free <ArrowRight className="cta-arrow h-4 w-4" />
+                </Link>
+              </Magnetic>
+              <Magnetic strength={0.18}>
+                <a href="#how" className="btn-shine inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-7 text-base font-medium text-white transition-all duration-300 hover:bg-white/10">
+                  Read the docs
+                </a>
+              </Magnetic>
             </div>
           </div>
         </section>
@@ -366,12 +383,12 @@ export default function Home() {
               <span className="font-semibold text-slate-800">{SITE_NAME}</span>
             </div>
             <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-              <a href="#features" className="hover:text-slate-900 transition-colors">Features</a>
-              <a href="#how" className="hover:text-slate-900 transition-colors">How it works</a>
-              <Link href="/pricing" className="hover:text-slate-900 transition-colors">Pricing</Link>
-              <a href="#compare" className="hover:text-slate-900 transition-colors">Compare</a>
-              <a href="#faq" className="hover:text-slate-900 transition-colors">FAQ</a>
-              <Link href="/client/login" className="hover:text-slate-900 transition-colors">Sign in</Link>
+              <a href="#features" className="link-underline hover:text-slate-900 transition-colors">Features</a>
+              <a href="#how" className="link-underline hover:text-slate-900 transition-colors">How it works</a>
+              <Link href="/pricing" className="link-underline hover:text-slate-900 transition-colors">Pricing</Link>
+              <a href="#compare" className="link-underline hover:text-slate-900 transition-colors">Compare</a>
+              <a href="#faq" className="link-underline hover:text-slate-900 transition-colors">FAQ</a>
+              <Link href="/client/login" className="link-underline hover:text-slate-900 transition-colors">Sign in</Link>
             </nav>
             <p>&copy; {new Date().getFullYear()} {SITE_NAME}</p>
           </div>

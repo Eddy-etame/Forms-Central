@@ -4,6 +4,7 @@ import { Check, Minus, ArrowRight, Sparkles } from "lucide-react";
 import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
 import AiChat from "@/components/AiChat";
 import { PLANS } from "@/lib/plans";
+import { SpotlightCard, ScrollProgress } from "@/components/marketing/Interactive";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -119,12 +120,12 @@ function PlanCard({
 }) {
   const inner = (
     <>
-      {cta} <ArrowRight className="h-4 w-4" />
+      {cta} <ArrowRight className="cta-arrow h-4 w-4" />
     </>
   );
   const btnClass = highlight
-    ? "mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-medium text-slate-900 hover:bg-slate-100 transition-colors"
-    : "mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-slate-300 px-5 text-sm font-medium text-slate-800 hover:border-slate-400 transition-colors";
+    ? "btn-shine btn-shine-soft group mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-medium text-slate-900 transition-all duration-300 hover:bg-slate-100 hover:shadow-lg hover:shadow-white/10"
+    : "btn-shine btn-shine-soft group mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-slate-300 px-5 text-sm font-medium text-slate-800 transition-all duration-300 hover:border-slate-400 hover:shadow-md";
   const content = (
     <>
       {highlight && (
@@ -156,18 +157,24 @@ function PlanCard({
 
   if (highlight) {
     return (
-      <div className="relative rounded-3xl bg-gradient-to-b from-blue-500 to-violet-600 p-px shadow-2xl shadow-blue-500/20 xl:-my-2">
-        <div className="relative flex h-full flex-col overflow-hidden rounded-[23px] bg-slate-950 p-7 text-white">
+      <div className="relative rounded-3xl bg-gradient-to-b from-blue-500 to-violet-600 p-px shadow-2xl shadow-blue-500/20 transition-transform duration-300 hover:-translate-y-1 xl:-my-2">
+        <SpotlightCard
+          glow="rgba(59,130,246,0.18)"
+          className="flex h-full flex-col overflow-hidden rounded-[23px] bg-slate-950 p-7 text-white"
+        >
           <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-48 w-64 -translate-x-1/2 rounded-full bg-blue-500/25 blur-[90px]" />
           {content}
-        </div>
+        </SpotlightCard>
       </div>
     );
   }
   return (
-    <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-7 transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg">
+    <SpotlightCard
+      glow="rgba(59,130,246,0.07)"
+      className="flex flex-col rounded-3xl border border-slate-200 bg-white p-7 transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg"
+    >
       {content}
-    </div>
+    </SpotlightCard>
   );
 }
 
@@ -179,6 +186,7 @@ export default function PricingPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify([productJsonLd, faqJsonLd]) }}
       />
       <div className="min-h-screen bg-white text-slate-900 font-sans">
+        <ScrollProgress />
         <NavBar />
 
         <header className="relative overflow-hidden">

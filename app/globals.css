@@ -146,6 +146,57 @@ html {
           mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
 }
 
+/* Marquee slows to a stop under the cursor — the strip is inspectable */
+.marquee-mask:hover .animate-marquee { animation-play-state: paused; }
+
+/* The inlet stream — flowing dashes carrying leads toward the inbox */
+@keyframes flow-dash { to { stroke-dashoffset: -24; } }
+.flow-dash { stroke-dasharray: 6 6; animation: flow-dash 0.9s linear infinite; }
+
+/* Shine sweep: a light band crosses the button on hover */
+.btn-shine { position: relative; overflow: hidden; }
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -75%;
+  width: 50%;
+  transform: skewX(-20deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  transition: left 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.btn-shine:hover::after { left: 125%; }
+/* Dark-text buttons (white bg) need a softer band */
+.btn-shine-soft::after { background: linear-gradient(90deg, transparent, rgba(15,23,42,0.10), transparent); }
+
+/* Animated link underline: grows from left on hover, slides away on leave */
+.link-underline {
+  position: relative;
+  text-decoration: none;
+}
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -3px;
+  height: 1.5px;
+  background: linear-gradient(90deg, #2563eb, #7c3aed);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.link-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Icon nudge inside CTA buttons */
+.cta-arrow { transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1); }
+.btn-shine:hover .cta-arrow, .group:hover .cta-arrow { transform: translateX(4px); }
+
 @media (prefers-reduced-motion: reduce) {
-  .aurora-a, .aurora-b, .animate-float, .shimmer-text, .animate-spin-slow, .animate-marquee { animation: none !important; }
+  .aurora-a, .aurora-b, .animate-float, .shimmer-text, .animate-spin-slow, .animate-marquee, .flow-dash { animation: none !important; }
+  .btn-shine::after { display: none; }
+  .link-underline::after { transition: none; }
+  .cta-arrow { transition: none; }
 }

@@ -86,12 +86,27 @@ export default async function ComparePage({ params }: { params: Promise<{ slug: 
   const c = COMPETITORS.find((x) => x.slug === slug);
   if (!c) notFound();
 
+  const SITE_URL = "https://forms-central-h1ee.vercel.app";
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: `Inlet vs ${c.name}`,
-    description: c.intro,
-    author: { "@type": "Organization", name: "Inlet" },
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: `Inlet vs ${c.name}`,
+        description: c.intro,
+        author: { "@type": "Organization", name: "Inlet" },
+        publisher: { "@type": "Organization", name: "Inlet" },
+        mainEntityOfPage: `${SITE_URL}/compare/${c.slug}`,
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: "Comparisons", item: `${SITE_URL}/compare/${c.slug}` },
+          { "@type": "ListItem", position: 3, name: `Inlet vs ${c.name}`, item: `${SITE_URL}/compare/${c.slug}` },
+        ],
+      },
+    ],
   };
 
   return (
@@ -101,6 +116,13 @@ export default async function ComparePage({ params }: { params: Promise<{ slug: 
         <NavBar />
 
         <main className="mx-auto max-w-3xl px-6 py-16 lg:py-20">
+          <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-1.5 text-xs text-slate-400">
+            <a href="/" className="hover:text-slate-600">Home</a>
+            <span aria-hidden>/</span>
+            <span className="text-slate-600">Compare</span>
+            <span aria-hidden>/</span>
+            <span className="font-medium text-slate-700">Inlet vs {c.name}</span>
+          </nav>
           <p className="text-sm font-semibold text-blue-600">Comparison</p>
           <h1 className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
             Inlet vs {c.name}

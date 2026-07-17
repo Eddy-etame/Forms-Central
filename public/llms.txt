@@ -15,12 +15,18 @@ sends the submitter a branded auto-reply. Consumer sites need only two values
 - No SMTP in consumer apps: email credentials live only inside the service; client
   sites hold none.
 - Multi-tenant white-label: emails adapt to each client's logo, colors, and brand.
+- Custom sender identity (paid): a client's confirmation emails carry their own
+  display name and reply-to address (e.g. "Shu" <contact@shu.com>).
 - Anti-spam: hidden honeypot, cryptographic proof-of-work challenge, NLP keyword
   filter, and reverse-DNS VPN/cloud blocking.
 - Works with any browser JS project — Astro, Next.js, Nuxt, Vue, or plain HTML —
   via one copy-paste submit helper.
 - Self-hosted on your own Supabase + Vercel: you own the data.
-- Automatic SMTP fallback rotation so a single failing credential never loses a lead.
+- Multi-account SMTP rotation with a circuit breaker + email-health dashboard, so a
+  blocked/quota'd sending account never loses a lead.
+- MCP server: AI agents (Claude, Codex) can create and manage forms directly.
+- Security: email-OTP two-factor sign-in, optional Google sign-in, multi-axis rate
+  limiting, a fail-fast secret validator, and a super-admin audit trail.
 
 ## How a developer integrates it
 A consumer project sets two env vars: FORM_API_URL and FORM_ID (a form's UUID from
@@ -32,9 +38,12 @@ Include a hidden `_gotcha` honeypot field. No SMTP, no email library required.
 
 ## Comparisons
 - vs Formspree / Basin: self-hosted and you own the data; multi-tenant white-label
-  branding; one backend for many sites instead of per-form config.
+  branding; one backend for many sites instead of per-form config; an MCP server so
+  AI agents wire forms for you; per-client custom sender identity.
 - vs Jotform: developer-first (code integration, not drag-and-drop); a centralized
   backend for dozens of sites, not a single-form builder.
+- Distinctive vs all: AI + proof-of-work anti-spam, white-label client portals, an
+  MCP server for AI agents, email-OTP 2FA, and per-client custom email senders.
 
 ## Common questions
 Q: Do consumer websites need SMTP credentials? A: No. SMTP is configured once inside

@@ -103,15 +103,15 @@ async function withTimeout<T>(p: (signal: AbortSignal) => Promise<T>, ms = 20000
 }
 
 // ---------------------------------------------------------------- providers
-async function callGemini(key: string, messages: ChatMessage[]): Promise<string> {
+async function callGemini(key: string, messages: ChatMessage[], system: string = SYSTEM_PROMPT, maxTokens = 800): Promise<string> {
   const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
   const body = {
-    systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    systemInstruction: { parts: [{ text: system }] },
     contents: messages.map((m) => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }],
     })),
-    generationConfig: { temperature: 0.4, maxOutputTokens: 800 },
+    generationConfig: { temperature: 0.4, maxOutputTokens: maxTokens },
   };
   return withTimeout(async (signal) => {
     const res = await fetch(
@@ -130,13 +130,15 @@ async function callOpenAICompatible(
   url: string,
   key: string,
   model: string,
-  messages: ChatMessage[]
+  messages: ChatMessage[],
+  system: string = SYSTEM_PROMPT,
+  maxTokens = 800
 ): Promise<string> {
   const body = {
     model,
-    messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
+    messages: [{ role: 'system', content: system }, ...messages],
     temperature: 0.4,
-    max_tokens: 800,
+    max_tokens: maxTokens,
   };
   return withTimeout(async (signal) => {
     const res = await fetch(url, {
@@ -154,7 +156,7 @@ async function callOpenAICompatible(
 }
 
 // ---------------------------------------------------------------- orchestrator
-export async function askAI(messages: ChatMessage[]): Promise<AiResult> {
+async function runChain(messages: ChatMessage[], system: string, maxTokens: number): Promise<AiResult> {
   const errors: string[] = [];
 
   // 1) Gemini pool, random rotation start.
@@ -164,7 +166,7 @@ export async function askAI(messages: ChatMessage[]): Promise<AiResult> {
     for (let n = 0; n < keys.length; n++) {
       const idx = (start + n) % keys.length;
       try {
-        const text = await callGemini(keys[idx], messages);
+        const text = await callGemini(keys[idx], messages, system, maxTokens);
         return { text, provider: `gemini_${idx + 1}` };
       } catch (e) {
         errors.push(`gemini_${idx + 1}: ${(e as Error).message}`);
@@ -180,7 +182,9 @@ export async function askAI(messages: ChatMessage[]): Promise<AiResult> {
         'https://api.groq.com/openai/v1/chat/completions',
         groqKey,
         process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
-        messages
+        messages,
+        system,
+        maxTokens
       );
       return { text, provider: 'groq' };
     } catch (e) {
@@ -196,7 +200,9 @@ export async function askAI(messages: ChatMessage[]): Promise<AiResult> {
         'https://api.mistral.ai/v1/chat/completions',
         mistralKey,
         process.env.MISTRAL_MODEL || 'mistral-small-latest',
-        messages
+        messages,
+        system,
+        maxTokens
       );
       return { text, provider: 'mistral' };
     } catch (e) {
@@ -206,4 +212,14 @@ export async function askAI(messages: ChatMessage[]): Promise<AiResult> {
 
   console.error('askAI: all providers failed ->', errors.join(' | '));
   throw new Error('AI_UNAVAILABLE');
+}
+
+/** Product-assistant chat (support persona system prompt). */
+export async function askAI(messages: ChatMessage[]): Promise<AiResult> {
+  return runChain(messages, SYSTEM_PROMPT, 800);
+}
+
+/** Raw completion with a caller-supplied system prompt (e.g. spam classification). */
+export async function askAIRaw(system: string, messages: ChatMessage[], maxTokens = 300): Promise<AiResult> {
+  return runChain(messages, system, maxTokens);
 }

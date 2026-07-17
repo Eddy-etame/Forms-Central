@@ -620,7 +620,7 @@ export async function POST(
   }
 
   // 6. Persist Lead in database
-  const { error: insertError } = await supabase
+  const { data: inserted, error: insertError } = await supabase
     .from('submissions')
     .insert([
       {
@@ -629,7 +629,17 @@ export async function POST(
         ip_address: ipAddress,
         fingerprint,
       },
-    ]);
+    ])
+    .select('id')
+    .single();
+
+  // 6b. AI spam classification — labels the stored row asynchronously
+  // (clean/suspect/spam); never blocks the response, never deletes a lead.
+  if (inserted?.id) {
+    import('@/lib/spamClassifier')
+      .then(({ classifySubmission }) => classifySubmission(inserted.id as string, cleanPayload))
+      .catch(() => {});
+  }
 
   if (insertError) {
     console.error('Error inserting submission:', insertError);

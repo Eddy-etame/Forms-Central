@@ -324,6 +324,17 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
                         <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800">
                           {lead.forms?.name || 'Unknown'}
                         </span>
+                        {/* AI verdict — labels only, the lead is always kept */}
+                        {lead.spam_status === 'spam' && (
+                          <span title={lead.spam_reason || undefined} className="ml-2 inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
+                            AI: spam
+                          </span>
+                        )}
+                        {lead.spam_status === 'suspect' && (
+                          <span title={lead.spam_reason || undefined} className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                            AI: suspect
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="font-bold text-slate-900">{name}</div>

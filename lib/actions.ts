@@ -594,7 +594,7 @@ export async function getClientDashboardStats() {
   ] = await Promise.all([
     supabase.from('submissions').select('*', { count: 'exact', head: true }).in('form_id', formIds),
     supabase.from('submissions').select('*', { count: 'exact', head: true }).in('form_id', formIds).gte('created_at', sevenDaysAgo.toISOString()),
-    supabase.from('submissions').select('id, payload, created_at, forms(name)').in('form_id', formIds).order('created_at', { ascending: false }).limit(1000)
+    supabase.from('submissions').select('id, payload, created_at, spam_status, spam_reason, forms(name)').in('form_id', formIds).order('created_at', { ascending: false }).limit(1000)
   ]);
 
   // 3. Aggregate Daily Trends (Last 30 Days)

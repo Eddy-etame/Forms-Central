@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { LogoBadge } from '@/components/Logo';
 
 export default function LoginPage() {
   const [password, setPassword] = useState('');
@@ -48,14 +49,12 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-md rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-white font-bold text-lg shadow-sm">
-            M
-          </div>
+          <LogoBadge className="h-12 w-12 rounded-xl shadow-sm" />
           <h2 className="mt-6 text-2xl font-bold text-slate-900 tracking-tight">
-            Accès Administration
+            Admin access
           </h2>
           <p className="mt-1.5 text-sm text-slate-500">
-            Saisissez le mot de passe de l&apos;agence pour vous connecter.
+            Enter the admin password to continue.
           </p>
         </div>
 
@@ -68,7 +67,7 @@ export default function LoginPage() {
 
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-700">
-              Mot de passe
+              Password
             </label>
             <Input
               type="password"
@@ -86,7 +85,7 @@ export default function LoginPage() {
             className="w-full py-2.5 mt-2 justify-center"
             disabled={loading}
           >
-            {loading ? 'Connexion en cours...' : 'Se connecter'}
+            {loading ? 'Signing in…' : 'Sign in'}
           </Button>
         </form>
       </div>

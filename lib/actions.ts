@@ -463,6 +463,69 @@ export async function getEmailHealth() {
   }
 }
 
+// ==================== SECURITY AUDIT ====================
+
+/**
+ * Recent security events for the super-admin (migrations/migration_v12).
+ * Returns the latest events plus 24h rollups (failed logins, rate-limit
+ * blocks, and the noisiest source IPs) so brute-force shows at a glance.
+ */
+export async function getSecurityEvents() {
+  try {
+    await verifyAdminAuth();
+
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    const [{ data: events, error: evErr }, { data: recent }] = await Promise.all([
+      supabase
+        .from('security_events')
+        .select('id, event_type, severity, actor, ip, detail, created_at')
+        .order('created_at', { ascending: false })
+        .limit(200),
+      supabase
+        .from('security_events')
+        .select('event_type, ip')
+        .gte('created_at', since)
+        .limit(2000),
+    ]);
+
+    // Surface a missing-table so the UI can prompt the one-time migration.
+    if (evErr) return { success: false, error: evErr.message || 'security_events table not found' };
+
+    const rows = recent || [];
+    const failedLogins = rows.filter(
+      (r) => r.event_type === 'ADMIN_LOGIN_FAILED' || r.event_type === 'CLIENT_LOGIN_FAILED'
+    ).length;
+    const rateBlocks = rows.filter((r) => r.event_type === 'RATE_LIMIT_BLOCK').length;
+    const adminFails = rows.filter((r) => r.event_type === 'ADMIN_LOGIN_FAILED').length;
+
+    // Noisiest source IPs in the last 24h (attack surface at a glance).
+    const ipCounts = new Map<string, number>();
+    for (const r of rows) {
+      if (!r.ip) continue;
+      ipCounts.set(r.ip, (ipCounts.get(r.ip) || 0) + 1);
+    }
+    const topIps = [...ipCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([ip, count]) => ({ ip, count }));
+
+    return {
+      success: true,
+      data: {
+        events: events || [],
+        failedLogins24h: failedLogins,
+        rateBlocks24h: rateBlocks,
+        adminFails24h: adminFails,
+        topIps,
+      },
+    };
+  } catch (err: any) {
+    console.error('Error in getSecurityEvents:', err);
+    return { success: false, error: err.message || String(err) };
+  }
+}
+
 // ==================== CLIENT PORTAL STATS ====================
 
 export async function getClientDashboardStats() {

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { signJWT } from '@/lib/jwt';
 import { supabase } from '@/lib/supabase';
+import { checkRateLimit, clientIp } from '@/lib/rateLimit';
+import { logSecurityEvent, SEC } from '@/lib/securityEvents';
 
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -12,7 +14,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Auth not configured' }, { status: 500 });
   }
 
+  const ip = clientIp(request.headers);
+
   try {
+    // Brute-force guard: the admin password is a single SHA-256 hash (no scrypt
+    // cost), so this endpoint MUST be throttled. 8 attempts/min per IP.
+    const okIp = await checkRateLimit(`admin-login:${ip}`, 8, 60_000);
+    if (!okIp) {
+      logSecurityEvent({ type: SEC.RATE_LIMIT_BLOCK, severity: 'warn', ip, detail: 'admin-login throttled (8/min)' });
+      return NextResponse.json({ error: 'Too many attempts. Try again in a minute.' }, { status: 429 });
+    }
+
     const { password } = await request.json();
     if (!password) {
       return NextResponse.json({ error: 'Password required' }, { status: 400 });
@@ -22,6 +34,7 @@ export async function POST(request: NextRequest) {
     const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
 
     if (passwordHash !== ADMIN_PASSWORD_HASH) {
+      logSecurityEvent({ type: SEC.ADMIN_LOGIN_FAILED, severity: 'critical', ip, detail: 'Invalid admin password' });
       // Intentionally return 401 Unauthorized for security audit obfuscation
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
     }
@@ -57,6 +70,8 @@ export async function POST(request: NextRequest) {
       console.error('Failed to store refresh token hash:', dbError);
       return NextResponse.json({ error: 'Database session error' }, { status: 500 });
     }
+
+    logSecurityEvent({ type: SEC.ADMIN_LOGIN_OK, severity: 'info', actor: 'admin', ip });
 
     const response = NextResponse.json({ success: true });
 

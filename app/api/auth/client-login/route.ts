@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { signJWT } from '@/lib/jwt';
 import { verifyPassword, needsRehash, hashPassword } from '@/lib/passwords';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
+import { logSecurityEvent, SEC } from '@/lib/securityEvents';
 import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
@@ -23,6 +24,7 @@ export async function POST(req: Request) {
       checkRateLimit(`login-ip:${ip}`, 20, 60_000),
     ]);
     if (!okPair || !okIp) {
+      logSecurityEvent({ type: SEC.RATE_LIMIT_BLOCK, severity: 'warn', actor: String(email).toLowerCase(), ip, detail: 'client-login throttled' });
       return NextResponse.json(
         { success: false, error: 'Too many attempts. Try again in a minute.' },
         { status: 429 }
@@ -37,6 +39,7 @@ export async function POST(req: Request) {
       .single();
 
     if (error || !client || !client.encrypted_password) {
+      logSecurityEvent({ type: SEC.CLIENT_LOGIN_FAILED, severity: 'warn', actor: String(email).toLowerCase(), ip, detail: 'Unknown account' });
       return NextResponse.json(
         { success: false, error: 'Identifiants incorrects.' },
         { status: 401 }
@@ -45,6 +48,7 @@ export async function POST(req: Request) {
 
     // Verify (scrypt hash, with legacy AES fallback).
     if (!verifyPassword(password, client.encrypted_password)) {
+      logSecurityEvent({ type: SEC.CLIENT_LOGIN_FAILED, severity: 'warn', actor: String(email).toLowerCase(), ip, detail: 'Wrong password' });
       return NextResponse.json(
         { success: false, error: 'Identifiants incorrects.' },
         { status: 401 }
@@ -77,6 +81,8 @@ export async function POST(req: Request) {
     };
 
     const token = await signJWT(payload, JWT_SECRET);
+
+    logSecurityEvent({ type: SEC.CLIENT_LOGIN_OK, severity: 'info', actor: String(email).toLowerCase(), ip, meta: { clientId: client.id } });
 
     // Set HTTP-only cookie
     const cookieStore = await cookies();

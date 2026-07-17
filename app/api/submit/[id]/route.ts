@@ -6,6 +6,7 @@ import { verifyChallenge } from '@/lib/pow';
 import { sendLeadEmail, sendAutoReplyEmail } from '@/lib/email';
 import { getQuotaState, logEmailSend } from '@/lib/quota';
 import { getPlan } from '@/lib/plans';
+import { checkRateLimit as dbCheckRateLimit } from '@/lib/rateLimit';
 
 // Basic in-memory cache for anti-replay (holds challenges for 5 mins)
 const challengeReplayCache = new Set<string>();
@@ -344,11 +345,29 @@ export async function POST(
     }
   }
 
-  // 3. Rate Limiting Check (5 per minute per IP / Fingerprint)
+  // 3. Rate Limiting Check — two gates:
+  //    a) in-memory (5/min per IP+fingerprint): free, catches bursts instantly
+  //    b) DB-backed (12/min per IP, auth_attempts table): authoritative across
+  //       serverless instances — without it, a spammer spraying requests over
+  //       many instances multiplies the in-memory limit.
   const rateLimitKey = `${ipAddress}:${fingerprint}`;
   if (!checkRateLimit(rateLimitKey)) {
     // If rate limit is hit, temporarily block & notify
     await blacklistTarget(ipAddress, 'ip', 'Rate limit exceeded (API Spam)');
+    return createErrorResponse(
+      429,
+      'RATE_LIMIT_EXCEEDED',
+      'Rate limit exceeded. Please wait a minute before making another submission.',
+      'Stop submitting forms rapidly. Try again in a few minutes.',
+      origin,
+      isJson,
+      redirectUrl
+    );
+  }
+  const okAcrossInstances = await dbCheckRateLimit(`submit:${ipAddress}`, 12, 60_000);
+  if (!okAcrossInstances) {
+    await logFailure(formId, 'RATE_LIMIT_GLOBAL', `IP ${ipAddress} exceeded 12 submissions/min across instances`);
+    await blacklistTarget(ipAddress, 'ip', 'Global rate limit exceeded (cross-instance spray)');
     return createErrorResponse(
       429,
       'RATE_LIMIT_EXCEEDED',

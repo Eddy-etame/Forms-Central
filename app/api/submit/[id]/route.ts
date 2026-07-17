@@ -285,7 +285,7 @@ export async function POST(
   // .single() reports "no rows" as a query error and would mask FORM_NOT_FOUND.
   const { data: form, error: formError } = await supabase
     .from('forms')
-    .select('name, is_active, allowed_origins, notify_email, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, client_id, clients(name, email, logo_url, primary_color, font_family, plan, sender_name, reply_to_email)')
+    .select('name, is_active, allowed_origins, notify_email, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, webhook_url, client_id, clients(name, email, logo_url, primary_color, font_family, plan, sender_name, reply_to_email)')
     .eq('id', formId)
     .maybeSingle();
 
@@ -638,6 +638,23 @@ export async function POST(
   if (inserted?.id) {
     import('@/lib/spamClassifier')
       .then(({ classifySubmission }) => classifySubmission(inserted.id as string, cleanPayload))
+      .catch(() => {});
+  }
+
+  // 6c. Outbound webhook — signed POST of the stored lead to the form's
+  // endpoint (fire-and-forget, 1 retry, failures logged to /admin/logs).
+  if (form.webhook_url && form.client_id) {
+    import('@/lib/webhooks')
+      .then(({ dispatchLeadWebhook }) =>
+        dispatchLeadWebhook({
+          webhookUrl: form.webhook_url as string,
+          clientId: form.client_id as string,
+          formId,
+          formName: form.name,
+          submissionId: (inserted?.id as string) || null,
+          payload: cleanPayload,
+        })
+      )
       .catch(() => {});
   }
 

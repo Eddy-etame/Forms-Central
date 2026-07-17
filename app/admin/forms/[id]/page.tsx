@@ -29,6 +29,7 @@ interface Form {
   auto_reply_subject?: string;
   auto_reply_message?: string;
   success_url?: string;
+  webhook_url?: string;
   clients: {
     name: string;
     email: string;
@@ -48,6 +49,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
   const [autoReplySubject, setAutoReplySubject] = useState('');
   const [autoReplyMessage, setAutoReplyMessage] = useState('');
   const [successUrl, setSuccessUrl] = useState('');
+  const [webhookUrl, setWebhookUrl] = useState('');
   const [updatingSettings, setUpdatingSettings] = useState(false);
 
   // CORS state
@@ -69,6 +71,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
         setAutoReplySubject(fetchedForm.auto_reply_subject || 'We received your message');
         setAutoReplyMessage(fetchedForm.auto_reply_message || '');
         setSuccessUrl(fetchedForm.success_url || '');
+        setWebhookUrl(fetchedForm.webhook_url || '');
         setCorsInput((fetchedForm.allowed_origins || ['*']).join(', '));
       }
     } catch (err) {
@@ -101,12 +104,12 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
     setUpdatingSettings(true);
     try {
       const { updateFormSettings } = await import('@/lib/actions');
-      const res = await updateFormSettings(form.id, autoReplyEnabled, autoReplySubject, autoReplyMessage, successUrl);
+      const res = await updateFormSettings(form.id, autoReplyEnabled, autoReplySubject, autoReplyMessage, successUrl, webhookUrl);
       if (res && !res.success) {
         toast.error(res.error || 'Could not save the settings.');
         return;
       }
-      setForm({ ...form, auto_reply_enabled: autoReplyEnabled, auto_reply_subject: autoReplySubject, auto_reply_message: autoReplyMessage, success_url: successUrl });
+      setForm({ ...form, auto_reply_enabled: autoReplyEnabled, auto_reply_subject: autoReplySubject, auto_reply_message: autoReplyMessage, success_url: successUrl, webhook_url: webhookUrl });
       toast.success('Settings updated.');
     } catch (err: any) {
       console.error('Error updating form settings:', err);
@@ -258,6 +261,23 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                 />
                 <span className="text-[9px] text-slate-400 block font-medium">
                   Forces a redirect to this page after submission (overrides your frontend config). Leave empty to use the one in your code.
+                </span>
+              </div>
+
+              <div className="space-y-1.5 border-b border-slate-50 pb-4">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Webhook URL (signed POST per lead)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. https://api.yourapp.com/hooks/inlet"
+                  value={webhookUrl}
+                  onChange={(e) => setWebhookUrl(e.target.value)}
+                  disabled={updatingSettings}
+                  className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
+                />
+                <span className="text-[9px] text-slate-400 block font-medium">
+                  Every stored lead is POSTed here as JSON, HMAC-signed (X-Inlet-Signature). Must be https. Leave empty to disable.
                 </span>
               </div>
 

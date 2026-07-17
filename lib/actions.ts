@@ -203,7 +203,7 @@ export async function getFormDetails(formId: string) {
   const [formRes, subsRes] = await Promise.all([
     supabase
       .from('forms')
-      .select('id, name, is_active, allowed_origins, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, clients(name, email)')
+      .select('id, name, is_active, allowed_origins, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, webhook_url, clients(name, email)')
       .eq('id', formId)
       .single(),
     supabase
@@ -258,10 +258,18 @@ export async function updateFormSettings(
   autoReplyEnabled: boolean,
   autoReplySubject: string,
   autoReplyMessage: string,
-  successUrl: string
+  successUrl: string,
+  webhookUrl: string = ''
 ) {
   try {
     await verifyAdminAuth();
+
+    // Webhook endpoints must be https (signed payloads over plaintext = leak).
+    const webhook = webhookUrl.trim();
+    if (webhook && !/^https:\/\/.+/i.test(webhook)) {
+      return { success: false, error: 'Webhook URL must start with https://' };
+    }
+
     const { error } = await supabase
       .from('forms')
       .update({
@@ -269,6 +277,7 @@ export async function updateFormSettings(
         auto_reply_subject: autoReplySubject,
         auto_reply_message: autoReplyMessage,
         success_url: successUrl,
+        webhook_url: webhook || null,
       })
       .eq('id', formId);
     if (error) throw error;

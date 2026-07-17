@@ -17,10 +17,14 @@ export default function ClientLoginPage() {
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [code, setCode] = useState('');
 
-  // Surface a failed Google sign-in redirect (?error=google).
+  // Surface redirect reasons (?error=google, ?evicted=1).
   useEffect(() => {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('error') === 'google') {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error') === 'google') {
       setError('Google sign-in failed or was cancelled. Try again or use your password.');
+    } else if (params.get('evicted') === '1') {
+      setError('You were signed out because this account reached its device limit — a newer sign-in on another device took this slot.');
     }
   }, []);
 

@@ -21,6 +21,14 @@ export default async function ClientProtectedLayout({ children }: { children: Re
     redirect('/client/login');
   }
 
+  // Device limit: a session evicted by a newer device stops working here.
+  if (payload.sid) {
+    const { isSessionRevoked } = await import('@/lib/clientSessions');
+    if (await isSessionRevoked(payload.sid as string)) {
+      redirect('/client/login?evicted=1');
+    }
+  }
+
   const forms = await getClientForms();
 
   return (

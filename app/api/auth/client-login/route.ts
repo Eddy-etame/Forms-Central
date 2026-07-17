@@ -91,9 +91,14 @@ export async function POST(req: Request) {
       );
     }
 
+    // Device registry: cap concurrent devices, evict the oldest (anti-sharing).
+    const { registerClientSession } = await import('@/lib/clientSessions');
+    const sid = await registerClientSession(client.id, ip, req.headers.get('user-agent'));
+
     const payload = {
       sub: 'client',
       clientId: client.id,
+      ...(sid ? { sid } : {}),
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 7 days expiration
     };

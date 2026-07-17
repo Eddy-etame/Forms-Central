@@ -59,8 +59,12 @@ export async function GET(req: Request) {
     clientId = created.id;
   }
 
+  // Device registry: cap concurrent devices, evict the oldest (anti-sharing).
+  const { registerClientSession } = await import('@/lib/clientSessions');
+  const sid = await registerClientSession(clientId, clientIp(req.headers), req.headers.get('user-agent'));
+
   const token = await signJWT(
-    { sub: 'client', clientId, iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 },
+    { sub: 'client', clientId, ...(sid ? { sid } : {}), iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 },
     JWT_SECRET
   );
 

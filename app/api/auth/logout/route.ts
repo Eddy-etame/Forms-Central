@@ -26,6 +26,20 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Revoke the client device session so the sid can't be replayed.
+  const clientToken = request.cookies.get('client_access_token')?.value;
+  if (clientToken && JWT_SECRET) {
+    try {
+      const payload = await verifyJWT(clientToken, JWT_SECRET);
+      if (payload?.sid) {
+        const { revokeClientSession } = await import('@/lib/clientSessions');
+        await revokeClientSession(payload.sid as string);
+      }
+    } catch (err) {
+      console.error('Client session revocation error:', err);
+    }
+  }
+
   const response = NextResponse.json({ success: true });
   response.cookies.delete('access_token');
   response.cookies.delete('refresh_token');

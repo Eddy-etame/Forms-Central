@@ -56,7 +56,9 @@ export function validateSecurityConfig(env: NodeJS.ProcessEnv = process.env): Se
     fatal.push('CLIENT_ENCRYPTION_KEY is not set — stored client SMTP passwords would fall back to a PUBLIC hardcoded key.');
   } else {
     if (KNOWN_INSECURE.has(encKey)) fatal.push('CLIENT_ENCRYPTION_KEY is the public hardcoded fallback — stored SMTP credentials would be trivially decryptable.');
-    if (encKey.length !== 32 && !KNOWN_INSECURE.has(encKey)) warnings.push(`CLIENT_ENCRYPTION_KEY is ${encKey.length} chars — AES-256 wants exactly 32; it is padded/truncated, which weakens it.`);
+    // v2 encryption derives the key via SHA-256, so any length works — but a
+    // short secret is still low-entropy input.
+    if (encKey.length < 24 && !KNOWN_INSECURE.has(encKey)) warnings.push(`CLIENT_ENCRYPTION_KEY is only ${encKey.length} chars — use 32+ random characters for full key entropy.`);
   }
 
   const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;

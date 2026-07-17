@@ -15,6 +15,9 @@ interface Client {
   logo_url?: string;
   primary_color?: string;
   font_family?: string;
+  sender_name?: string;
+  reply_to_email?: string;
+  plan?: string;
   created_at: string;
 }
 
@@ -33,6 +36,8 @@ export default function ClientsPage() {
   const [logoUrl, setLogoUrl] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#000000');
   const [fontFamily, setFontFamily] = useState('sans-serif');
+  const [senderName, setSenderName] = useState('');
+  const [replyToEmail, setReplyToEmail] = useState('');
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -64,6 +69,8 @@ export default function ClientsPage() {
     setLogoUrl('');
     setPrimaryColor('#000000');
     setFontFamily('sans-serif');
+    setSenderName('');
+    setReplyToEmail('');
     setFormError('');
     setModalOpen(true);
   };
@@ -76,6 +83,8 @@ export default function ClientsPage() {
     setLogoUrl(client.logo_url || '');
     setPrimaryColor(client.primary_color || '#000000');
     setFontFamily(client.font_family || 'sans-serif');
+    setSenderName(client.sender_name || '');
+    setReplyToEmail(client.reply_to_email || '');
     setFormError('');
     setModalOpen(true);
   };
@@ -92,13 +101,15 @@ export default function ClientsPage() {
 
     try {
       const res = await saveClient(
-        editClient ? editClient.id : null, 
-        name, 
-        email, 
+        editClient ? editClient.id : null,
+        name,
+        email,
         phone,
         logoUrl || null,
         primaryColor || '#000000',
-        fontFamily || 'sans-serif'
+        fontFamily || 'sans-serif',
+        senderName || null,
+        replyToEmail || null
       );
       if (res && !res.success) {
         setFormError(res.error || 'Impossible de sauvegarder le client.');
@@ -386,6 +397,43 @@ export default function ClientsPage() {
                     <option value="monospace">Monospace (Code)</option>
                   </select>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-slate-100">
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className="text-sm font-bold text-slate-900">Custom sender</h4>
+              <span className="rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Paid</span>
+            </div>
+            <p className="mb-4 text-xs text-slate-500">
+              How this client&apos;s brand appears on the confirmation emails their customers receive. Applied only on paid plans.
+              A true custom <code className="rounded bg-slate-100 px-1">From</code> address activates once the client&apos;s domain is verified.
+            </p>
+
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700">Sender display name</label>
+                <Input
+                  type="text"
+                  placeholder="e.g. Shu"
+                  value={senderName}
+                  onChange={e => setSenderName(e.target.value)}
+                  disabled={saving}
+                />
+                <p className="text-[11px] text-slate-400">Shown as the sender name. Falls back to the client name if empty.</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700">Reply-to address</label>
+                <Input
+                  type="email"
+                  placeholder="e.g. contact@shu.com"
+                  value={replyToEmail}
+                  onChange={e => setReplyToEmail(e.target.value)}
+                  disabled={saving}
+                />
+                <p className="text-[11px] text-slate-400">Replies from their customers go here. Works today — no domain needed.</p>
               </div>
             </div>
           </div>

@@ -70,20 +70,31 @@ export async function getClients() {
 }
 
 export async function saveClient(
-  id: string | null, 
-  name: string, 
-  email: string, 
+  id: string | null,
+  name: string,
+  email: string,
   phone: string | null,
   logo_url: string | null = null,
   primary_color: string | null = '#000000',
-  font_family: string | null = 'sans-serif'
+  font_family: string | null = 'sans-serif',
+  sender_name: string | null = null,
+  reply_to_email: string | null = null
 ) {
   try {
     await verifyAdminAuth();
+
+    // Custom-sender fields (paid perk). Normalise + validate the reply-to so a
+    // bad address can't poison outgoing mail.
+    const senderName = sender_name?.trim() || null;
+    const replyTo = reply_to_email?.trim().toLowerCase() || null;
+    if (replyTo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(replyTo)) {
+      return { success: false, error: 'Reply-to must be a valid email address.' };
+    }
+
     if (id) {
       const { error } = await supabase
         .from('clients')
-        .update({ name, email, phone: phone || null, logo_url, primary_color, font_family })
+        .update({ name, email, phone: phone || null, logo_url, primary_color, font_family, sender_name: senderName, reply_to_email: replyTo })
         .eq('id', id);
       if (error) throw error;
     } else {
@@ -93,14 +104,16 @@ export async function saveClient(
 
       const { error } = await supabase
         .from('clients')
-        .insert([{ 
-          name, 
-          email, 
-          phone: phone || null, 
-          logo_url, 
-          primary_color, 
+        .insert([{
+          name,
+          email,
+          phone: phone || null,
+          logo_url,
+          primary_color,
           font_family,
-          encrypted_password: encryptedPassword 
+          sender_name: senderName,
+          reply_to_email: replyTo,
+          encrypted_password: encryptedPassword
         }]);
       if (error) throw error;
 

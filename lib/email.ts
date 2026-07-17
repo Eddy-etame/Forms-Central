@@ -157,7 +157,12 @@ export async function sendAutoReplyEmail(
   customMessage?: string,
   lang: string = 'fr',
   branding?: any,
-  senderName?: string
+  senderName?: string,
+  // Paid "custom sender" identity (see lib/plans customSender): the display
+  // name the end-customer sees and the address their reply goes to. Both work
+  // without a verified domain (the actual From stays on our authed sender).
+  customSenderName?: string,
+  replyTo?: string
 ): Promise<boolean> {
   const isEn = lang.toLowerCase() === 'en';
   
@@ -194,11 +199,12 @@ export async function sendAutoReplyEmail(
       : `Merci pour votre message, ${senderName || 'Client'}. Nous avons bien reçu votre demande et vous répondrons dans les meilleurs délais.`);
 
   const result = await sendWithFallback({
-    from: getSenderAddress(clientName),
+    from: getSenderAddress(customSenderName?.trim() || clientName),
     to: toEmail,
     subject: subject,
     text: textContent,
     html: htmlContent,
+    ...(replyTo && replyTo.trim() ? { replyTo: replyTo.trim() } : {}),
   });
 
   if (result.success) {

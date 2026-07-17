@@ -5,6 +5,7 @@ import { handleHoneypotTrigger, resolveHostDomain } from '@/lib/dnsLookup';
 import { verifyChallenge } from '@/lib/pow';
 import { sendLeadEmail, sendAutoReplyEmail } from '@/lib/email';
 import { getQuotaState, logEmailSend } from '@/lib/quota';
+import { getPlan } from '@/lib/plans';
 
 // Basic in-memory cache for anti-replay (holds challenges for 5 mins)
 const challengeReplayCache = new Set<string>();
@@ -283,7 +284,7 @@ export async function POST(
   // .single() reports "no rows" as a query error and would mask FORM_NOT_FOUND.
   const { data: form, error: formError } = await supabase
     .from('forms')
-    .select('name, is_active, allowed_origins, notify_email, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, client_id, clients(name, email, logo_url, primary_color, font_family, plan)')
+    .select('name, is_active, allowed_origins, notify_email, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, client_id, clients(name, email, logo_url, primary_color, font_family, plan, sender_name, reply_to_email)')
     .eq('id', formId)
     .maybeSingle();
 
@@ -668,13 +669,19 @@ export async function POST(
 
     if (senderEmail && typeof senderEmail === 'string' && senderEmail.trim() !== '') {
       const emailToSubmit = senderEmail.trim();
-      const clientObj = form.clients as unknown as { name: string; email: string; logo_url?: string; primary_color?: string; font_family?: string };
+      const clientObj = form.clients as unknown as { name: string; email: string; logo_url?: string; primary_color?: string; font_family?: string; plan?: string; sender_name?: string; reply_to_email?: string };
       const clientName = clientObj ? clientObj.name : 'Notre Entreprise';
       const branding = clientObj ? {
         logo_url: clientObj.logo_url,
         primary_color: clientObj.primary_color,
         font_family: clientObj.font_family,
       } : {};
+
+      // Paid "custom sender" identity — only honoured if the client's plan
+      // includes it (free tenants send under the shared Inlet identity).
+      const canCustomSender = getPlan(clientObj?.plan).customSender;
+      const customSenderName = canCustomSender ? clientObj?.sender_name?.trim() || undefined : undefined;
+      const customReplyTo = canCustomSender ? clientObj?.reply_to_email?.trim() || undefined : undefined;
 
       const senderNameKey = Object.keys(cleanPayload).find(k => k.toLowerCase() === 'nom' || k.toLowerCase() === 'name');
       const senderName = senderNameKey ? String(cleanPayload[senderNameKey]).trim() : undefined;
@@ -690,7 +697,9 @@ export async function POST(
           form.auto_reply_message || undefined,
           lang,
           branding,
-          senderName
+          senderName,
+          customSenderName,
+          customReplyTo
         ).catch(err => {
           console.error('Auto-reply background error:', err);
           logFailure(formId, 'SMTP_AUTOREPLY_FAILED', `Failed to send auto-reply to ${emailToSubmit}: ${err.message || err}`, cleanPayload);

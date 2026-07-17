@@ -27,6 +27,7 @@ export interface Plan {
   whiteLabel: boolean;
   csvExport: boolean;
   analytics: boolean;
+  customSender: boolean;           // custom sender name + reply-to on customer emails
   priorityDeliverability: boolean;
   retentionDays: number | null;    // null = unlimited
   apiAccess: boolean;              // API keys + MCP server
@@ -46,6 +47,7 @@ export const PLANS: Record<PlanId, Plan> = {
     whiteLabel: false,
     csvExport: false,
     analytics: false,
+    customSender: false,
     priorityDeliverability: false,
     retentionDays: 30,
     apiAccess: false,
@@ -63,6 +65,7 @@ export const PLANS: Record<PlanId, Plan> = {
     whiteLabel: false,
     csvExport: true,
     analytics: true,
+    customSender: true,
     priorityDeliverability: false,
     retentionDays: 365,
     apiAccess: true,
@@ -80,6 +83,7 @@ export const PLANS: Record<PlanId, Plan> = {
     whiteLabel: true,
     csvExport: true,
     analytics: true,
+    customSender: true,
     priorityDeliverability: true,
     retentionDays: null,
     apiAccess: true,
@@ -97,6 +101,7 @@ export const PLANS: Record<PlanId, Plan> = {
     whiteLabel: true,
     csvExport: true,
     analytics: true,
+    customSender: true,
     priorityDeliverability: true,
     retentionDays: null,
     apiAccess: true,

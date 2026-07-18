@@ -225,8 +225,8 @@ export default function ClientsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Clients</h2>
-          <p className="text-sm text-slate-500">Manage the recipients who get form notifications.</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Clients</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Manage the recipients who get form notifications.</p>
         </div>
         <Button onClick={openCreateModal} className="flex items-center gap-1.5 px-3 py-2 bg-slate-900 text-white font-medium hover:bg-slate-800 rounded-lg">
           <Plus className="h-4 w-4" /> New client
@@ -241,7 +241,7 @@ export default function ClientsPage() {
           </div>
         ) : (
           clients.map((client) => (
-            <div key={client.id} className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs flex flex-col justify-between min-h-[14rem]">
+            <div key={client.id} className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs flex flex-col justify-between min-h-[14rem]">
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   {client.logo_url ? (
@@ -254,17 +254,17 @@ export default function ClientsPage() {
                       {client.name.charAt(0)}
                     </div>
                   )}
-                  <h3 className="font-bold text-slate-900 text-base truncate">{client.name}</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base truncate">{client.name}</h3>
                 </div>
-                <p className="text-sm text-slate-500 mt-2 truncate">{client.email}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 truncate">{client.email}</p>
                 {client.phone && <p className="text-xs text-slate-400 mt-1 font-medium">{client.phone}</p>}
 
                 {/* Password Section */}
-                <div className="mt-4 flex items-center justify-between border border-slate-100 rounded-lg p-2 bg-slate-50">
+                <div className="mt-4 flex items-center justify-between border border-slate-100 dark:border-slate-800 rounded-lg p-2 bg-slate-50">
                   <div className="flex items-center gap-2 overflow-hidden">
                     <Key className="h-4 w-4 text-slate-400" />
                     {visiblePasswords[client.id] ? (
-                      <span className="font-mono text-xs font-bold text-slate-900 bg-white px-2 py-1 rounded border border-slate-200">
+                      <span className="font-mono text-xs font-bold text-slate-900 dark:text-white bg-white px-2 py-1 rounded border border-slate-200">
                         {visiblePasswords[client.id]}
                       </span>
                     ) : (
@@ -327,7 +327,7 @@ export default function ClientsPage() {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Client name</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Client name</label>
             <Input 
               type="text" 
               placeholder="e.g. Acme Corp" 
@@ -339,7 +339,7 @@ export default function ClientsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Adresse Email</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Adresse Email</label>
             <Input 
               type="email" 
               placeholder="e.g. contact@acme.com" 
@@ -351,7 +351,7 @@ export default function ClientsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Phone number (SMS)</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Phone number (SMS)</label>
             <Input 
               type="text" 
               placeholder="e.g. +1 555 123 4567" 
@@ -361,12 +361,12 @@ export default function ClientsPage() {
             />
           </div>
 
-          <div className="pt-4 border-t border-slate-100">
-            <h4 className="text-sm font-bold text-slate-900 mb-4">Direction Artistique (Emails)</h4>
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Direction Artistique (Emails)</h4>
             
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">URL du Logo</label>
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">URL du Logo</label>
                 <Input 
                   type="url" 
                   placeholder="https://.../logo.png" 
@@ -378,7 +378,7 @@ export default function ClientsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700">Primary color</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Primary color</label>
                   <div className="flex items-center gap-2">
                     <input 
                       type="color" 
@@ -399,12 +399,12 @@ export default function ClientsPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700">Font family</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Font family</label>
                   <select
                     value={fontFamily}
                     onChange={e => setFontFamily(e.target.value)}
                     disabled={saving}
-                    className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="sans-serif">Sans-serif (default)</option>
                     <option value="serif">Serif (Classique)</option>
@@ -415,19 +415,19 @@ export default function ClientsPage() {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2 mb-1">
-              <h4 className="text-sm font-bold text-slate-900">Custom sender</h4>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">Custom sender</h4>
               <span className="rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Paid</span>
             </div>
             <p className="mb-4 text-xs text-slate-500">
               How this client&apos;s brand appears on the confirmation emails their customers receive. Applied only on paid plans.
-              A true custom <code className="rounded bg-slate-100 px-1">From</code> address activates once the client&apos;s domain is verified.
+              A true custom <code className="rounded bg-slate-100 dark:bg-slate-800 px-1">From</code> address activates once the client&apos;s domain is verified.
             </p>
 
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Sender display name</label>
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Sender display name</label>
                 <Input
                   type="text"
                   placeholder="e.g. Shu"
@@ -439,7 +439,7 @@ export default function ClientsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Reply-to address</label>
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Reply-to address</label>
                 <Input
                   type="email"
                   placeholder="e.g. contact@shu.com"
@@ -452,9 +452,9 @@ export default function ClientsPage() {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100">
-            <h4 className="text-sm font-bold text-slate-900 mb-3">Security</h4>
-            <label className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 cursor-pointer hover:bg-slate-50 transition-colors">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Security</h4>
+            <label className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
               <input
                 type="checkbox"
                 checked={twoFactorEnabled}
@@ -463,7 +463,7 @@ export default function ClientsPage() {
                 className="mt-0.5 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
               />
               <span>
-                <span className="block text-sm font-semibold text-slate-800">Require two-factor sign-in</span>
+                <span className="block text-sm font-semibold text-slate-800 dark:text-slate-200">Require two-factor sign-in</span>
                 <span className="block text-[11px] text-slate-500">
                   After their password, this client must enter a 6-digit code emailed to {email || 'their address'}.
                 </span>
@@ -471,7 +471,7 @@ export default function ClientsPage() {
             </label>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             <Button variant="secondary" type="button" onClick={() => setModalOpen(false)} disabled={saving}>
               Annuler
             </Button>

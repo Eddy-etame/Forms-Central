@@ -163,8 +163,8 @@ export default function FormsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Forms</h2>
-          <p className="text-sm text-slate-500">Configure your forms and get their integration links.</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Forms</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Configure your forms and get their integration links.</p>
         </div>
         <Button onClick={openCreateModal} className="flex items-center gap-1.5 px-3 py-2">
           <Plus className="h-4 w-4" /> New form
@@ -181,13 +181,13 @@ export default function FormsPage() {
           forms.map((form) => (
             <div
               key={form.id}
-              className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs flex flex-col justify-between h-56 transition-all hover:shadow-xs"
+              className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs flex flex-col justify-between h-56 transition-all hover:shadow-xs"
             >
               <div>
                 <div className="flex items-start justify-between">
                   <Link
                     href={`/admin/forms/${form.id}`}
-                    className="font-bold text-slate-900 text-base hover:underline block truncate max-w-[80%]"
+                    className="font-bold text-slate-900 dark:text-white text-base hover:underline block truncate max-w-[80%]"
                   >
                     {form.name}
                   </Link>
@@ -218,7 +218,7 @@ export default function FormsPage() {
               <div className="flex items-center justify-end gap-2 border-t border-slate-50 pt-4">
                 <Link
                   href={`/admin/forms/${form.id}`}
-                  className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-950 transition-colors"
+                  className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-950 transition-colors"
                 >
                   Integration
                 </Link>
@@ -245,7 +245,7 @@ export default function FormsPage() {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Form name</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Form name</label>
             <Input
               type="text"
               placeholder="e.g. Acme contact form"
@@ -257,13 +257,13 @@ export default function FormsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Recipient client</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Recipient client</label>
             <select
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
               required
               disabled={saving}
-              className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
+              className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
             >
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -274,7 +274,7 @@ export default function FormsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
               Allowed CORS origins (comma-separated)
             </label>
             <Input
@@ -289,7 +289,7 @@ export default function FormsPage() {
             </span>
           </div>
 
-          <div className="space-y-3 pt-2 border-t border-slate-100">
+          <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between">
               <label htmlFor="auto-reply" className="text-xs font-semibold text-slate-700 cursor-pointer">
                 Auto-reply
@@ -305,7 +305,7 @@ export default function FormsPage() {
             </div>
             
             {autoReplyEnabled && (
-              <div className="space-y-3 pl-4 border-l-2 border-slate-100">
+              <div className="space-y-3 pl-4 border-l-2 border-slate-100 dark:border-slate-800">
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
                     Objet de l'e-mail
@@ -328,7 +328,7 @@ export default function FormsPage() {
                     onChange={(e) => setAutoReplyMessage(e.target.value)}
                     disabled={saving}
                     rows={3}
-                    className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
+                    className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
                   />
                   <span className="text-[10px] text-slate-400 block font-medium">
                     Leave empty to use the default message (which includes the recipient client's name).
@@ -338,7 +338,7 @@ export default function FormsPage() {
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             <Button
               variant="secondary"
               type="button"

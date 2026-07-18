@@ -163,7 +163,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
   if (!form) {
     return (
       <div className="text-center py-12">
-        <h3 className="text-lg font-bold text-slate-800">Form not found</h3>
+        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">Form not found</h3>
         <Link href="/admin/forms" className="text-sm text-slate-600 underline mt-2 block">
           Back to list
         </Link>
@@ -182,11 +182,11 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
       </Link>
 
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{form.name}</h2>
-          <p className="text-sm text-slate-500 mt-1">
-            Client destinataire : <span className="font-semibold text-slate-700">{form.clients?.name}</span> ({form.clients?.email})
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{form.name}</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Client destinataire : <span className="font-semibold text-slate-700 dark:text-slate-300">{form.clients?.name}</span> ({form.clients?.email})
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -205,14 +205,14 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
         {/* Left column: integration code */}
         <div className="lg:col-span-1 space-y-6">
           <BlurFade delay={0.1}>
-          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs space-y-4 relative overflow-hidden group">
+          <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs space-y-4 relative overflow-hidden group">
             <BorderBeam size={250} duration={12} delay={9} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" colorFrom="#0ea5e9" colorTo="#3b82f6" />
-            <h3 className="font-bold text-slate-900 text-sm relative z-10">Direct HTML integration</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm relative z-10">Direct HTML integration</h3>
             <p className="text-xs text-slate-500 relative z-10">
               Copiez cette URL dans l&apos;attribut `action` de votre formulaire HTML standard.
             </p>
 
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 border border-slate-100 p-2 text-xs font-mono text-slate-600 select-all overflow-x-auto">
+            <div className="flex items-center gap-2 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 p-2 text-xs font-mono text-slate-600 select-all overflow-x-auto">
               <span className="truncate">{window.location.origin}/api/submit/{form.id}</span>
               <button
                 onClick={copyEndpoint}
@@ -223,7 +223,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
             </div>
 
             <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-700 block">Exemple de code HTML :</span>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">Exemple de code HTML :</span>
               <pre className="rounded-lg bg-slate-950 p-3 text-[10px] text-slate-300 font-mono overflow-x-auto leading-relaxed">
 {`<form action="${window.location.origin}/api/submit/${form.id}" method="POST">
   <!-- Honeypot invisible -->
@@ -240,8 +240,8 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
 
           {/* Auto-Reply panel */}
           <BlurFade delay={0.15}>
-          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs space-y-4">
-            <h3 className="font-bold text-slate-900 text-sm">Advanced settings & auto-reply</h3>
+          <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs space-y-4">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Advanced settings & auto-reply</h3>
             <p className="text-xs text-slate-500">
               Configure the redirect page and the automatic confirmation email sent to the prospect.
             </p>
@@ -257,7 +257,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                   value={successUrl}
                   onChange={(e) => setSuccessUrl(e.target.value)}
                   disabled={updatingSettings}
-                  className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
+                  className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
                 />
                 <span className="text-[9px] text-slate-400 block font-medium">
                   Forces a redirect to this page after submission (overrides your frontend config). Leave empty to use the one in your code.
@@ -274,7 +274,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                   value={webhookUrl}
                   onChange={(e) => setWebhookUrl(e.target.value)}
                   disabled={updatingSettings}
-                  className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
+                  className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
                 />
                 <span className="text-[9px] text-slate-400 block font-medium">
                   Every stored lead is POSTed here as JSON, HMAC-signed (X-Inlet-Signature). Must be https. Leave empty to disable.
@@ -283,7 +283,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
 
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-xs font-semibold text-slate-900">Enable auto-reply</h4>
+                  <h4 className="text-xs font-semibold text-slate-900 dark:text-white">Enable auto-reply</h4>
                   <p className="text-[10px] text-slate-500 mt-0.5">Sends a confirmation email to the address provided.</p>
                 </div>
                 <input
@@ -308,7 +308,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                       value={autoReplySubject}
                       onChange={(e) => setAutoReplySubject(e.target.value)}
                       disabled={updatingSettings}
-                      className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
+                      className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
                       required
                     />
                   </div>
@@ -323,10 +323,10 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                       onChange={(e) => setAutoReplyMessage(e.target.value)}
                       disabled={updatingSettings}
                       rows={4}
-                      className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
+                      className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
                     />
                     <span className="text-[9px] text-slate-500 block font-medium">
-                      Use <code className="bg-slate-100 text-slate-700 px-1 py-0.5 rounded text-[8px] font-mono">{"{{name}}"}</code> or <code className="bg-slate-100 text-slate-700 px-1 py-0.5 rounded text-[8px] font-mono">{"{{nom}}"}</code> to dynamically include the sender's name. Leave empty to use the default message.
+                      Use <code className="bg-slate-100 dark:bg-slate-800 text-slate-700 px-1 py-0.5 rounded text-[8px] font-mono">{"{{name}}"}</code> or <code className="bg-slate-100 dark:bg-slate-800 text-slate-700 px-1 py-0.5 rounded text-[8px] font-mono">{"{{nom}}"}</code> to dynamically include the sender's name. Leave empty to use the default message.
                     </span>
                   </div>
                 </div>
@@ -344,8 +344,8 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
           </BlurFade>
 
           <BlurFade delay={0.2}>
-          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs space-y-4">
-            <h3 className="font-bold text-slate-900 text-sm">Configured CORS domains</h3>
+          <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs space-y-4">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Configured CORS domains</h3>
             <p className="text-xs text-slate-500">
               Specify allowed domains (comma-separated). Use `*` to allow all.
             </p>
@@ -358,7 +358,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                   value={corsInput}
                   onChange={(e) => setCorsInput(e.target.value)}
                   disabled={updatingCors}
-                  className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
+                  className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
                   required
                 />
               </div>
@@ -367,7 +367,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                 {form.allowed_origins.map((origin) => (
                   <span
                     key={origin}
-                    className="inline-block text-[10px] font-mono font-medium bg-slate-50 border border-slate-100 text-slate-600 px-2 py-0.5 rounded-md"
+                    className="inline-block text-[10px] font-mono font-medium bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 text-slate-600 px-2 py-0.5 rounded-md"
                   >
                     {origin}
                   </span>
@@ -389,8 +389,8 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
         {/* Right column: Form leads list */}
         <div className="lg:col-span-2 space-y-6">
           <BlurFade delay={0.25}>
-          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs">
-            <h3 className="font-bold text-slate-900 text-base mb-6">Leads received ({submissions.length})</h3>
+          <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs">
+            <h3 className="font-bold text-slate-900 dark:text-white text-base mb-6">Leads received ({submissions.length})</h3>
 
             {submissions.length === 0 ? (
               <div className="py-12 text-center">
@@ -398,8 +398,8 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left text-sm text-slate-500">
-                  <thead className="bg-slate-50 text-xs font-bold text-slate-700 uppercase border-b border-slate-100">
+                <table className="w-full border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
+                  <thead className="bg-slate-50 dark:bg-slate-950/60 text-xs font-bold text-slate-700 dark:text-slate-200 uppercase border-b border-slate-100 dark:border-slate-800">
                     <tr>
                       <th className="px-4 py-3">Date</th>
                       <th className="px-4 py-3">IP</th>
@@ -407,9 +407,9 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                       <th className="px-4 py-3 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {submissions.map((sub) => (
-                      <tr key={sub.id} className="hover:bg-slate-50/50 transition-colors">
+                      <tr key={sub.id} className="hover:bg-slate-50/50 dark:bg-slate-900/60 transition-colors">
                         <td className="px-4 py-3.5 whitespace-nowrap text-xs">
                           {new Date(sub.created_at).toLocaleDateString('en-GB', {
                             day: 'numeric',
@@ -419,7 +419,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                           })}
                         </td>
                         <td className="px-4 py-3.5 font-mono text-xs">{sub.ip_address}</td>
-                        <td className="px-4 py-3.5 max-w-[200px] truncate text-xs font-medium text-slate-700">
+                        <td className="px-4 py-3.5 max-w-[200px] truncate text-xs font-medium text-slate-700 dark:text-slate-300">
                           {Object.entries(sub.payload)
                             .map(([k, v]) => `${k}: ${v}`)
                             .join(', ')}
@@ -451,7 +451,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
           title="Submission details"
         >
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-2 text-xs border-b border-slate-100 pb-3 text-slate-400 font-medium">
+            <div className="grid grid-cols-2 gap-2 text-xs border-b border-slate-100 dark:border-slate-800 pb-3 text-slate-400 font-medium">
               <div>
                 Date: <span className="text-slate-800 font-semibold">{new Date(selectedSub.created_at).toLocaleString()}</span>
               </div>
@@ -462,14 +462,14 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
 
             <div className="space-y-3 mt-4 max-h-96 overflow-y-auto pr-2">
               {Object.entries(selectedSub.payload).map(([key, val]) => (
-                <div key={key} className="space-y-1 bg-slate-50 border border-slate-100 p-2.5 rounded-lg">
+                <div key={key} className="space-y-1 bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 p-2.5 rounded-lg">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">{key}</span>
                   <p className="text-xs text-slate-800 font-medium whitespace-pre-wrap">{val}</p>
                 </div>
               ))}
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-slate-100 mt-6">
+            <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800 mt-6">
               <Button onClick={() => setSelectedSub(null)}>Close</Button>
             </div>
           </div>

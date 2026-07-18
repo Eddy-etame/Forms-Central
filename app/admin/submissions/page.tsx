@@ -105,8 +105,8 @@ export default function SubmissionsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Leads / Submissions</h2>
-          <p className="text-sm text-slate-500">Every message received across all your forms.</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Leads / Submissions</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Every message received across all your forms.</p>
         </div>
         <Button 
           onClick={handleExportCSV} 
@@ -119,7 +119,7 @@ export default function SubmissionsPage() {
       </div>
 
       {/* Leads Table */}
-      <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs">
+      <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs">
         {submissions.length === 0 ? (
           <div className="py-12 text-center flex flex-col items-center justify-center">
             <FileText className="h-10 w-10 text-slate-300" />
@@ -127,8 +127,8 @@ export default function SubmissionsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-sm text-slate-500">
-              <thead className="bg-slate-50 text-xs font-bold text-slate-700 uppercase border-b border-slate-100">
+            <table className="w-full border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
+              <thead className="bg-slate-50 dark:bg-slate-950/60 text-xs font-bold text-slate-700 dark:text-slate-200 uppercase border-b border-slate-100 dark:border-slate-800">
                 <tr>
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Form</th>
@@ -137,9 +137,9 @@ export default function SubmissionsPage() {
                   <th className="px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {submissions.map((sub) => (
-                  <tr key={sub.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={sub.id} className="hover:bg-slate-50/50 dark:bg-slate-900/60 transition-colors">
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs">
                       {new Date(sub.created_at).toLocaleDateString('en-GB', {
                         day: 'numeric',
@@ -148,7 +148,7 @@ export default function SubmissionsPage() {
                         minute: '2-digit',
                       })}
                     </td>
-                    <td className="px-4 py-3.5 text-xs font-semibold text-slate-800">
+                    <td className="px-4 py-3.5 text-xs font-semibold text-slate-800 dark:text-slate-200">
                       {sub.forms ? sub.forms.name : 'Inconnu'}
                     </td>
                     <td className="px-4 py-3.5 font-mono text-xs">{sub.ip_address}</td>
@@ -179,7 +179,7 @@ export default function SubmissionsPage() {
           title="Lead details"
         >
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-2 text-xs border-b border-slate-100 pb-3 text-slate-400 font-medium">
+            <div className="grid grid-cols-2 gap-2 text-xs border-b border-slate-100 dark:border-slate-800 pb-3 text-slate-400 font-medium">
               <div>
                 Date: <span className="text-slate-800 font-semibold">{new Date(selectedSub.created_at).toLocaleString()}</span>
               </div>
@@ -190,20 +190,20 @@ export default function SubmissionsPage() {
 
             {selectedSub.fingerprint && (
               <div className="text-[10px] text-slate-400 font-mono">
-                Fingerprint: <span className="bg-slate-50 border border-slate-100 px-1 py-0.5 rounded-sm">{selectedSub.fingerprint}</span>
+                Fingerprint: <span className="bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 px-1 py-0.5 rounded-sm">{selectedSub.fingerprint}</span>
               </div>
             )}
 
             <div className="space-y-3 mt-4 max-h-96 overflow-y-auto pr-2">
               {Object.entries(selectedSub.payload).map(([key, val]) => (
-                <div key={key} className="space-y-1 bg-slate-50 border border-slate-100 p-2.5 rounded-lg">
+                <div key={key} className="space-y-1 bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 p-2.5 rounded-lg">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">{key}</span>
                   <p className="text-xs text-slate-800 font-medium whitespace-pre-wrap">{val}</p>
                 </div>
               ))}
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-slate-100 mt-6">
+            <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800 mt-6">
               <Button onClick={() => setSelectedSub(null)}>Close</Button>
             </div>
           </div>

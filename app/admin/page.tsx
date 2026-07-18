@@ -66,8 +66,8 @@ export default function Dashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Dashboard</h2>
-        <p className="text-sm text-slate-500">Overview of your form service activity.</p>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Dashboard</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Overview of your form service activity.</p>
       </div>
 
       {/* Stats Cards grid */}
@@ -88,15 +88,15 @@ export default function Dashboard() {
 
       {/* Submissions Section */}
       <BlurFade delay={0.3}>
-      <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-5">
+      <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
-            <h3 className="text-base font-bold text-slate-900">Recent submissions</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Recent submissions</h3>
             <p className="text-xs text-slate-400 font-medium">The 5 most recent leads across your forms.</p>
           </div>
           <Link
             href="/admin/submissions"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-900 hover:opacity-80 transition-opacity"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-900 dark:text-white hover:opacity-80 transition-opacity"
           >
             View all <ArrowRight className="h-3 w-3" />
           </Link>
@@ -110,7 +110,7 @@ export default function Dashboard() {
               </div>
             </BlurFade>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {recentSubmissions.map((sub, idx) => (
                 <BlurFade key={sub.id} delay={0.3 + idx * 0.05}>
                   <div className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
@@ -118,8 +118,8 @@ export default function Dashboard() {
                       <span className="text-xs font-semibold text-slate-400">
                         {sub.forms ? sub.forms.name : 'Unknown form'}
                       </span>
-                      <h4 className="text-sm font-bold text-slate-800">
-                        Submission ID: <span className="font-mono text-xs font-medium bg-slate-50 border border-slate-100 px-1 py-0.5 rounded-sm">{sub.id.substring(0, 8)}...</span>
+                      <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                        Submission ID: <span className="font-mono text-xs font-medium bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 px-1 py-0.5 rounded-sm">{sub.id.substring(0, 8)}...</span>
                       </h4>
                     </div>
                     <div className="text-right space-y-1">

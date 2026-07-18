@@ -105,8 +105,8 @@ export default function BlacklistPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Security blacklist</h2>
-          <p className="text-sm text-slate-500">View and manage banned IPs, fingerprints and hosts.</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Security blacklist</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">View and manage banned IPs, fingerprints and hosts.</p>
         </div>
         <Button onClick={() => {
           setTarget('');
@@ -119,7 +119,7 @@ export default function BlacklistPage() {
       </div>
 
       {/* Blacklist Table */}
-      <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs">
+      <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs">
         {blacklist.length === 0 ? (
           <div className="py-12 text-center flex flex-col items-center justify-center">
             <ShieldAlert className="h-10 w-10 text-slate-300" />
@@ -127,8 +127,8 @@ export default function BlacklistPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-sm text-slate-500">
-              <thead className="bg-slate-50 text-xs font-bold text-slate-700 uppercase border-b border-slate-100">
+            <table className="w-full border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
+              <thead className="bg-slate-50 dark:bg-slate-950/60 text-xs font-bold text-slate-700 dark:text-slate-200 uppercase border-b border-slate-100 dark:border-slate-800">
                 <tr>
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Cible</th>
@@ -137,9 +137,9 @@ export default function BlacklistPage() {
                   <th className="px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {blacklist.map((entry) => (
-                  <tr key={entry.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={entry.id} className="hover:bg-slate-50/50 dark:bg-slate-900/60 transition-colors">
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs">
                       {new Date(entry.created_at).toLocaleDateString('en-GB', {
                         day: 'numeric',
@@ -148,7 +148,7 @@ export default function BlacklistPage() {
                         minute: '2-digit',
                       })}
                     </td>
-                    <td className="px-4 py-3.5 font-mono text-xs font-semibold text-slate-900">
+                    <td className="px-4 py-3.5 font-mono text-xs font-semibold text-slate-900 dark:text-white">
                       {entry.target}
                     </td>
                     <td className="px-4 py-3.5 text-xs">
@@ -162,7 +162,7 @@ export default function BlacklistPage() {
                         {entry.type}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 text-xs font-medium text-slate-700">
+                    <td className="px-4 py-3.5 text-xs font-medium text-slate-700 dark:text-slate-300">
                       {entry.reason}
                     </td>
                     <td className="px-4 py-3.5 text-right">
@@ -191,7 +191,7 @@ export default function BlacklistPage() {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Target to ban (IP, fingerprint or host)</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Target to ban (IP, fingerprint or host)</label>
             <Input
               type="text"
               placeholder="e.g. 198.51.100.42 or a VPS hostname"
@@ -203,13 +203,13 @@ export default function BlacklistPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Type de cible</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type de cible</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as 'ip' | 'fingerprint' | 'host')}
               required
               disabled={saving}
-              className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
+              className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
             >
               <option value="ip">Adresse IP</option>
               <option value="fingerprint">Fingerprint</option>
@@ -218,7 +218,7 @@ export default function BlacklistPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Motif du bannissement</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Motif du bannissement</label>
             <Input
               type="text"
               placeholder="e.g. Spam observed from this server"
@@ -229,7 +229,7 @@ export default function BlacklistPage() {
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             <Button
               variant="secondary"
               type="button"

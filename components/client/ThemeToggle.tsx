@@ -4,24 +4,33 @@ import { useEffect, useState } from 'react';
 import { Sun, Moon } from 'lucide-react';
 
 /**
- * Dashboard theme toggle. The dashboard is dark-first (`#dash-root` ships
- * with .dark); this flips the class and persists the choice. An inline
- * script in the layout applies the stored choice before paint.
+ * Workspace theme toggle. Each dark-first surface ships its root with .dark
+ * (client dashboard: #dash-root, admin: #admin-root); this flips the class
+ * and persists the choice under its own storage key. An inline script in
+ * each layout applies the stored choice before paint.
  */
-export default function ThemeToggle({ className = '' }: { className?: string }) {
+export default function ThemeToggle({
+  className = '',
+  rootId = 'dash-root',
+  storageKey = 'inlet-theme',
+}: {
+  className?: string;
+  rootId?: string;
+  storageKey?: string;
+}) {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
-    setIsDark(document.getElementById('dash-root')?.classList.contains('dark') ?? true);
-  }, []);
+    setIsDark(document.getElementById(rootId)?.classList.contains('dark') ?? true);
+  }, [rootId]);
 
   const toggle = () => {
-    const root = document.getElementById('dash-root');
+    const root = document.getElementById(rootId);
     if (!root) return;
     const next = !root.classList.contains('dark');
     root.classList.toggle('dark', next);
     setIsDark(next);
-    try { localStorage.setItem('inlet-theme', next ? 'dark' : 'light'); } catch {}
+    try { localStorage.setItem(storageKey, next ? 'dark' : 'light'); } catch {}
   };
 
   return (

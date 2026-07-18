@@ -20,6 +20,69 @@ async function authedClientId(): Promise<string | null> {
   return payload.clientId as string;
 }
 
+/** List the client's forms (id, name, webhook_url) for self-serve config. */
+export async function GET() {
+  try {
+    const clientId = await authedClientId();
+    if (!clientId) {
+      return NextResponse.json({ success: false, error: 'Not signed in.' }, { status: 401 });
+    }
+    const { data, error } = await supabase
+      .from('forms')
+      .select('id, name, webhook_url')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    return NextResponse.json({ success: true, forms: data || [] });
+  } catch (err) {
+    console.error('client/forms GET error:', err);
+    return NextResponse.json({ success: false, error: 'Internal server error.' }, { status: 500 });
+  }
+}
+
+/** Self-serve webhook config: set/clear a form's webhook URL (https only). */
+export async function PATCH(req: Request) {
+  try {
+    const clientId = await authedClientId();
+    if (!clientId) {
+      return NextResponse.json({ success: false, error: 'Not signed in.' }, { status: 401 });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const formId = String(body.formId ?? '');
+    const webhookUrl = String(body.webhookUrl ?? '').trim();
+
+    if (!formId) {
+      return NextResponse.json({ success: false, error: 'formId required.' }, { status: 400 });
+    }
+    if (webhookUrl && !/^https:\/\/.+/i.test(webhookUrl)) {
+      return NextResponse.json({ success: false, error: 'Webhook URL must start with https://' }, { status: 400 });
+    }
+
+    // Ownership check — a client can only configure their own forms.
+    const { data: form } = await supabase
+      .from('forms')
+      .select('id')
+      .eq('id', formId)
+      .eq('client_id', clientId)
+      .maybeSingle();
+    if (!form) {
+      return NextResponse.json({ success: false, error: 'Form not found.' }, { status: 404 });
+    }
+
+    const { error } = await supabase
+      .from('forms')
+      .update({ webhook_url: webhookUrl || null })
+      .eq('id', formId);
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error('client/forms PATCH error:', err);
+    return NextResponse.json({ success: false, error: 'Internal server error.' }, { status: 500 });
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const clientId = await authedClientId();

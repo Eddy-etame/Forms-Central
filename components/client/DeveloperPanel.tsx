@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { KeyRound, Plus, Trash2, Copy, Check, Lock, Bot, Terminal } from 'lucide-react';
+import { KeyRound, Plus, Trash2, Copy, Check, Lock, Bot, Terminal, Webhook } from 'lucide-react';
 
 type ApiKey = {
   id: string;
@@ -11,6 +11,8 @@ type ApiKey = {
   last_used_at: string | null;
   created_at: string;
 };
+
+type WebhookForm = { id: string; name: string; webhook_url: string | null };
 
 function CopyBtn({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
@@ -40,6 +42,42 @@ export default function DeveloperPanel() {
   const [freshKey, setFreshKey] = useState<string | null>(null);
   const [error, setError] = useState('');
 
+  // Webhooks (per-form, self-serve)
+  const [hookForms, setHookForms] = useState<WebhookForm[]>([]);
+  const [hookDrafts, setHookDrafts] = useState<Record<string, string>>({});
+  const [hookSaving, setHookSaving] = useState<Record<string, boolean>>({});
+  const [hookMsg, setHookMsg] = useState<Record<string, string>>({});
+
+  async function loadHooks() {
+    try {
+      const res = await fetch('/api/client/forms');
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setHookForms(data.forms);
+        setHookDrafts(Object.fromEntries(data.forms.map((f: WebhookForm) => [f.id, f.webhook_url || ''])));
+      }
+    } catch {}
+  }
+
+  async function saveHook(formId: string) {
+    setHookSaving((s) => ({ ...s, [formId]: true }));
+    setHookMsg((m) => ({ ...m, [formId]: '' }));
+    try {
+      const res = await fetch('/api/client/forms', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ formId, webhookUrl: hookDrafts[formId] || '' }),
+      });
+      const data = await res.json();
+      setHookMsg((m) => ({ ...m, [formId]: res.ok && data.success ? 'Saved.' : data.error || 'Could not save.' }));
+      if (res.ok && data.success) setTimeout(() => setHookMsg((m) => ({ ...m, [formId]: '' })), 2000);
+    } catch {
+      setHookMsg((m) => ({ ...m, [formId]: 'Network error.' }));
+    } finally {
+      setHookSaving((s) => ({ ...s, [formId]: false }));
+    }
+  }
+
   const mcpUrl = typeof window !== 'undefined' ? `${window.location.origin}/api/mcp` : '/api/mcp';
   const mcpConfig = `{
   "mcpServers": {
@@ -63,7 +101,7 @@ export default function DeveloperPanel() {
       setLoading(false);
     }
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); loadHooks(); }, []);
 
   async function createKey(e: React.FormEvent) {
     e.preventDefault();
@@ -194,6 +232,54 @@ export default function DeveloperPanel() {
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+
+      {/* Webhooks — leads POSTed into the client's own stack */}
+      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center gap-2.5 border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/60">
+          <Webhook className="h-4 w-4 text-slate-500" />
+          <h2 className="font-bold text-slate-900 dark:text-white">Webhooks — every lead, POSTed to your app</h2>
+        </div>
+        <div className="space-y-4 p-6">
+          <p className="text-sm leading-6 text-slate-600 dark:text-slate-400">
+            Set an <strong className="text-slate-900 dark:text-white">https</strong> endpoint per form and every stored lead
+            arrives as a signed <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-800">submission.created</code> POST
+            — verify the <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-800">X-Inlet-Signature</code> header
+            (snippet in the <a href="/docs" className="font-semibold text-blue-600 hover:underline dark:text-blue-400">docs</a>).
+            Delivery never blocks or loses a lead.
+          </p>
+          {hookForms.length === 0 ? (
+            <p className="text-sm text-slate-500 dark:text-slate-400">Create a form first — webhooks are configured per form.</p>
+          ) : (
+            <ul className="space-y-3">
+              {hookForms.map((f) => (
+                <li key={f.id} className="rounded-xl border border-slate-100 p-4 dark:border-slate-800">
+                  <p className="mb-2 truncate text-sm font-semibold text-slate-800 dark:text-slate-200">{f.name}</p>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <input
+                      value={hookDrafts[f.id] ?? ''}
+                      onChange={(e) => setHookDrafts((d) => ({ ...d, [f.id]: e.target.value }))}
+                      placeholder="https://api.yourapp.com/hooks/inlet (empty = disabled)"
+                      className="h-10 flex-1 rounded-lg border border-slate-200 px-3.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500"
+                    />
+                    <button
+                      onClick={() => saveHook(f.id)}
+                      disabled={hookSaving[f.id]}
+                      className="inline-flex h-10 items-center justify-center rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-800 transition-colors disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                    >
+                      {hookSaving[f.id] ? 'Saving…' : 'Save'}
+                    </button>
+                  </div>
+                  {hookMsg[f.id] && (
+                    <p className={`mt-1.5 text-xs font-medium ${hookMsg[f.id] === 'Saved.' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600'}`}>
+                      {hookMsg[f.id]}
+                    </p>
+                  )}
                 </li>
               ))}
             </ul>

@@ -5,13 +5,19 @@ import type { NextConfig } from "next";
  * CSP: Next.js App Router requires inline scripts for hydration, so
  * script-src keeps 'unsafe-inline' (JSON-LD data blocks are unaffected).
  * Everything else is locked to self; images allow https for client logos.
+ *
+ * 'unsafe-eval' is added in DEVELOPMENT ONLY — React/Turbopack dev mode uses
+ * eval() for fast-refresh + callstack reconstruction. React never uses eval()
+ * in production, so the production CSP stays strict (no eval).
  */
+const isDev = process.env.NODE_ENV === "development";
+
 const securityHeaders = [
   {
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' https: data: blob:",
       "font-src 'self' data:",

@@ -119,11 +119,13 @@ export function Tilt({
 export function SpotlightCard({
   children,
   glow = 'rgba(59,130,246,0.14)',
+  size = 420,
   className = '',
   style,
 }: {
   children: ReactNode;
   glow?: string;
+  size?: number;
   className?: string;
   style?: CSSProperties;
 }) {
@@ -147,7 +149,7 @@ export function SpotlightCard({
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-0 rounded-[inherit] opacity-0 transition-opacity duration-300 group-hover/spot:opacity-100"
-        style={{ background: 'radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), var(--spot-glow), transparent 70%)' }}
+        style={{ background: `radial-gradient(${size}px circle at var(--mx, 50%) var(--my, 0%), var(--spot-glow), transparent 70%)` }}
       />
       {children}
     </div>

@@ -111,69 +111,89 @@ export default function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="min-h-screen bg-white text-slate-900 font-sans">
         <ScrollProgress />
-        <NavBar />
+        <NavBar variant="dark" />
 
-        {/* ---------------- Hero ---------------- */}
-        <header className="relative overflow-hidden">
-          {/* Animated aurora background */}
-          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:22px_22px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_55%,transparent_100%)]" />
-            <div className="aurora-a absolute -top-28 left-[22%] h-[380px] w-[380px] rounded-full bg-blue-500/25 blur-[120px]" />
-            <div className="aurora-b absolute -top-20 right-[22%] h-[340px] w-[340px] rounded-full bg-violet-500/20 blur-[120px]" />
-            <div className="aurora-a absolute -top-10 left-1/2 h-[280px] w-[560px] -translate-x-1/2 rounded-full bg-cyan-400/10 blur-[130px]" />
+        {/* ---------------- Hero — dark-first, the brand's opening frame ---------------- */}
+        <header className="relative overflow-hidden bg-slate-950 pb-28 text-white">
+          {/* Texture + aurora */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff09_1px,transparent_1px),linear-gradient(to_bottom,#ffffff09_1px,transparent_1px)] bg-[size:36px_36px] [mask-image:radial-gradient(ellipse_65%_55%_at_50%_0%,#000_45%,transparent_100%)]" />
+            <div className="aurora-a absolute -top-28 left-[20%] h-[420px] w-[420px] rounded-full bg-blue-600/25 blur-[130px]" />
+            <div className="aurora-b absolute -top-16 right-[18%] h-[380px] w-[380px] rounded-full bg-cyan-500/15 blur-[130px]" />
+            <div className="aurora-a absolute top-40 left-1/2 h-[300px] w-[640px] -translate-x-1/2 rounded-full bg-violet-600/12 blur-[140px]" />
           </div>
 
-          <div className="mx-auto max-w-4xl px-6 pt-20 pb-16 text-center lg:pt-28 fade-up">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-medium text-slate-600 shadow-sm">
-              <Sparkles className="h-3.5 w-3.5 text-blue-500" />
-              Self-hosted form backend · you own the data
+          {/* Cursor-reactive glow across the whole hero */}
+          <SpotlightCard glow="rgba(56,189,248,0.07)" size={900} className="relative">
+            <div className="relative mx-auto max-w-4xl px-6 pt-20 pb-14 text-center lg:pt-28 fade-up">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-sm font-medium text-slate-300 backdrop-blur">
+                <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+                Self-hosted form backend · you own the data
+              </div>
+              <h1 className="text-balance text-5xl font-extrabold tracking-tight text-white sm:text-7xl">
+                One form backend for <span className="shimmer-text bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 bg-clip-text font-serif italic text-transparent">all your websites.</span>
+              </h1>
+              <p className="mx-auto mt-6 max-w-2xl text-balance text-lg leading-8 text-slate-400">
+                Centralize submissions from every site into one dashboard — with <strong className="text-white">no SMTP and no per-site setup</strong>. Branded auto-reply emails, AI + proof-of-work spam blocking, CSV exports. The privacy-first alternative to Formspree and Jotform.
+              </p>
+              <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Magnetic>
+                  <Link href="/client/signup" className="btn-shine btn-shine-soft inline-flex h-12 items-center gap-2 rounded-full bg-white px-7 text-base font-semibold text-slate-950 shadow-lg shadow-cyan-500/10 transition-all duration-300 hover:bg-slate-100 hover:shadow-xl hover:shadow-cyan-400/20">
+                    Start free <ArrowRight className="cta-arrow h-4 w-4" />
+                  </Link>
+                </Magnetic>
+                <Magnetic strength={0.18}>
+                  <a href="#how" className="btn-shine inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-7 text-base font-medium text-white transition-all duration-300 hover:bg-white/10">
+                    See how it works
+                  </a>
+                </Magnetic>
+              </div>
+              <p className="mt-5 text-xs text-slate-500">No credit card · no SMTP config · integrate in 2 minutes</p>
             </div>
-            <h1 className="text-balance text-5xl font-extrabold tracking-tight text-slate-900 sm:text-7xl">
-              One form backend for <span className="shimmer-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text font-serif italic text-transparent">all your websites.</span>
-            </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-balance text-lg leading-8 text-slate-600">
-              Centralize submissions from every site into one dashboard — with <strong className="text-slate-900">no SMTP and no per-site setup</strong>. Branded auto-reply emails, AI + proof-of-work spam blocking, CSV exports. The privacy-first alternative to Formspree and Jotform.
-            </p>
-            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Magnetic>
-                <Link href="/client/signup" className="btn-shine inline-flex h-12 items-center gap-2 rounded-full bg-slate-900 px-7 text-base font-medium text-white shadow-lg shadow-slate-900/20 transition-all duration-300 hover:bg-slate-800 hover:shadow-xl hover:shadow-blue-500/20">
-                  Start free <ArrowRight className="cta-arrow h-4 w-4" />
-                </Link>
-              </Magnetic>
-              <Magnetic strength={0.18}>
-                <a href="#how" className="btn-shine btn-shine-soft inline-flex h-12 items-center gap-2 rounded-full border border-slate-200 bg-white px-7 text-base font-medium text-slate-800 transition-all duration-300 hover:border-slate-300 hover:shadow-md">
-                  See how it works
-                </a>
-              </Magnetic>
+
+            {/* The inlet: streams flowing down into the product */}
+            <div aria-hidden className="pointer-events-none relative mx-auto -mb-6 h-14 max-w-3xl">
+              <svg viewBox="0 0 600 56" className="h-full w-full overflow-visible opacity-60" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="heroStream" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#38bdf8" stopOpacity="0" />
+                    <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.9" />
+                  </linearGradient>
+                </defs>
+                <path d="M120 0 C 150 30, 240 36, 300 52" fill="none" stroke="url(#heroStream)" strokeWidth="1.5" className="flow-dash" />
+                <path d="M300 0 L300 52" fill="none" stroke="url(#heroStream)" strokeWidth="1.5" className="flow-dash" style={{ animationDelay: "-0.3s" }} />
+                <path d="M480 0 C 450 30, 360 36, 300 52" fill="none" stroke="url(#heroStream)" strokeWidth="1.5" className="flow-dash" style={{ animationDelay: "-0.6s" }} />
+              </svg>
             </div>
-            <p className="mt-5 text-xs text-slate-400">No credit card · no SMTP config · integrate in 2 minutes</p>
-          </div>
 
-          {/* Product preview — floats on idle, tilts in 3D under the cursor */}
-          <div className="animate-float">
-            <Tilt max={6} className="rounded-3xl">
-              <HeroPreview />
-            </Tilt>
-          </div>
+            {/* Product preview — glowing frame, floats on idle, tilts under the cursor */}
+            <div className="animate-float relative">
+              <div aria-hidden className="pointer-events-none absolute left-1/2 top-8 h-56 w-[560px] -translate-x-1/2 rounded-full bg-cyan-500/15 blur-[100px]" />
+              <Tilt max={6} className="rounded-3xl">
+                <HeroPreview />
+              </Tilt>
+            </div>
 
-          {/* Framework marquee */}
-          <div className="mx-auto max-w-5xl px-6 pb-16 fade-up" style={{ animationDelay: "120ms" }}>
-            <p className="mb-5 text-center text-xs font-semibold uppercase tracking-widest text-slate-400">Drops into any stack</p>
-            <div className="marquee-mask relative overflow-hidden">
-              <div className="flex w-max animate-marquee gap-3">
-                {[...Array(2)].flatMap((_, copy) =>
-                  ["Astro", "Next.js", "Nuxt", "Vue", "Svelte", "SvelteKit", "Remix", "React", "Solid", "Qwik", "Angular", "Plain HTML"].map((s) => (
-                    <span key={`${copy}-${s}`} className="inline-flex shrink-0 items-center rounded-full border border-slate-200 bg-white/70 px-4 py-2 text-sm font-medium text-slate-600 shadow-sm backdrop-blur">
-                      {s}
-                    </span>
-                  ))
-                )}
+            {/* Framework marquee */}
+            <div className="relative mx-auto max-w-5xl px-6 pt-14 fade-up" style={{ animationDelay: "120ms" }}>
+              <p className="mb-5 text-center text-xs font-semibold uppercase tracking-widest text-slate-500">Drops into any stack</p>
+              <div className="marquee-mask relative overflow-hidden">
+                <div className="flex w-max animate-marquee gap-3">
+                  {[...Array(2)].flatMap((_, copy) =>
+                    ["Astro", "Next.js", "Nuxt", "Vue", "Svelte", "SvelteKit", "Remix", "React", "Solid", "Qwik", "Angular", "Plain HTML"].map((s) => (
+                      <span key={`${copy}-${s}`} className="inline-flex shrink-0 items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 backdrop-blur">
+                        {s}
+                      </span>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          </SpotlightCard>
         </header>
 
-        {/* ---------------- The wedge: no SMTP ---------------- */}
+        {/* ---------------- The wedge: no SMTP (light sheet slides over the dark hero) ---------------- */}
+        <div className="relative -mt-10 rounded-t-[2.5rem] bg-white">
         <section className="mx-auto max-w-6xl px-6 py-20 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
@@ -206,8 +226,9 @@ export default function Home() {
             </div>
           </div>
         </section>
+        </div>
 
-        {/* ---------------- Animated demo ---------------- */}
+        {/* ---------------- Playable demo ---------------- */}
         <LazyDemoFlow />
 
         {/* ---------------- Features (dark band) ---------------- */}

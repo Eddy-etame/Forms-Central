@@ -17,7 +17,7 @@ const LINKS = [
  * simply disappear — most first visits are mobile, so this was a broken
  * funnel, not a styling gap.
  */
-export function MobileMenu() {
+export function MobileMenu({ dark = false }: { dark?: boolean }) {
   const [open, setOpen] = useState(false);
 
   // Lock scroll while open; close on Escape.
@@ -37,7 +37,9 @@ export function MobileMenu() {
         aria-label={open ? 'Close menu' : 'Open menu'}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition-colors hover:bg-slate-50"
+        className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
+          dark ? 'border-white/15 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+        }`}
       >
         {open ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
       </button>

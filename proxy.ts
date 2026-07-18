@@ -12,31 +12,41 @@ const BOT_USER_AGENTS = [
   'scraper', 'crawler', 'spider', 'got', 'node-fetch', 'superagent'
 ];
 
+/**
+ * Indistinguishable 404: rewrite to a path that doesn't exist, so Next
+ * renders the SAME branded not-found page (same body, same headers, same
+ * render cost) as any genuinely missing route. A bare `new NextResponse
+ * ('Not Found', 404)` — or a 404 that sets cookies — is a fingerprint that
+ * tells an attacker the route exists but is guarded.
+ */
+function hidden404(request: NextRequest) {
+  return NextResponse.rewrite(new URL('/__no-such-route__', request.url));
+}
+
 export async function proxy(request: NextRequest) {
   const url = request.nextUrl.clone();
-  
+
   // 1. Scraper Block by User-Agent
   const userAgent = (request.headers.get('user-agent') || '').toLowerCase();
   const isSuspiciousAgent = BOT_USER_AGENTS.some(bot => userAgent.includes(bot));
-  
+
   if (isSuspiciousAgent) {
-    // Silently return 404
-    return new NextResponse('Not Found', { status: 404 });
+    return hidden404(request);
   }
 
   // 2. IP Blacklist check at routing level
   const forwardedFor = request.headers.get('x-forwarded-for');
   const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
-  
+
   if (await isBlacklisted(ipAddress)) {
-    return new NextResponse('Not Found', { status: 404 });
+    return hidden404(request);
   }
 
   // 3. Admin Area Guard (/admin/*)
   if (url.pathname.startsWith('/admin')) {
     if (!JWT_SECRET) {
-      // Configuration error, return 404 to obfuscate
-      return new NextResponse('Not Found', { status: 404 });
+      // Configuration error — obfuscate identically
+      return hidden404(request);
     }
 
     const accessToken = request.cookies.get('access_token')?.value;
@@ -58,12 +68,12 @@ export async function proxy(request: NextRequest) {
         url.pathname = '/login';
         return NextResponse.redirect(url);
       }
-      
-      // If no session exists, return 404 to completely hide admin routes
-      return new NextResponse('Not Found', { status: 404 });
+
+      // No session: serve the identical branded 404 every missing route gets
+      return hidden404(request);
     }
 
-    // Verify JWT access token
+    // Verify JWT access token (HMAC verify via WebCrypto — constant-time)
     const payload = await verifyJWT(accessToken, JWT_SECRET);
     if (!payload || payload.sub !== 'admin') {
       // Check if prefetch to prevent console errors
@@ -76,11 +86,9 @@ export async function proxy(request: NextRequest) {
         return new NextResponse(null, { status: 204 });
       }
 
-      // If signature is invalid or expired, clear cookies and return 404
-      const response = new NextResponse('Not Found', { status: 404 });
-      response.cookies.delete('access_token');
-      response.cookies.delete('refresh_token');
-      return response;
+      // Invalid/expired token: DO NOT clear cookies here — Set-Cookie on a
+      // "404" would reveal the route is special. The dead token just expires.
+      return hidden404(request);
     }
   }
 

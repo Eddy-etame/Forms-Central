@@ -29,10 +29,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Password required' }, { status: 400 });
     }
 
-    // Compute SHA-256 hex hash of password
+    // Compute SHA-256 hex hash of password and compare CONSTANT-TIME —
+    // `!==` short-circuits on the first differing byte, leaking match-length
+    // through response timing (amaz_ convention: timingSafeEqual everywhere).
     const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+    const a = Buffer.from(passwordHash, 'utf8');
+    const b = Buffer.from(ADMIN_PASSWORD_HASH, 'utf8');
+    const matches = a.length === b.length && crypto.timingSafeEqual(a, b);
 
-    if (passwordHash !== ADMIN_PASSWORD_HASH) {
+    if (!matches) {
       logSecurityEvent({ type: SEC.ADMIN_LOGIN_FAILED, severity: 'critical', ip, detail: 'Invalid admin password' });
       // Intentionally return 401 Unauthorized for security audit obfuscation
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 });

@@ -24,7 +24,7 @@ function CopyBtn({ value }: { value: string }) {
         } catch {}
       }}
       aria-label="Copy"
-      className="shrink-0 rounded-md border border-slate-200 bg-white p-1.5 text-slate-500 hover:text-slate-900 transition-colors"
+      className="shrink-0 rounded-md border border-slate-200 bg-white p-1.5 text-slate-500 hover:text-slate-900 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white"
     >
       {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
     </button>
@@ -104,19 +104,19 @@ export default function DeveloperPanel() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Developer</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight dark:text-white">Developer</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           API keys and the MCP server — let your AI assistant run your forms.
         </p>
       </div>
 
       {!apiAccess && !loading && (
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-center">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-900">
-            <Lock className="h-4.5 w-4.5 text-white" />
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-center dark:border-slate-800 dark:bg-slate-900">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 dark:bg-white">
+            <Lock className="h-4.5 w-4.5 text-white dark:text-slate-950" />
           </div>
-          <p className="font-semibold text-slate-900">API &amp; MCP access starts on the Solo plan</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-slate-500">
+          <p className="font-semibold text-slate-900 dark:text-white">API &amp; MCP access starts on the Solo plan</p>
+          <p className="mx-auto mt-1 max-w-md text-sm text-slate-500 dark:text-slate-400">
             Connect Claude, Cursor or any MCP client and let it create forms and read your leads for you.
           </p>
           <a
@@ -129,19 +129,19 @@ export default function DeveloperPanel() {
       )}
 
       {/* Keys */}
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center gap-2.5 border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center gap-2.5 border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/60">
           <KeyRound className="h-4 w-4 text-slate-500" />
-          <h2 className="font-bold text-slate-900">API keys</h2>
+          <h2 className="font-bold text-slate-900 dark:text-white">API keys</h2>
         </div>
         <div className="space-y-4 p-6">
           {freshKey && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/30 dark:bg-emerald-500/10">
+              <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                 Your new key — shown only once, store it now
               </p>
               <div className="mt-2 flex items-center gap-2">
-                <code className="flex-1 truncate rounded bg-white px-3 py-2 text-xs font-semibold text-slate-800 border border-emerald-100">
+                <code className="flex-1 truncate rounded bg-white px-3 py-2 text-xs font-semibold text-slate-800 border border-emerald-100 dark:border-emerald-500/30 dark:bg-slate-950 dark:text-slate-200">
                   {freshKey}
                 </code>
                 <CopyBtn value={freshKey} />
@@ -159,12 +159,12 @@ export default function DeveloperPanel() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Key name (e.g. claude-code)"
                 maxLength={40}
-                className="h-10 flex-1 rounded-lg border border-slate-200 px-3.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                className="h-10 flex-1 rounded-lg border border-slate-200 px-3.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500"
               />
               <button
                 type="submit"
                 disabled={creating}
-                className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-800 transition-colors disabled:opacity-50"
+                className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-800 transition-colors disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
               >
                 <Plus className="h-4 w-4" /> {creating ? 'Creating…' : 'New key'}
               </button>
@@ -176,11 +176,11 @@ export default function DeveloperPanel() {
           ) : keys.length === 0 ? (
             <p className="text-sm text-slate-500">No active keys.</p>
           ) : (
-            <ul className="divide-y divide-slate-100 rounded-xl border border-slate-100">
+            <ul className="divide-y divide-slate-100 rounded-xl border border-slate-100 dark:divide-slate-800 dark:border-slate-800">
               {keys.map((k) => (
                 <li key={k.id} className="flex items-center justify-between gap-3 px-4 py-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-800">{k.name}</p>
+                    <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">{k.name}</p>
                     <p className="text-xs text-slate-400">
                       <code>{k.key_prefix}…</code>
                       {' · '}
@@ -202,21 +202,21 @@ export default function DeveloperPanel() {
       </section>
 
       {/* MCP */}
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center gap-2.5 border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center gap-2.5 border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/60">
           <Bot className="h-4 w-4 text-slate-500" />
-          <h2 className="font-bold text-slate-900">MCP server — your AI runs your forms</h2>
+          <h2 className="font-bold text-slate-900 dark:text-white">MCP server — your AI runs your forms</h2>
         </div>
         <div className="space-y-4 p-6">
-          <p className="text-sm leading-6 text-slate-600">
+          <p className="text-sm leading-6 text-slate-600 dark:text-slate-400">
             Connect Claude Code, Cursor, or any MCP client and your assistant can{' '}
-            <strong className="text-slate-900">create forms, read leads, and fetch integration snippets</strong>{' '}
+            <strong className="text-slate-900 dark:text-white">create forms, read leads, and fetch integration snippets</strong>{' '}
             without leaving the editor.
           </p>
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Endpoint</p>
             <div className="mt-1 flex items-center gap-2">
-              <code className="flex-1 truncate text-xs font-semibold text-slate-800">{mcpUrl}</code>
+              <code className="flex-1 truncate text-xs font-semibold text-slate-800 dark:text-slate-200">{mcpUrl}</code>
               <CopyBtn value={mcpUrl} />
             </div>
           </div>

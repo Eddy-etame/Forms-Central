@@ -13,10 +13,10 @@ import { Plus, X, Check, Copy, ArrowRight, Sparkles } from 'lucide-react';
 function CopyRow({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+    <div className="rounded-lg border border-slate-200 bg-slate-50 dark:bg-slate-950/60 p-3">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{label}</p>
       <div className="mt-1 flex items-center gap-2">
-        <code className="flex-1 truncate text-xs font-semibold text-slate-800">{value}</code>
+        <code className="flex-1 truncate text-xs font-semibold text-slate-800 dark:text-slate-200">{value}</code>
         <button
           onClick={async () => {
             try {
@@ -26,7 +26,7 @@ function CopyRow({ label, value }: { label: string; value: string }) {
             } catch {}
           }}
           aria-label={`Copy ${label}`}
-          className="shrink-0 rounded-md border border-slate-200 bg-white p-1.5 text-slate-500 hover:text-slate-900 transition-colors"
+          className="shrink-0 rounded-md border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-1.5 text-slate-500 hover:text-slate-900 transition-colors"
         >
           {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
         </button>
@@ -96,7 +96,7 @@ export default function NewFormButton({ prominent = false }: { prominent?: boole
       ) : (
         <button
           onClick={() => setOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:border-slate-300 transition-colors"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:border-slate-300 transition-colors"
         >
           <Plus className="h-4 w-4" /> New form
         </button>
@@ -118,8 +118,8 @@ export default function NewFormButton({ prominent = false }: { prominent?: boole
               exit={{ opacity: 0, scale: 0.95, y: 16 }}
               className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4">
-                <h3 className="font-bold text-slate-900">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 px-6 py-4">
+                <h3 className="font-bold text-slate-900 dark:text-white">
                   {created ? 'Your form is live' : 'Create a form'}
                 </h3>
                 <button onClick={close} aria-label="Close" className="rounded-full p-2 hover:bg-slate-200 transition-colors">
@@ -129,7 +129,7 @@ export default function NewFormButton({ prominent = false }: { prominent?: boole
 
               {!created ? (
                 <form onSubmit={create} className="space-y-4 p-6">
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
                     Name it after the website or purpose — you&apos;ll get its ID and a
                     working snippet right away.
                   </p>
@@ -146,7 +146,7 @@ export default function NewFormButton({ prominent = false }: { prominent?: boole
                     <div role="alert" className="rounded-lg border border-red-100 bg-red-50 p-3 text-xs font-medium text-red-600">
                       {error}
                       {paywall && (
-                        <a href="/pricing" className="mt-2 flex items-center gap-1 font-semibold text-slate-900 hover:underline">
+                        <a href="/pricing" className="mt-2 flex items-center gap-1 font-semibold text-slate-900 dark:text-white hover:underline">
                           See Pro plans <ArrowRight className="h-3 w-3" />
                         </a>
                       )}

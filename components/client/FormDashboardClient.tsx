@@ -77,8 +77,8 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
             <FileText className="h-3 w-3" />
             Form view
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{stats?.formName}</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{stats?.formName}</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Data and files submitted through this form.
           </p>
         </div>
@@ -96,13 +96,13 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+          className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-sm"
         >
           <div className="absolute -right-4 -top-4 rounded-full bg-blue-50 p-8">
             <BarChart3 className="h-8 w-8 text-blue-500" />
           </div>
           <p className="text-sm font-medium text-slate-500">Total submissions</p>
-          <h3 className="mt-2 text-4xl font-bold text-slate-900">{stats?.allTime || 0}</h3>
+          <h3 className="mt-2 text-4xl font-bold text-slate-900 dark:text-white">{stats?.allTime || 0}</h3>
           <div className="mt-4 flex items-center text-sm text-blue-600 font-medium">
             <TrendingUp className="mr-1 h-4 w-4" /> For this form
           </div>
@@ -113,9 +113,9 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-sm"
           >
-            <h3 className="font-bold text-slate-900 mb-4 text-sm">Trend (last 30 days)</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm">Trend (last 30 days)</h3>
             <div className="h-[120px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats?.dailyTrends || []}>
@@ -137,7 +137,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
             className="rounded-2xl border border-blue-100 bg-blue-50/50 p-6 shadow-sm flex items-center justify-center flex-col text-center"
           >
             <TrendingUp className="h-6 w-6 text-blue-400 mb-2" />
-            <p className="text-sm font-semibold text-slate-900">More data needed</p>
+            <p className="text-sm font-semibold text-slate-900 dark:text-white">More data needed</p>
             <p className="text-xs text-slate-500">The chart unlocks at 10 submissions.</p>
           </motion.div>
         )}
@@ -147,10 +147,10 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col"
+        className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden flex flex-col"
       >
-        <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="font-bold text-slate-900">Structured data</h3>
+        <div className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h3 className="font-bold text-slate-900 dark:text-white">Structured data</h3>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input 
@@ -163,8 +163,8 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-white border-b border-slate-100 text-xs font-semibold uppercase text-slate-400">
+          <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
+            <thead className="bg-white border-b border-slate-100 dark:border-slate-800 text-xs font-semibold uppercase text-slate-400">
               <tr>
                 <th className="px-6 py-4">Date</th>
                 {tableColumns.map(col => (
@@ -175,7 +175,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white">
               {filteredLeads.length === 0 ? (
                 <tr>
                   <td colSpan={tableColumns.length + 2} className="px-6 py-12 text-center text-slate-500">
@@ -251,9 +251,9 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col max-h-[90vh]"
             >
-              <div className="border-b border-slate-100 bg-slate-50 px-6 py-4 flex items-center justify-between shrink-0">
+              <div className="border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 px-6 py-4 flex items-center justify-between shrink-0">
                 <div>
-                  <h3 className="font-bold text-slate-900 text-lg">Full submission</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-lg">Full submission</h3>
                   <p className="text-xs text-slate-500">
                     Submitted {new Date(selectedLead.created_at).toLocaleString('en-GB')}
                   </p>
@@ -275,7 +275,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                     return (
                       <div 
                         key={key} 
-                        className={`rounded-xl border border-slate-100 bg-white shadow-sm p-5 ${isLongText ? 'md:col-span-2' : ''}`}
+                        className={`rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm p-5 ${isLongText ? 'md:col-span-2' : ''}`}
                       >
                         <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 border-b border-slate-50 pb-2">
                           {key.replace(/_/g, ' ')}
@@ -284,7 +284,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                         {isFile ? (
                           <div className="flex flex-col gap-4">
                             {String(value).match(/\.(jpeg|jpg|gif|png|webp)$/i) ? (
-                              <div className="relative h-40 w-full overflow-hidden rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
+                              <div className="relative h-40 w-full overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-950/60 flex items-center justify-center border border-slate-100 dark:border-slate-800">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={String(value)} alt={key} className="max-h-full max-w-full object-contain" />
                               </div>
@@ -305,7 +305,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                             </a>
                           </div>
                         ) : (
-                          <div className="prose prose-sm prose-slate max-w-none text-slate-700">
+                          <div className="prose prose-sm prose-slate max-w-none text-slate-700 dark:text-slate-300">
                             {String(value).split('\n').map((line, i) => (
                               <p key={i} className="my-1">{line}</p>
                             ))}
@@ -317,7 +317,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                 </div>
               </div>
               
-              <div className="border-t border-slate-100 px-6 py-4 bg-slate-50 flex justify-end shrink-0">
+              <div className="border-t border-slate-100 dark:border-slate-800 px-6 py-4 bg-slate-50 dark:bg-slate-950/60 flex justify-end shrink-0">
                 <button 
                   onClick={() => setSelectedLead(null)}
                   className="rounded-lg bg-white border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"

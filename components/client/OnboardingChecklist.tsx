@@ -9,14 +9,14 @@ type Form = { id: string; name: string };
 function CopyField({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+    <div className="rounded-lg border border-slate-200 bg-slate-50 dark:bg-slate-950/60 p-3">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{label}</p>
       <div className="mt-1 flex items-center gap-2">
-        <code className="flex-1 truncate text-xs font-semibold text-slate-800">{value}</code>
+        <code className="flex-1 truncate text-xs font-semibold text-slate-800 dark:text-slate-200">{value}</code>
         <button
           onClick={async () => { try { await navigator.clipboard.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {} }}
           aria-label={`Copy ${label}`}
-          className="shrink-0 rounded-md border border-slate-200 bg-white p-1.5 text-slate-500 hover:text-slate-900 transition-colors"
+          className="shrink-0 rounded-md border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-1.5 text-slate-500 hover:text-slate-900 transition-colors"
         >
           {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
         </button>
@@ -82,7 +82,7 @@ export default function OnboardingChecklist({ formsCount, forms }: { formsCount:
           <Inbox className="h-3.5 w-3.5" /> Getting started
         </div>
         <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">Let&apos;s get your first lead</h1>
-        <p className="mt-2 text-slate-600">Three steps, about two minutes. No SMTP, no backend to run.</p>
+        <p className="mt-2 text-slate-600 dark:text-slate-400">Three steps, about two minutes. No SMTP, no backend to run.</p>
       </div>
 
       {/* Step 1 */}
@@ -94,10 +94,10 @@ export default function OnboardingChecklist({ formsCount, forms }: { formsCount:
         <div className="flex-1 pb-6">
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-slate-400" />
-            <h2 className="font-bold text-slate-900">Create a form</h2>
+            <h2 className="font-bold text-slate-900 dark:text-white">Create a form</h2>
             {s1 === 'done' && <span className="text-xs font-semibold text-emerald-600">Done · {formsCount} form{formsCount > 1 ? 's' : ''}</span>}
           </div>
-          <p className="mt-1 text-sm text-slate-500">Name it after the website it lives on. You&apos;ll get an ID to wire up.</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Name it after the website it lives on. You&apos;ll get an ID to wire up.</p>
           <div className="mt-3">
             <NewFormButton prominent={!hasForm} />
           </div>
@@ -113,9 +113,9 @@ export default function OnboardingChecklist({ formsCount, forms }: { formsCount:
         <div className={`flex-1 pb-6 ${s2 === 'todo' ? 'opacity-50' : ''}`}>
           <div className="flex items-center gap-2">
             <Code2 className="h-4 w-4 text-slate-400" />
-            <h2 className="font-bold text-slate-900">Add it to your website</h2>
+            <h2 className="font-bold text-slate-900 dark:text-white">Add it to your website</h2>
           </div>
-          <p className="mt-1 text-sm text-slate-500">Paste this HTML anywhere. It works with no JavaScript and no email setup.</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Paste this HTML anywhere. It works with no JavaScript and no email setup.</p>
 
           {hasForm && (
             <div className="mt-4 space-y-3">
@@ -151,14 +151,14 @@ export default function OnboardingChecklist({ formsCount, forms }: { formsCount:
         <div className={`flex-1 ${s3 === 'todo' && !hasForm ? 'opacity-50' : ''}`}>
           <div className="flex items-center gap-2">
             <Inbox className="h-4 w-4 text-slate-400" />
-            <h2 className="font-bold text-slate-900">Receive your first lead</h2>
+            <h2 className="font-bold text-slate-900 dark:text-white">Receive your first lead</h2>
           </div>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Submit your form once to test it. Your lead lands here instantly — with the owner notified and a branded
             auto-reply sent for you.
           </p>
           {hasForm && (
-            <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-500">
+            <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-500 dark:text-slate-400">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-blue-500" />
@@ -169,7 +169,7 @@ export default function OnboardingChecklist({ formsCount, forms }: { formsCount:
         </div>
       </div>
 
-      <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+      <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-950/60 px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
         <ArrowRight className="h-4 w-4 shrink-0 text-slate-400" />
         Once your first lead arrives, this page becomes your live analytics dashboard.
       </div>

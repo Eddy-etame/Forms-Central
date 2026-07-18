@@ -27,7 +27,7 @@ export async function NavBar({ variant = 'light' }: { variant?: 'light' | 'dark'
   const dark = variant === 'dark';
   const signedIn = await hasClientSession();
   return (
-    <nav className={`sticky top-0 z-50 border-b backdrop-blur-xl ${dark ? 'border-white/10 bg-slate-950/70' : 'border-slate-200/70 bg-white/70'}`}>
+    <nav className={`sticky top-0 z-50 border-b backdrop-blur-xl ${dark ? 'border-white/5 bg-slate-950' : 'border-slate-200/70 bg-white/80'}`}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
         <Link href="/" className="group flex items-center gap-2.5">
           <LogoBadge className="h-8 w-8 rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6" />

@@ -118,21 +118,28 @@ export default function Home() {
         <header className="relative overflow-hidden bg-slate-950 pb-28 text-white">
           {/* Texture + aurora */}
           <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff09_1px,transparent_1px),linear-gradient(to_bottom,#ffffff09_1px,transparent_1px)] bg-[size:36px_36px] [mask-image:radial-gradient(ellipse_65%_55%_at_50%_0%,#000_45%,transparent_100%)]" />
-            <div className="aurora-a absolute -top-28 left-[20%] h-[420px] w-[420px] rounded-full bg-blue-600/25 blur-[130px]" />
-            <div className="aurora-b absolute -top-16 right-[18%] h-[380px] w-[380px] rounded-full bg-cyan-500/15 blur-[130px]" />
-            <div className="aurora-a absolute top-40 left-1/2 h-[300px] w-[640px] -translate-x-1/2 rounded-full bg-violet-600/12 blur-[140px]" />
+            {/* deep radial base — lifts it off flat navy */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,#1e293b_0%,#0b1120_45%,#020617_100%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:38px_38px] [mask-image:radial-gradient(ellipse_65%_55%_at_50%_0%,#000_40%,transparent_100%)]" />
+            <div className="aurora-a absolute -top-28 left-[18%] h-[440px] w-[440px] rounded-full bg-blue-600/30 blur-[130px]" />
+            <div className="aurora-b absolute -top-16 right-[16%] h-[400px] w-[400px] rounded-full bg-cyan-500/20 blur-[130px]" />
+            <div className="aurora-a absolute top-44 left-1/2 h-[320px] w-[680px] -translate-x-1/2 rounded-full bg-violet-600/15 blur-[140px]" />
+            {/* film grain — the texture layer every reference site uses */}
+            <div
+              className="absolute inset-0 opacity-[0.06] mix-blend-overlay"
+              style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")" }}
+            />
           </div>
 
           {/* Cursor-reactive glow across the whole hero */}
           <SpotlightCard glow="rgba(56,189,248,0.07)" size={900} className="relative">
-            <div className="relative mx-auto max-w-4xl px-6 pt-20 pb-14 text-center lg:pt-28 fade-up">
-              <Kicker center className="mb-7">Self-hosted form backend · you own the data</Kicker>
-              <h1 className="text-balance text-5xl font-extrabold tracking-tight text-white sm:text-7xl">
+            <div className="relative mx-auto max-w-4xl px-6 pt-14 pb-9 text-center lg:pt-[4.5rem] fade-up">
+              <Kicker center className="mb-6">Self-hosted form backend · you own the data</Kicker>
+              <h1 className="text-balance text-5xl font-extrabold leading-[0.95] tracking-tight text-white sm:text-[5.25rem]">
                 One form backend for <span className="shimmer-text bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 bg-clip-text font-serif italic text-transparent">all your websites.</span>
               </h1>
-              <p className="mx-auto mt-6 max-w-2xl text-balance text-lg leading-8 text-slate-400">
-                Centralize submissions from every site into one dashboard — with <strong className="text-white">no SMTP and no per-site setup</strong>. Branded auto-reply emails, AI + proof-of-work spam blocking, CSV exports. The privacy-first alternative to Formspree and Jotform.
+              <p className="mx-auto mt-6 max-w-xl text-balance text-lg leading-8 text-slate-300">
+                Every submission from every site, in one dashboard — with <strong className="text-white">no SMTP and no backend</strong>. Branded auto-replies and AI spam-blocking included.
               </p>
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Magnetic>
@@ -195,9 +202,7 @@ export default function Home() {
         <section className="mx-auto max-w-6xl px-6 py-20 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
-              <div className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-600">
-                <Lock className="h-4 w-4" /> The whole integration
-              </div>
+              <Kicker tone="light" className="mb-4">The whole integration</Kicker>
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
                 Two values. Zero email plumbing.
               </h2>
@@ -277,7 +282,7 @@ export default function Home() {
           <div aria-hidden className="pointer-events-none absolute left-[12%] bottom-8 h-56 w-56 rounded-full bg-violet-400/10 blur-[110px]" />
           <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
             <Reveal className="mb-16 max-w-2xl">
-              <div className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-600"><Zap className="h-4 w-4" /> Fast path</div>
+              <Kicker tone="light" className="mb-4">Fast path</Kicker>
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Live in three steps</h2>
               <p className="mt-4 text-lg text-slate-600">From zero to receiving branded lead emails — in minutes.</p>
             </Reveal>

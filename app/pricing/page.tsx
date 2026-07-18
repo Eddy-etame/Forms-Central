@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Check, Minus, ArrowRight, Sparkles } from "lucide-react";
+import { Check, Minus, ArrowRight } from "lucide-react";
+import { Kicker } from "@/components/marketing/Kicker";
 import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
 import AiChat from "@/components/AiChat";
 import { PLANS } from "@/lib/plans";
@@ -129,8 +130,8 @@ function PlanCard({
   const content = (
     <>
       {highlight && (
-        <div className="absolute -top-3.5 left-7 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-500 to-violet-600 px-3 py-1 text-xs font-semibold text-white shadow-lg shadow-blue-500/30">
-          <Sparkles className="h-3 w-3" /> Most popular
+        <div className="absolute -top-3 left-7 inline-flex items-center rounded-md bg-cyan-400 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-slate-950">
+          Most popular
         </div>
       )}
       <h2 className="relative text-base font-bold">{name}</h2>
@@ -191,12 +192,14 @@ export default function PricingPage() {
 
         <header className="relative overflow-hidden">
           <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:26px_26px] [mask-image:radial-gradient(ellipse_55%_60%_at_50%_0%,#000_50%,transparent_100%)]" />
             <div className="aurora-a absolute -top-20 left-1/3 h-72 w-72 rounded-full bg-blue-500/15 blur-[110px]" />
-            <div className="aurora-b absolute -top-8 right-1/3 h-64 w-64 rounded-full bg-violet-500/12 blur-[110px]" />
+            <div className="aurora-b absolute -top-8 right-1/3 h-64 w-64 rounded-full bg-cyan-400/12 blur-[110px]" />
           </div>
           <div className="mx-auto max-w-3xl px-6 pt-16 pb-10 text-center lg:pt-24">
+            <Kicker center tone="light" className="mb-5">Pricing · usage-based, not per-form</Kicker>
             <h1 className="text-balance text-4xl font-extrabold tracking-tight sm:text-6xl">
-              Pay for leads, <span className="shimmer-text bg-gradient-to-r from-blue-600 via-violet-500 to-blue-600 bg-clip-text text-transparent">not per form.</span>
+              Pay for leads, <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text font-serif italic text-transparent">not per form.</span>
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-600">
               One backend for every site you build. Start free in two minutes — upgrade

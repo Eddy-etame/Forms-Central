@@ -1,13 +1,31 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LayoutDashboard } from "lucide-react";
+import { cookies } from "next/headers";
+import { verifyJWT } from "@/lib/jwt";
 import { LogoBadge } from "@/components/Logo";
 import { Magnetic } from "@/components/marketing/Interactive";
 import { MobileMenu } from "@/components/marketing/MobileMenu";
 
+/** Is there a valid client session? Lets the marketing nav stay coherent for
+ *  signed-in subscribers (no more "Sign in / Get started" — and the feeling of
+ *  being logged out — when they open /pricing from inside the dashboard). */
+async function hasClientSession(): Promise<boolean> {
+  try {
+    const token = (await cookies()).get('client_access_token')?.value;
+    const secret = process.env.JWT_SECRET;
+    if (!token || !secret) return false;
+    const payload = await verifyJWT(token, secret);
+    return !!payload && payload.sub === 'client';
+  } catch {
+    return false;
+  }
+}
+
 /** Shared marketing nav — used by every public page (multi-page site).
  *  `variant="dark"` sits on the dark hero (landing); default stays light. */
-export function NavBar({ variant = 'light' }: { variant?: 'light' | 'dark' }) {
+export async function NavBar({ variant = 'light' }: { variant?: 'light' | 'dark' }) {
   const dark = variant === 'dark';
+  const signedIn = await hasClientSession();
   return (
     <nav className={`sticky top-0 z-50 border-b backdrop-blur-xl ${dark ? 'border-white/10 bg-slate-950/70' : 'border-slate-200/70 bg-white/70'}`}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
@@ -23,19 +41,36 @@ export function NavBar({ variant = 'light' }: { variant?: 'light' | 'dark' }) {
           <Link href="/#faq" className={`link-underline transition-colors ${dark ? 'hover:text-white' : 'hover:text-slate-900'}`}>FAQ</Link>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/client/login" className={`link-underline hidden text-sm font-medium transition-colors sm:block ${dark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}>Sign in</Link>
-          <Magnetic strength={0.2}>
-            <Link
-              href="/client/signup"
-              className={`btn-shine hidden items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-all duration-300 sm:inline-flex ${
-                dark
-                  ? 'btn-shine-soft bg-white text-slate-900 hover:bg-slate-100 hover:shadow-md hover:shadow-white/20'
-                  : 'bg-slate-900 text-white hover:bg-slate-800 hover:shadow-md hover:shadow-blue-500/20'
-              }`}
-            >
-              Get started <ArrowRight className="cta-arrow h-3.5 w-3.5" />
-            </Link>
-          </Magnetic>
+          {signedIn ? (
+            <Magnetic strength={0.2}>
+              <Link
+                href="/client/dashboard"
+                className={`btn-shine inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-all duration-300 ${
+                  dark
+                    ? 'btn-shine-soft bg-white text-slate-900 hover:bg-slate-100 hover:shadow-md hover:shadow-white/20'
+                    : 'bg-slate-900 text-white hover:bg-slate-800 hover:shadow-md hover:shadow-blue-500/20'
+                }`}
+              >
+                <LayoutDashboard className="h-3.5 w-3.5" /> Dashboard
+              </Link>
+            </Magnetic>
+          ) : (
+            <>
+              <Link href="/client/login" className={`link-underline hidden text-sm font-medium transition-colors sm:block ${dark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}>Sign in</Link>
+              <Magnetic strength={0.2}>
+                <Link
+                  href="/client/signup"
+                  className={`btn-shine hidden items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-all duration-300 sm:inline-flex ${
+                    dark
+                      ? 'btn-shine-soft bg-white text-slate-900 hover:bg-slate-100 hover:shadow-md hover:shadow-white/20'
+                      : 'bg-slate-900 text-white hover:bg-slate-800 hover:shadow-md hover:shadow-blue-500/20'
+                  }`}
+                >
+                  Get started <ArrowRight className="cta-arrow h-3.5 w-3.5" />
+                </Link>
+              </Magnetic>
+            </>
+          )}
           <MobileMenu dark={dark} />
         </div>
       </div>

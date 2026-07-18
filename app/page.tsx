@@ -1,9 +1,10 @@
 import Link from "next/link";
 import {
   Shield, Zap, Inbox, Palette, BarChart3, ArrowRight, Check, X,
-  FileDown, RefreshCw, Terminal, Globe, Lock, Sparkles,
+  FileDown, RefreshCw, Terminal, Globe, Lock,
 } from "lucide-react";
 import { NavBar } from "@/components/marketing/NavBar";
+import { Kicker } from "@/components/marketing/Kicker";
 import HeroPreview from "@/components/marketing/HeroPreview";
 import { LogoBadge } from "@/components/Logo";
 import AiChat from "@/components/AiChat";
@@ -126,10 +127,7 @@ export default function Home() {
           {/* Cursor-reactive glow across the whole hero */}
           <SpotlightCard glow="rgba(56,189,248,0.07)" size={900} className="relative">
             <div className="relative mx-auto max-w-4xl px-6 pt-20 pb-14 text-center lg:pt-28 fade-up">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-sm font-medium text-slate-300 backdrop-blur">
-                <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
-                Self-hosted form backend · you own the data
-              </div>
+              <Kicker center className="mb-7">Self-hosted form backend · you own the data</Kicker>
               <h1 className="text-balance text-5xl font-extrabold tracking-tight text-white sm:text-7xl">
                 One form backend for <span className="shimmer-text bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 bg-clip-text font-serif italic text-transparent">all your websites.</span>
               </h1>
@@ -356,7 +354,7 @@ export default function Home() {
         <section id="faq" className="border-t border-slate-100 bg-gradient-to-b from-white to-slate-50 py-24">
           <div className="mx-auto max-w-3xl px-6 lg:px-8">
             <Reveal className="mb-12 text-center">
-              <div className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-600"><Sparkles className="h-4 w-4" /> Answers</div>
+              <Kicker center tone="light" className="mb-4">Answers</Kicker>
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Frequently asked</h2>
             </Reveal>
             <div className="space-y-3">

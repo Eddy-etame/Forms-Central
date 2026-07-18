@@ -3,8 +3,9 @@
 import { useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
-  Send, Bot, ShieldCheck, Inbox, Mail, Cpu, CheckCircle2, Sparkles,
+  Send, Bot, ShieldCheck, Inbox, Mail, Cpu, CheckCircle2,
 } from 'lucide-react';
+import { Kicker } from '@/components/marketing/Kicker';
 
 /**
  * The playable demo — the visitor drives the actual pipeline instead of
@@ -87,9 +88,7 @@ export default function LiveDemo() {
     <section id="demo" className="border-y border-slate-100 bg-slate-50/60 py-20" aria-label="Playable demo of the submission pipeline">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <div className="mb-12 max-w-2xl">
-          <div className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-cyan-600">
-            <Sparkles className="h-4 w-4" /> Playable demo
-          </div>
+          <Kicker tone="light" className="mb-4">Playable demo</Kicker>
           <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             Don&apos;t read about it. <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">Use it.</span>
           </h2>

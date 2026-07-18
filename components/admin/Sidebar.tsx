@@ -64,14 +64,16 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* My Atelier — the owner's own subscriber workspace */}
-      <Link
-        href="/client/dashboard"
+      {/* My Atelier — establishes the owner's own subscriber session (via
+          /api/admin/atelier) then lands on the dashboard. Plain <a>, not
+          next/link: this hits a route handler that sets a cookie + 302s. */}
+      <a
+        href="/api/admin/atelier"
         className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-900 px-3 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors dark:border-slate-700 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
       >
         <Briefcase className="h-4.5 w-4.5" />
         My Atelier
-      </Link>
+      </a>
 
       {/* Theme + Logout */}
       <div className="mt-4 border-t border-slate-100 pt-4 space-y-1 dark:border-slate-800">

@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Class-scoped dark mode (Tailwind v4): `dark:` applies inside any .dark
+   ancestor — used by the client dashboard (dark-first, toggleable). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

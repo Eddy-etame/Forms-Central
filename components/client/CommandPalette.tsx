@@ -110,7 +110,7 @@ export default function CommandPalette({ forms }: { forms: { id: string; name: s
       {/* Discoverability: floating hint (desktop only, out of the content flow) */}
       <button
         onClick={openPalette}
-        className="fixed bottom-5 right-5 z-40 hidden items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-3.5 py-2 text-xs font-medium text-slate-500 shadow-lg backdrop-blur transition-all hover:-translate-y-0.5 hover:text-slate-900 hover:shadow-xl lg:flex"
+        className="fixed bottom-5 right-5 z-40 hidden items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-3.5 py-2 text-xs font-medium text-slate-500 shadow-lg backdrop-blur transition-all hover:-translate-y-0.5 hover:text-slate-900 hover:shadow-xl lg:flex dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-400 dark:hover:text-white"
         aria-label="Open command palette"
       >
         <Command className="h-3.5 w-3.5" />
@@ -121,9 +121,9 @@ export default function CommandPalette({ forms }: { forms: { id: string; name: s
       {open && (
         <div className="fixed inset-0 z-[70] flex items-start justify-center px-4 pt-[14vh]" role="dialog" aria-modal="true" aria-label="Command palette">
           <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <div className="fade-up relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+          <div className="fade-up relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
             {/* Search */}
-            <div className="flex items-center gap-3 border-b border-slate-100 px-4">
+            <div className="flex items-center gap-3 border-b border-slate-100 px-4 dark:border-slate-800">
               <Search className="h-4 w-4 shrink-0 text-slate-400" />
               <input
                 ref={inputRef}
@@ -131,7 +131,7 @@ export default function CommandPalette({ forms }: { forms: { id: string; name: s
                 onChange={(e) => { setQuery(e.target.value); setActive(0); }}
                 onKeyDown={onInputKey}
                 placeholder="Search forms, pages, actions…"
-                className="h-13 w-full bg-transparent py-4 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                className="h-13 w-full bg-transparent py-4 text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-white"
               />
               <kbd className="rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-[10px] text-slate-400">esc</kbd>
             </div>
@@ -154,7 +154,7 @@ export default function CommandPalette({ forms }: { forms: { id: string; name: s
                           onClick={() => item.run()}
                           onMouseEnter={() => setActive(idx)}
                           className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
-                            isActive ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-50'
+                            isActive ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-950' : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/5'
                           }`}
                         >
                           <item.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
@@ -170,7 +170,7 @@ export default function CommandPalette({ forms }: { forms: { id: string; name: s
             </div>
 
             {/* Footer */}
-            <div className="flex items-center gap-4 border-t border-slate-100 bg-slate-50/70 px-4 py-2.5 text-[11px] text-slate-400">
+            <div className="flex items-center gap-4 border-t border-slate-100 bg-slate-50/70 px-4 py-2.5 text-[11px] text-slate-400 dark:border-slate-800 dark:bg-slate-950/50">
               <span className="flex items-center gap-1"><kbd className="rounded border border-slate-200 bg-white px-1 font-mono">↑↓</kbd> navigate</span>
               <span className="flex items-center gap-1"><kbd className="rounded border border-slate-200 bg-white px-1 font-mono">↵</kbd> open</span>
               <span className="ml-auto font-medium text-slate-300">Inlet</span>

@@ -75,8 +75,8 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Overview</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight dark:text-white">Overview</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Manage your forms and review your latest leads.
           </p>
         </div>
@@ -84,7 +84,7 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
           <NewFormButton />
           <button
             onClick={exportToCSV}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 transition-colors"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 transition-colors dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
           >
             <Download className="h-4 w-4" />
             Export CSV
@@ -128,13 +128,13 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-8 text-center"
+          className="rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-8 text-center dark:border-blue-500/25 dark:bg-blue-500/5"
         >
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600">
             <FileText className="h-6 w-6 text-white" />
           </div>
-          <h3 className="text-lg font-bold text-slate-900">Create your first form</h3>
-          <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Create your first form</h3>
+          <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
             Name it, copy two values into your website, and submissions start landing
             here — with spam blocked and branded auto-replies sent for you.
           </p>
@@ -146,23 +146,23 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {[
-          { label: "Total leads", value: stats?.allTime || 0, icon: Users, hint: "All-time volume", trend: TrendingUp, tone: "text-blue-600", tile: "bg-blue-50 text-blue-600", glow: "from-blue-500/15" },
-          { label: "Last 7 days", value: stats?.past7Days || 0, icon: CalendarDays, hint: "Recent momentum", trend: TrendingUp, tone: "text-emerald-600", tile: "bg-emerald-50 text-emerald-600", glow: "from-emerald-500/15" },
-          { label: "Active forms", value: stats?.formsCount || 0, icon: FileText, hint: "Conversion sources", trend: FileText, tone: "text-violet-600", tile: "bg-violet-50 text-violet-600", glow: "from-violet-500/15" },
+          { label: "Total leads", value: stats?.allTime || 0, icon: Users, hint: "All-time volume", trend: TrendingUp, tone: "text-blue-600 dark:text-blue-400", tile: "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400", glow: "from-blue-500/15" },
+          { label: "Last 7 days", value: stats?.past7Days || 0, icon: CalendarDays, hint: "Recent momentum", trend: TrendingUp, tone: "text-emerald-600 dark:text-emerald-400", tile: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400", glow: "from-emerald-500/15" },
+          { label: "Active forms", value: stats?.formsCount || 0, icon: FileText, hint: "Conversion sources", trend: FileText, tone: "text-violet-600 dark:text-violet-400", tile: "bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400", glow: "from-violet-500/15" },
         ].map((c, i) => (
           <motion.div
             key={c.label}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 + i * 0.08 }}
-            className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+            className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
           >
             <div aria-hidden className={`pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br ${c.glow} to-transparent blur-2xl`} />
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-slate-500">{c.label}</p>
               <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${c.tile}`}><c.icon className="h-[18px] w-[18px]" /></span>
             </div>
-            <h3 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 tabular-nums">{(c.value as number).toLocaleString("en-US")}</h3>
+            <h3 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 tabular-nums dark:text-white">{(c.value as number).toLocaleString("en-US")}</h3>
             <div className={`mt-3 flex items-center gap-1 text-sm font-medium ${c.tone}`}>
               <c.trend className="h-4 w-4" /> {c.hint}
             </div>
@@ -176,12 +176,12 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
           >
             <div className="mb-6 flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><BarChart3 className="h-[18px] w-[18px]" /></span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"><BarChart3 className="h-[18px] w-[18px]" /></span>
               <div>
-                <h3 className="font-bold leading-tight text-slate-900">Submission trend</h3>
+                <h3 className="font-bold leading-tight text-slate-900 dark:text-white">Submission trend</h3>
                 <p className="text-xs text-slate-500">Last 30 days</p>
               </div>
             </div>
@@ -209,12 +209,12 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="lg:col-span-1 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col"
+            className="lg:col-span-1 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 flex flex-col"
           >
             <div className="mb-6 flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600"><FileText className="h-[18px] w-[18px]" /></span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400"><FileText className="h-[18px] w-[18px]" /></span>
               <div>
-                <h3 className="font-bold leading-tight text-slate-900">Top forms</h3>
+                <h3 className="font-bold leading-tight text-slate-900 dark:text-white">Top forms</h3>
                 <p className="text-xs text-slate-500">By share of leads</p>
               </div>
             </div>
@@ -229,12 +229,12 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
                     <div key={idx} className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="flex min-w-0 items-center gap-2 pr-4">
-                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-100 text-[11px] font-bold text-slate-500 tabular-nums">{idx + 1}</span>
-                          <span className="truncate font-medium text-slate-700">{form.name}</span>
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-100 text-[11px] font-bold text-slate-500 tabular-nums dark:bg-slate-800 dark:text-slate-400">{idx + 1}</span>
+                          <span className="truncate font-medium text-slate-700 dark:text-slate-300">{form.name}</span>
                         </span>
-                        <span className="shrink-0 font-bold text-slate-900 tabular-nums">{form.count}</span>
+                        <span className="shrink-0 font-bold text-slate-900 tabular-nums dark:text-white">{form.count}</span>
                       </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-blue-500 to-violet-500 transition-[width] duration-500"
                           style={{ width: `${percentage}%` }}
@@ -251,13 +251,13 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-blue-100 bg-blue-50/50 p-6 shadow-sm text-center"
+          className="rounded-2xl border border-blue-100 bg-blue-50/50 p-6 shadow-sm text-center dark:border-blue-500/20 dark:bg-blue-500/5"
         >
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-            <TrendingUp className="h-6 w-6 text-blue-600" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-500/15">
+            <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
           </div>
-          <h3 className="text-lg font-bold text-slate-900">Advanced analytics unlocks at 15 leads</h3>
-          <p className="mt-2 text-sm text-slate-600 max-w-md mx-auto">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Advanced analytics unlocks at 15 leads</h3>
+          <p className="mt-2 text-sm text-slate-600 max-w-md mx-auto dark:text-slate-400">
             Charts and performance stats unlock automatically once you reach <strong>15 leads</strong>. Only {15 - (stats?.allTime || 0)} more to go!
           </p>
         </motion.div>
@@ -267,10 +267,10 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col"
+        className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col dark:border-slate-800 dark:bg-slate-900"
       >
-        <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="font-bold text-slate-900">Lead database</h3>
+        <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 dark:border-slate-800 dark:bg-slate-900/60">
+          <h3 className="font-bold text-slate-900 dark:text-white">Lead database</h3>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input 
@@ -278,13 +278,13 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
               placeholder="Search name, email…" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-4 py-2 w-full sm:w-64 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="pl-9 pr-4 py-2 w-full sm:w-64 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500"
             />
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-white border-b border-slate-100 text-xs font-semibold uppercase text-slate-400">
+            <thead className="bg-white border-b border-slate-100 text-xs font-semibold uppercase text-slate-400 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-500">
               <tr>
                 <th className="px-6 py-4">Date</th>
                 <th className="px-6 py-4">Form</th>
@@ -292,7 +292,7 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
                 <th className="px-6 py-4">Preview</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
+            <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
               {filteredLeads.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
@@ -315,13 +315,13 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
                     <tr 
                       key={lead.id} 
                       onClick={() => setSelectedLead(lead)}
-                      className="hover:bg-slate-50 cursor-pointer transition-colors"
+                      className="hover:bg-slate-50 cursor-pointer transition-colors dark:hover:bg-slate-800/50"
                     >
-                      <td className="whitespace-nowrap px-6 py-4 font-medium text-slate-900">
+                      <td className="whitespace-nowrap px-6 py-4 font-medium text-slate-900 dark:text-slate-200">
                         {date}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
-                        <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800">
+                        <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800 dark:bg-slate-800 dark:text-slate-200">
                           {lead.forms?.name || 'Unknown'}
                         </span>
                         {/* AI verdict — labels only, the lead is always kept */}
@@ -337,14 +337,14 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-bold text-slate-900">{name}</div>
-                        <div className="text-xs text-slate-500">{email}</div>
+                        <div className="font-bold text-slate-900 dark:text-white">{name}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">{email}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="max-w-md truncate text-xs text-slate-500">
                           {otherData.map(([k, v]) => (
                             <span key={k} className="mr-3">
-                              <span className="font-semibold text-slate-700 capitalize">{k.replace(/_/g, ' ')}:</span> {String(v)}
+                              <span className="font-semibold text-slate-700 capitalize dark:text-slate-300">{k.replace(/_/g, ' ')}:</span> {String(v)}
                             </span>
                           ))}
                         </div>
@@ -372,18 +372,18 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col max-h-[90vh]"
+              className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col max-h-[90vh] dark:bg-slate-900 dark:border dark:border-slate-800"
             >
-              <div className="border-b border-slate-100 bg-slate-50 px-6 py-4 flex items-center justify-between shrink-0">
+              <div className="border-b border-slate-100 bg-slate-50 px-6 py-4 flex items-center justify-between shrink-0 dark:border-slate-800 dark:bg-slate-900">
                 <div>
-                  <h3 className="font-bold text-slate-900 text-lg">Submission details</h3>
-                  <p className="text-xs text-slate-500">
+                  <h3 className="font-bold text-slate-900 text-lg dark:text-white">Submission details</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Received {new Date(selectedLead.created_at).toLocaleString('en-GB')} via <strong>{selectedLead.forms?.name}</strong>
                   </p>
                 </div>
                 <button 
                   onClick={() => setSelectedLead(null)}
-                  className="rounded-full p-2 hover:bg-slate-200 transition-colors"
+                  className="rounded-full p-2 hover:bg-slate-200 transition-colors dark:hover:bg-slate-700"
                 >
                   <X className="h-5 w-5 text-slate-500" />
                 </button>
@@ -394,7 +394,7 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
                     const isSupabaseUrl = typeof value === 'string' && value.startsWith('http') && value.includes('supabase.co/storage');
                     
                     return (
-                      <div key={key} className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+                      <div key={key} className="rounded-lg border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60">
                         <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
                           {key.replace(/_/g, ' ')}
                         </p>
@@ -416,7 +416,7 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
                             </a>
                           </div>
                         ) : (
-                          <p className="text-sm font-medium text-slate-900 break-words whitespace-pre-wrap">
+                          <p className="text-sm font-medium text-slate-900 break-words whitespace-pre-wrap dark:text-slate-100">
                             {String(value)}
                           </p>
                         )}

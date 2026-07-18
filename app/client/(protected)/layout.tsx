@@ -32,12 +32,19 @@ export default async function ClientProtectedLayout({ children }: { children: Re
   const forms = await getClientForms();
 
   return (
-    <div className="flex min-h-screen flex-col lg:flex-row bg-slate-50">
+    // Dark-first workspace (devs live in dark). ThemeToggle flips the class;
+    // the inline script applies the persisted choice before first paint.
+    <div id="dash-root" className="dark flex min-h-screen flex-col lg:flex-row bg-slate-50 dark:bg-slate-950">
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `try{if(localStorage.getItem('inlet-theme')==='light')document.getElementById('dash-root').classList.remove('dark')}catch(e){}`,
+        }}
+      />
       {/* Mobile Header (Hidden on large screens where Sidebar handles logo) */}
-      <header className="lg:hidden sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm">
+      <header className="lg:hidden sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <div className="flex items-center gap-2">
           <LogoBadge className="h-8 w-8 rounded-lg" />
-          <span className="font-bold text-slate-900">Inlet</span>
+          <span className="font-bold text-slate-900 dark:text-white">Inlet</span>
         </div>
         <SignOutLink className="text-sm font-medium text-red-600 hover:text-red-700" />
       </header>

@@ -110,7 +110,9 @@ async function submitForm(fields) {
 
 export default async function Home() {
   const locale = await getLocale();
-  const t = getDictionary(locale).hero;
+  const d = getDictionary(locale);
+  const t = d.hero;
+  const L = d.landing;
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -206,17 +208,17 @@ export default async function Home() {
         <section className="mx-auto max-w-6xl px-6 py-20 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
-              <Kicker tone="light" className="mb-4">The whole integration</Kicker>
+              <Kicker tone="light" className="mb-4">{L.wedge.kicker}</Kicker>
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-                Two values. Zero email plumbing.
+                {L.wedge.title}
               </h2>
               <p className="mt-4 text-lg leading-8 text-slate-600">
-                Every other form tool makes you wire SMTP or an email SDK into each site. Here, your site holds <strong>nothing</strong> — just a <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">FORM_API_URL</code> and a <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">FORM_ID</code>. The service does delivery, spam filtering, and the branded auto-reply.
+                {L.wedge.bodyA} <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">FORM_API_URL</code> {L.wedge.bodyAnd} <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">FORM_ID</code>. {L.wedge.bodyB}
               </p>
               <ul className="mt-6 space-y-3 text-slate-700">
-                {["No SMTP credentials in your frontend", "No email library to install", "No backend for you to run", "Copy-paste helper works everywhere"].map((t) => (
-                  <li key={t} className="flex items-start gap-3">
-                    <Check className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" /> {t}
+                {L.wedge.bullets.map((b) => (
+                  <li key={b} className="flex items-start gap-3">
+                    <Check className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" /> {b}
                   </li>
                 ))}
               </ul>
@@ -244,22 +246,22 @@ export default async function Home() {
           <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_40%,transparent_100%)]" />
           <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
             <Reveal className="mb-14 max-w-2xl">
-              <div className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-400"><Shield className="h-4 w-4" /> Built to scale</div>
-              <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">Everything a lead needs to arrive — nothing you have to run.</h2>
-              <p className="mt-4 text-lg text-slate-400">One backend, many client sites — each branded, all protected, all centralized.</p>
+              <div className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-400"><Shield className="h-4 w-4" /> {L.features.kicker}</div>
+              <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">{L.features.title}</h2>
+              <p className="mt-4 text-lg text-slate-400">{L.features.subtitle}</p>
             </Reveal>
             <div className="grid grid-cols-1 gap-5 md:grid-cols-3 auto-rows-[240px]">
               {[
-                { icon: Inbox, title: "Centralized inbox", desc: "Every submission from every site lands in one dashboard with live status.", cls: "md:col-span-2", color: "text-blue-400", bg: "bg-blue-500/15", glow: "rgba(59,130,246,0.16)" },
-                { icon: Shield, title: "AI + PoW anti-spam", desc: "Honeypot, proof-of-work, NLP filter, reverse-DNS VPN block.", cls: "", color: "text-emerald-400", bg: "bg-emerald-500/15", glow: "rgba(16,185,129,0.16)" },
-                { icon: Palette, title: "White-label emails", desc: "Auto-reply emails adapt to each client's logo, colors and name.", cls: "", color: "text-violet-400", bg: "bg-violet-500/15", glow: "rgba(139,92,246,0.16)" },
-                { icon: BarChart3, title: "Client analytics", desc: "Per-client dashboards so each site owner tracks their own leads and conversion in real time.", cls: "md:col-span-2", color: "text-indigo-400", bg: "bg-indigo-500/15", glow: "rgba(99,102,241,0.16)" },
-                { icon: FileDown, title: "CSV export", desc: "One click flattens dynamic fields into clean columns.", cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)" },
-                { icon: RefreshCw, title: "SMTP fallback", desc: "Rotates across backup accounts so a lead is never lost.", cls: "", color: "text-amber-400", bg: "bg-amber-500/15", glow: "rgba(245,158,11,0.16)" },
-                { icon: Globe, title: "Any framework", desc: "Astro, Next, Nuxt, Vue, Svelte, or plain HTML.", cls: "", color: "text-cyan-400", bg: "bg-cyan-500/15", glow: "rgba(34,211,238,0.16)" },
-              ].map((f) => (
+                { icon: Inbox, cls: "md:col-span-2", color: "text-blue-400", bg: "bg-blue-500/15", glow: "rgba(59,130,246,0.16)" },
+                { icon: Shield, cls: "", color: "text-emerald-400", bg: "bg-emerald-500/15", glow: "rgba(16,185,129,0.16)" },
+                { icon: Palette, cls: "", color: "text-violet-400", bg: "bg-violet-500/15", glow: "rgba(139,92,246,0.16)" },
+                { icon: BarChart3, cls: "md:col-span-2", color: "text-indigo-400", bg: "bg-indigo-500/15", glow: "rgba(99,102,241,0.16)" },
+                { icon: FileDown, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)" },
+                { icon: RefreshCw, cls: "", color: "text-amber-400", bg: "bg-amber-500/15", glow: "rgba(245,158,11,0.16)" },
+                { icon: Globe, cls: "", color: "text-cyan-400", bg: "bg-cyan-500/15", glow: "rgba(34,211,238,0.16)" },
+              ].map((f, i) => (
                 <div
-                  key={f.title}
+                  key={i}
                   className={`group relative rounded-3xl p-px transition-transform duration-300 hover:-translate-y-1 ${f.cls}`}
                   style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.16), rgba(255,255,255,0.02) 42%, transparent)" }}
                 >
@@ -270,8 +272,8 @@ export default async function Home() {
                     <div className={`relative mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl ${f.bg} ring-1 ring-inset ring-white/10 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3`}>
                       <f.icon className={`h-5 w-5 ${f.color}`} />
                     </div>
-                    <h3 className="relative mb-1.5 text-lg font-bold">{f.title}</h3>
-                    <p className="relative max-w-sm text-sm leading-relaxed text-slate-400">{f.desc}</p>
+                    <h3 className="relative mb-1.5 text-lg font-bold">{L.features.cards[i].title}</h3>
+                    <p className="relative max-w-sm text-sm leading-relaxed text-slate-400">{L.features.cards[i].desc}</p>
                     <f.icon className="pointer-events-none absolute -bottom-10 -right-10 h-40 w-40 text-white opacity-[0.04] transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110" />
                   </SpotlightCard>
                 </div>
@@ -286,23 +288,19 @@ export default async function Home() {
           <div aria-hidden className="pointer-events-none absolute left-[12%] bottom-8 h-56 w-56 rounded-full bg-violet-400/10 blur-[110px]" />
           <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
             <Reveal className="mb-16 max-w-2xl">
-              <Kicker tone="light" className="mb-4">Fast path</Kicker>
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Live in three steps</h2>
-              <p className="mt-4 text-lg text-slate-600">From zero to receiving branded lead emails — in minutes.</p>
+              <Kicker tone="light" className="mb-4">{L.how.kicker}</Kicker>
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{L.how.title}</h2>
+              <p className="mt-4 text-lg text-slate-600">{L.how.subtitle}</p>
             </Reveal>
             <div className="relative grid gap-8 md:grid-cols-3">
               <div aria-hidden className="pointer-events-none absolute left-[16%] right-[16%] top-6 hidden h-px bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 md:block" />
-              {[
-                { n: "01", t: "Create a form", d: "Add a form in the dashboard, pick its brand, copy its unique ID." },
-                { n: "02", t: "Paste the snippet", d: "Drop the two env values and the submit helper into any site." },
-                { n: "03", t: "Receive & manage", d: "Owner gets a notification, submitter gets a branded auto-reply, you watch it live." },
-              ].map((s, i) => (
-                <Reveal key={s.n} delay={i * 0.08}>
+              {L.how.steps.map((s, i) => (
+                <Reveal key={i} delay={i * 0.08}>
                   <SpotlightCard
                     glow="rgba(59,130,246,0.10)"
                     className="group rounded-3xl border border-slate-200 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/10"
                   >
-                    <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 font-mono text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">{s.n}</div>
+                    <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 font-mono text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">{String(i + 1).padStart(2, "0")}</div>
                     <h3 className="relative mt-5 text-xl font-bold text-slate-900">{s.t}</h3>
                     <p className="relative mt-2 text-sm leading-relaxed text-slate-600">{s.d}</p>
                   </SpotlightCard>
@@ -315,15 +313,15 @@ export default async function Home() {
         {/* ---------------- Comparison ---------------- */}
         <section id="compare" className="mx-auto max-w-5xl px-6 py-24 lg:px-8">
           <Reveal className="mb-12 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Why teams switch</h2>
-            <p className="mt-4 text-lg text-slate-600">Self-hosted, multi-tenant, and developer-first.</p>
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{L.compare.title}</h2>
+            <p className="mt-4 text-lg text-slate-600">{L.compare.subtitle}</p>
           </Reveal>
           <Reveal>
             <div className="overflow-x-auto rounded-3xl border border-slate-200 shadow-sm">
               <table className="w-full min-w-[640px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100">
-                    <th className="px-6 py-5 font-medium text-slate-400">Capability</th>
+                    <th className="px-6 py-5 font-medium text-slate-400">{L.compare.capability}</th>
                     <th className="bg-blue-50/50 px-6 py-5 text-center">
                       <span className="inline-flex items-center rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-3 py-1 text-xs font-bold text-white shadow-sm">{SITE_NAME}</span>
                     </th>
@@ -332,14 +330,14 @@ export default async function Home() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {[
-                    ["Self-hosted, own your data", true, false, false],
-                    ["No SMTP in your sites", true, true, false],
-                    ["Multi-tenant white-label emails", true, false, false],
-                    ["Proof-of-work + NLP anti-spam", true, false, false],
-                    ["Developer-first integration", true, true, false],
-                    ["One backend for many sites", true, false, false],
-                  ].map(([label, a, b, c]) => (
+                  {([
+                    [L.compare.rows[0], true, false, false],
+                    [L.compare.rows[1], true, true, false],
+                    [L.compare.rows[2], true, false, false],
+                    [L.compare.rows[3], true, false, false],
+                    [L.compare.rows[4], true, true, false],
+                    [L.compare.rows[5], true, false, false],
+                  ] as [string, boolean, boolean, boolean][]).map(([label, a, b, c]) => (
                     <tr key={label as string} className="transition-colors hover:bg-slate-50/60">
                       <td className="px-6 py-4 font-medium text-slate-800">{label}</td>
                       <td className="bg-blue-50/40 px-6 py-4 text-center">
@@ -363,11 +361,11 @@ export default async function Home() {
         <section id="faq" className="border-t border-slate-100 bg-gradient-to-b from-white to-slate-50 py-24">
           <div className="mx-auto max-w-3xl px-6 lg:px-8">
             <Reveal className="mb-12 text-center">
-              <Kicker center tone="light" className="mb-4">Answers</Kicker>
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Frequently asked</h2>
+              <Kicker center tone="light" className="mb-4">{L.faq.kicker}</Kicker>
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{L.faq.title}</h2>
             </Reveal>
             <div className="space-y-3">
-              {FAQ.map((f) => (
+              {L.faq.items.map((f) => (
                 <details key={f.q} className="group rounded-2xl border border-slate-200 bg-white p-5 transition-colors open:border-blue-200 open:shadow-md hover:border-slate-300">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-slate-900">
                     {f.q}
@@ -386,17 +384,17 @@ export default async function Home() {
         <section className="relative overflow-hidden bg-slate-950 py-24 text-center text-white">
           <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[600px] -translate-x-1/2 rounded-full bg-blue-500/25 blur-[120px]" />
           <div className="relative mx-auto max-w-2xl px-6">
-            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Ship forms today. Own them forever.</h2>
-            <p className="mx-auto mt-5 max-w-xl text-lg text-slate-300">One backend for every site you build — no SMTP, no lock-in, your data.</p>
+            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">{L.cta.title}</h2>
+            <p className="mx-auto mt-5 max-w-xl text-lg text-slate-300">{L.cta.subtitle}</p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Magnetic>
                 <Link href="/client/signup" className="btn-shine btn-shine-soft inline-flex h-12 items-center gap-2 rounded-full bg-white px-7 text-base font-medium text-slate-900 transition-all duration-300 hover:bg-slate-100 hover:shadow-lg hover:shadow-white/10">
-                  Get started free <ArrowRight className="cta-arrow h-4 w-4" />
+                  {L.cta.primary} <ArrowRight className="cta-arrow h-4 w-4" />
                 </Link>
               </Magnetic>
               <Magnetic strength={0.18}>
-                <a href="#how" className="btn-shine inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-7 text-base font-medium text-white transition-all duration-300 hover:bg-white/10">
-                  Read the docs
+                <a href="/docs" className="btn-shine inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-7 text-base font-medium text-white transition-all duration-300 hover:bg-white/10">
+                  {L.cta.secondary}
                 </a>
               </Magnetic>
             </div>
@@ -411,12 +409,12 @@ export default async function Home() {
               <span className="font-semibold text-slate-800">{SITE_NAME}</span>
             </div>
             <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-              <a href="#features" className="link-underline hover:text-slate-900 transition-colors">Features</a>
-              <a href="#how" className="link-underline hover:text-slate-900 transition-colors">How it works</a>
-              <Link href="/pricing" className="link-underline hover:text-slate-900 transition-colors">Pricing</Link>
-              <a href="#compare" className="link-underline hover:text-slate-900 transition-colors">Compare</a>
-              <a href="#faq" className="link-underline hover:text-slate-900 transition-colors">FAQ</a>
-              <Link href="/client/login" className="link-underline hover:text-slate-900 transition-colors">Sign in</Link>
+              <a href="#features" className="link-underline hover:text-slate-900 transition-colors">{L.footer.features}</a>
+              <a href="#how" className="link-underline hover:text-slate-900 transition-colors">{L.footer.how}</a>
+              <Link href="/pricing" className="link-underline hover:text-slate-900 transition-colors">{L.footer.pricing}</Link>
+              <a href="#compare" className="link-underline hover:text-slate-900 transition-colors">{L.footer.compare}</a>
+              <a href="#faq" className="link-underline hover:text-slate-900 transition-colors">{L.footer.faq}</a>
+              <Link href="/client/login" className="link-underline hover:text-slate-900 transition-colors">{L.footer.signIn}</Link>
             </nav>
             <p>&copy; {new Date().getFullYear()} {SITE_NAME}</p>
           </div>

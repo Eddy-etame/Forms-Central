@@ -24,7 +24,7 @@ function Kpi({ icon: Icon, label, value, hint, tone }: { icon: any; label: strin
     <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-5">
       <div className={`absolute -right-3 -top-3 rounded-full ${tone} p-6 opacity-10`}><Icon className="h-8 w-8" /></div>
       <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900">{value}</p>
+      <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{value}</p>
       <p className="mt-1 text-xs font-medium text-slate-400">{hint}</p>
     </div>
   );
@@ -53,7 +53,7 @@ export default function RevenuePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">Revenue &amp; subscribers</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Revenue &amp; subscribers</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400">Who&apos;s paying, monthly recurring revenue, and growth.</p>
       </div>
 
@@ -73,9 +73,9 @@ export default function RevenuePage() {
               <div key={p.name}>
                 <div className="mb-1 flex items-center justify-between text-xs">
                   <span className="font-medium text-slate-700 dark:text-slate-300">{p.name} {p.price > 0 && <span className="text-slate-400">· ${p.price}/mo</span>}</span>
-                  <span className="font-bold tabular-nums text-slate-900">{p.count}</span>
+                  <span className="font-bold tabular-nums text-slate-900 dark:text-white">{p.count}</span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                   <div className={`h-full rounded-full ${PLAN_TONE[p.name]}`} style={{ width: `${(p.count / maxPlan) * 100}%` }} />
                 </div>
               </div>

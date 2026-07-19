@@ -13,15 +13,15 @@ export function StatsCard({ title, value, description, icon: Icon }: StatsCardPr
   const isNumber = typeof value === 'number';
 
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs flex items-center justify-between">
+    <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs flex items-center justify-between dark:border-slate-800 dark:bg-slate-900">
       <div className="space-y-1">
-        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{title}</span>
-        <h3 className="text-3xl font-bold text-slate-900 tracking-tight">
+        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider dark:text-slate-400">{title}</span>
+        <h3 className="text-3xl font-bold text-slate-900 tracking-tight dark:text-white">
           {isNumber ? <NumberTicker value={value as number} /> : value}
         </h3>
         {description && <p className="text-xs text-slate-400 font-medium">{description}</p>}
       </div>
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-slate-700">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
         <Icon className="h-6 w-6" />
       </div>
     </div>

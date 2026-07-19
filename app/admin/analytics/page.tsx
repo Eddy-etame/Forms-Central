@@ -23,7 +23,7 @@ function Kpi({ icon: Icon, label, value, hint, tone }: { icon: any; label: strin
     <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-5">
       <div className={`absolute -right-3 -top-3 rounded-full ${tone} p-6 opacity-10`}><Icon className="h-8 w-8" /></div>
       <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900">{value.toLocaleString('en-US')}</p>
+      <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{value.toLocaleString('en-US')}</p>
       <p className="mt-1 text-xs font-medium text-slate-400">{hint}</p>
     </div>
   );
@@ -87,7 +87,7 @@ export default function AnalyticsPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Traffic analytics</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Traffic analytics</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">Who visits, what they view, where they come from.</p>
         </div>
         <div className="rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10 p-6 text-sm text-amber-900">
@@ -101,7 +101,7 @@ export default function AnalyticsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Traffic analytics</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Traffic analytics</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">First-party, privacy-safe (IPs are hashed). Refreshes automatically.</p>
         </div>
         <button onClick={load} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-600 hover:border-slate-300 transition-colors">

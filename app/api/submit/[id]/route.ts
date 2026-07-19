@@ -66,6 +66,45 @@ function escapeHtml(text: string): string {
   });
 }
 
+// Input hardening (public, unauthenticated endpoint). Body cap allows a few MB
+// of legitimate base64 file uploads but blocks memory-DoS / DB-bloat bodies.
+const MAX_BODY_BYTES = 6 * 1024 * 1024; // 6 MB
+const MAX_FIELDS = 100;
+
+/**
+ * Prevent open redirect. After a native form submit we redirect the browser,
+ * and the target can come from attacker-controlled `redirect_url`/`referer`.
+ * Only allow: the form's owner-configured success_url, or a URL whose origin
+ * is one of the form's allowed_origins (or this app's own origin). Anything
+ * else (an external phishing target) falls back to a safe default.
+ */
+function safeRedirect(
+  candidate: string,
+  appOrigin: string,
+  allowedOrigins: string[],
+  successUrl?: string | null,
+  referer?: string | null
+): string {
+  const fallback = (successUrl && successUrl.trim()) || `${appOrigin}/`;
+  if (!candidate) return fallback;
+  if (successUrl && candidate === successUrl) return candidate;
+  try {
+    const target = new URL(candidate, appOrigin);
+    if (target.protocol !== 'https:' && target.protocol !== 'http:') return fallback;
+    const allowed = new Set<string>([appOrigin]);
+    for (const o of allowedOrigins || []) {
+      if (o && o !== '*') { try { allowed.add(new URL(o).origin); } catch {} }
+    }
+    if (successUrl) { try { allowed.add(new URL(successUrl).origin); } catch {} }
+    // The submitting page's own origin (browser-set referer) is always a safe
+    // redirect target — the user is already there; it can't be an escalation.
+    if (referer) { try { allowed.add(new URL(referer).origin); } catch {} }
+    return allowed.has(target.origin) ? target.toString() : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 async function logFailure(formId: string | null, errorType: string, errorMessage: string, payload: any = {}) {
   try {
     await supabase.from('failures_log').insert([{
@@ -237,7 +276,17 @@ export async function POST(
   const { id: formId } = await params;
   const origin = request.headers.get('origin');
   const referer = request.headers.get('referer');
-  
+
+  // Reject oversized bodies up front (memory-DoS / DB-bloat guard) before any work.
+  const declaredLen = parseInt(request.headers.get('content-length') || '0', 10);
+  if (declaredLen > MAX_BODY_BYTES) {
+    return createErrorResponse(
+      413, 'PAYLOAD_TOO_LARGE', 'Submission body is too large.',
+      'Reduce the size of your submission or file attachments.',
+      origin, (request.headers.get('content-type') || '').includes('application/json'), referer || '/'
+    );
+  }
+
   // Determine client IP
   const forwardedFor = request.headers.get('x-forwarded-for');
   const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
@@ -384,36 +433,50 @@ export async function POST(
   
   try {
     if (isJson) {
-      payload = await request.json();
+      // Read as text first so we can enforce a hard byte cap even when the
+      // Content-Length header is absent or lies.
+      const rawBody = await request.text();
+      if (rawBody.length > MAX_BODY_BYTES) throw new Error('BODY_TOO_LARGE');
+      payload = JSON.parse(rawBody);
     } else if (contentType.includes('application/x-www-form-urlencoded')) {
       // Standard HTML form submission — parse URL-encoded body
       const rawBody = await request.text();
-      console.log(`[SUBMIT] Raw urlencoded body: "${rawBody}"`);
+      if (rawBody.length > MAX_BODY_BYTES) throw new Error('BODY_TOO_LARGE');
       const params = new URLSearchParams(rawBody);
       params.forEach((value, key) => {
         payload[key] = value;
       });
     } else {
-      // multipart/form-data or other
+      // multipart/form-data or other (bounded up front by Content-Length)
       const formData = await request.formData();
       formData.forEach((value, key) => {
         payload[key] = value.toString();
       });
     }
-    
+
+    if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+      if (Object.keys(payload).length > MAX_FIELDS) throw new Error('TOO_MANY_FIELDS');
+    } else {
+      throw new Error('INVALID_SHAPE');
+    }
+
     if (payload.redirect_url) {
       redirectUrl = payload.redirect_url;
     }
+    // Neutralize open-redirect: the target must be the owner's success_url or an
+    // allowed-origin URL — never an arbitrary attacker-supplied destination.
+    redirectUrl = safeRedirect(redirectUrl, request.nextUrl.origin, form.allowed_origins || [], form.success_url, referer);
   } catch (err) {
+    const tooLarge = err instanceof Error && err.message === 'BODY_TOO_LARGE';
     console.error('[SUBMIT] Body parsing error:', err);
     return createErrorResponse(
-      400,
-      'INVALID_REQUEST_BODY',
-      'Failed to parse submission body. Make sure the content-type and parameters match.',
-      'Ensure your request body matches your Content-Type header. If using fetch, stringify your JSON body or send a valid FormData object.',
+      tooLarge ? 413 : 400,
+      tooLarge ? 'PAYLOAD_TOO_LARGE' : 'INVALID_REQUEST_BODY',
+      tooLarge ? 'Submission body is too large.' : 'Failed to parse submission body. Make sure the content-type and parameters match.',
+      tooLarge ? 'Reduce the size of your submission or file attachments.' : 'Ensure your request body matches your Content-Type header. If using fetch, stringify your JSON body or send a valid FormData object.',
       origin,
       isJson,
-      redirectUrl
+      safeRedirect(redirectUrl, request.nextUrl.origin, form.allowed_origins || [], form.success_url, referer)
     );
   }
 

@@ -12,6 +12,14 @@ interface MarketingDict {
     faq: { kicker: string; title: string; items: { q: string; a: string }[] };
     cta: { title: string; subtitle: string; primary: string; secondary: string };
     footer: { features: string; how: string; pricing: string; compare: string; faq: string; signIn: string };
+    demo: {
+      kicker: string; titleLead: string; titleAccent: string; subtitle: string;
+      formLabel: string; phName: string; phMessage: string; send: string; tryBot: string;
+      idleStatus: string; honeypot: string;
+      statusPow: string; statusScan: string; statusDeliver: string; statusDone: string;
+      inbox: string; newBadge: string; autoReplyTo: string;
+      cLeads: string; cSpam: string; cReplies: string; footnote: string;
+    };
   };
 }
 
@@ -92,6 +100,30 @@ export const dictionaries: Record<Locale, MarketingDict> = {
       },
       cta: { title: 'Ship forms today. Own them forever.', subtitle: 'One backend for every site you build — no SMTP, no lock-in, your data.', primary: 'Get started free', secondary: 'Read the docs' },
       footer: { features: 'Features', how: 'How it works', pricing: 'Pricing', compare: 'Compare', faq: 'FAQ', signIn: 'Sign in' },
+      demo: {
+        kicker: 'Playable demo',
+        titleLead: "Don't read about it.",
+        titleAccent: 'Use it.',
+        subtitle: 'This is the real pipeline — proof-of-work, spam scan, delivery, auto-reply — running in your browser. Type something and hit send. Then try to spam it.',
+        formLabel: "Your website's form",
+        phName: 'Your name',
+        phMessage: 'Say anything — it lands in the inbox on the right.',
+        send: 'Send',
+        tryBot: 'Try as a spam bot',
+        idleStatus: 'No SMTP. No backend. This form holds nothing.',
+        honeypot: 'Honeypot tripped — bot blocked, silently. It thinks it succeeded.',
+        statusPow: 'Solving proof-of-work…',
+        statusScan: 'Scanning for spam…',
+        statusDeliver: 'Delivering…',
+        statusDone: 'Delivered — check the inbox →',
+        inbox: 'Your Inlet inbox',
+        newBadge: 'NEW',
+        autoReplyTo: 'Branded auto-reply sent to',
+        cLeads: 'Leads',
+        cSpam: 'Spam blocked',
+        cReplies: 'Auto-replies',
+        footnote: 'Interactive simulation of the live pipeline — nothing you type here is sent or stored.',
+      },
     },
   },
   fr: {
@@ -165,6 +197,30 @@ export const dictionaries: Record<Locale, MarketingDict> = {
       },
       cta: { title: 'Lancez vos formulaires aujourd’hui. Gardez-les pour toujours.', subtitle: 'Un seul backend pour tous vos sites — sans SMTP, sans verrouillage, vos données.', primary: 'Commencer gratuitement', secondary: 'Lire la documentation' },
       footer: { features: 'Fonctionnalités', how: 'Comment ça marche', pricing: 'Tarifs', compare: 'Comparatif', faq: 'FAQ', signIn: 'Connexion' },
+      demo: {
+        kicker: 'Démo interactive',
+        titleLead: 'Ne lisez pas à son sujet.',
+        titleAccent: 'Essayez-la.',
+        subtitle: "Voici le vrai pipeline — preuve de travail, analyse anti-spam, envoi, réponse automatique — exécuté dans votre navigateur. Écrivez quelque chose et envoyez. Puis essayez de le spammer.",
+        formLabel: 'Le formulaire de votre site',
+        phName: 'Votre nom',
+        phMessage: 'Écrivez ce que vous voulez — ça arrive dans la boîte de réception à droite.',
+        send: 'Envoyer',
+        tryBot: 'Essayer en tant que bot spammeur',
+        idleStatus: 'Sans SMTP. Sans backend. Ce formulaire ne contient rien.',
+        honeypot: 'Honeypot déclenché — bot bloqué, en silence. Il croit avoir réussi.',
+        statusPow: 'Résolution de la preuve de travail…',
+        statusScan: 'Analyse anti-spam…',
+        statusDeliver: 'Envoi en cours…',
+        statusDone: 'Envoyé — regardez la boîte de réception →',
+        inbox: 'Votre boîte de réception Inlet',
+        newBadge: 'NOUVEAU',
+        autoReplyTo: 'Réponse automatique à votre image envoyée à',
+        cLeads: 'Leads',
+        cSpam: 'Spam bloqué',
+        cReplies: 'Réponses auto',
+        footnote: 'Simulation interactive du pipeline en direct — rien de ce que vous tapez ici n’est envoyé ou stocké.',
+      },
     },
   },
 };

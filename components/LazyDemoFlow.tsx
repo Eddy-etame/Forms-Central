@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState, lazy, Suspense } from 'react';
+import type { Dictionary } from '@/lib/dictionaries';
 
+type DemoDict = Dictionary['landing']['demo'];
 const DemoFlow = lazy(() => import('./marketing/LiveDemo'));
 
 /**
@@ -9,7 +11,7 @@ const DemoFlow = lazy(() => import('./marketing/LiveDemo'));
  * visitor scrolls near it — the landing's initial JS stays lean.
  * The placeholder reserves height so nothing shifts.
  */
-export default function LazyDemoFlow() {
+export default function LazyDemoFlow({ dict }: { dict: DemoDict }) {
   const ref = useRef<HTMLDivElement>(null);
   const [near, setNear] = useState(false);
 
@@ -33,10 +35,8 @@ export default function LazyDemoFlow() {
     <section className="border-y border-slate-100 bg-slate-50/60 py-20" aria-busy="true">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <div className="mb-12 max-w-2xl">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Don&apos;t read about it. Use it.</h2>
-          <p className="mt-4 text-lg text-slate-600">
-            The real pipeline — proof-of-work, spam scan, delivery, auto-reply — running in your browser.
-          </p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{dict.titleLead} {dict.titleAccent}</h2>
+          <p className="mt-4 text-lg text-slate-600">{dict.subtitle}</p>
         </div>
         <div className="h-[560px] md:h-[420px]" />
       </div>
@@ -45,7 +45,7 @@ export default function LazyDemoFlow() {
 
   return (
     <div ref={ref}>
-      {near ? <Suspense fallback={placeholder}>{<DemoFlow />}</Suspense> : placeholder}
+      {near ? <Suspense fallback={placeholder}>{<DemoFlow dict={dict} />}</Suspense> : placeholder}
     </div>
   );
 }

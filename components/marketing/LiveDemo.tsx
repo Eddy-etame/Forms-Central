@@ -6,6 +6,9 @@ import {
   Send, Bot, ShieldCheck, Inbox, Mail, Cpu, CheckCircle2,
 } from 'lucide-react';
 import { Kicker } from '@/components/marketing/Kicker';
+import type { Dictionary } from '@/lib/dictionaries';
+
+type DemoDict = Dictionary['landing']['demo'];
 
 /**
  * The playable demo — the visitor drives the actual pipeline instead of
@@ -27,7 +30,7 @@ const SEED: DemoLead[] = [
   { id: 1, name: 'Amara Diallo', email: 'amara@studio.co', message: 'Loved the quote — when can we start?' },
 ];
 
-export default function LiveDemo() {
+export default function LiveDemo({ dict }: { dict: DemoDict }) {
   const reduce = useReducedMotion();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -78,34 +81,34 @@ export default function LiveDemo() {
   const busy = stage !== 'idle';
 
   const statusLine =
-    stage === 'pow' ? { icon: Cpu, text: 'Solving proof-of-work…', cls: 'text-blue-600' } :
-    stage === 'scan' ? { icon: ShieldCheck, text: 'Scanning for spam…', cls: 'text-emerald-600' } :
-    stage === 'travel' ? { icon: Send, text: 'Delivering…', cls: 'text-cyan-600' } :
-    stage === 'done' ? { icon: CheckCircle2, text: 'Delivered — check the inbox →', cls: 'text-emerald-600' } :
+    stage === 'pow' ? { icon: Cpu, text: dict.statusPow, cls: 'text-blue-600' } :
+    stage === 'scan' ? { icon: ShieldCheck, text: dict.statusScan, cls: 'text-emerald-600' } :
+    stage === 'travel' ? { icon: Send, text: dict.statusDeliver, cls: 'text-cyan-600' } :
+    stage === 'done' ? { icon: CheckCircle2, text: dict.statusDone, cls: 'text-emerald-600' } :
     null;
 
   return (
     <section id="demo" className="border-y border-slate-100 bg-slate-50/60 py-20" aria-label="Playable demo of the submission pipeline">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <div className="mb-12 max-w-2xl">
-          <Kicker tone="light" className="mb-4">Playable demo</Kicker>
+          <Kicker tone="light" className="mb-4">{dict.kicker}</Kicker>
           <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Don&apos;t read about it. <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">Use it.</span>
+            {dict.titleLead} <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">{dict.titleAccent}</span>
           </h2>
           <p className="mt-4 text-lg text-slate-600">
-            This is the real pipeline — proof-of-work, spam scan, delivery, auto-reply — running in your browser. Type something and hit send. Then try to spam it.
+            {dict.subtitle}
           </p>
         </div>
 
         <div className="relative grid items-stretch gap-6 lg:grid-cols-[1fr_auto_1fr]">
           {/* ---------------- The form (visitor side) ---------------- */}
           <div className={`relative rounded-3xl border bg-white p-6 shadow-sm transition-colors duration-300 ${botCaught ? 'border-rose-300' : 'border-slate-200'}`}>
-            <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-400">Your website&apos;s form</p>
+            <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-400">{dict.formLabel}</p>
             <form onSubmit={submit} className="space-y-3">
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
+                placeholder={dict.phName}
                 disabled={busy}
                 className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:opacity-60"
               />
@@ -120,7 +123,7 @@ export default function LiveDemo() {
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Say anything — it lands in the inbox on the right."
+                placeholder={dict.phMessage}
                 rows={3}
                 disabled={busy}
                 className="w-full resize-none rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:opacity-60"
@@ -131,7 +134,7 @@ export default function LiveDemo() {
                   disabled={busy}
                   className="btn-shine inline-flex h-10 items-center gap-2 rounded-full bg-slate-900 px-5 text-sm font-semibold text-white transition-all duration-300 hover:bg-slate-800 hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-70"
                 >
-                  <Send className="h-3.5 w-3.5" /> Send
+                  <Send className="h-3.5 w-3.5" /> {dict.send}
                 </button>
                 <button
                   type="button"
@@ -139,7 +142,7 @@ export default function LiveDemo() {
                   disabled={busy || botCaught}
                   className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 px-5 text-sm font-medium text-slate-600 transition-all duration-300 hover:border-rose-300 hover:text-rose-600 disabled:opacity-60"
                 >
-                  <Bot className="h-4 w-4" /> Try as a spam bot
+                  <Bot className="h-4 w-4" /> {dict.tryBot}
                 </button>
               </div>
             </form>
@@ -152,10 +155,10 @@ export default function LiveDemo() {
                   {statusLine.text}
                 </span>
               )}
-              {!statusLine && !botCaught && <span className="text-slate-400">No SMTP. No backend. This form holds nothing.</span>}
+              {!statusLine && !botCaught && <span className="text-slate-400">{dict.idleStatus}</span>}
               {botCaught && (
                 <span className="inline-flex items-center gap-1.5 text-rose-600">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Honeypot tripped — bot blocked, silently. It thinks it succeeded.
+                  <ShieldCheck className="h-3.5 w-3.5" /> {dict.honeypot}
                 </span>
               )}
             </div>
@@ -215,7 +218,7 @@ export default function LiveDemo() {
             <div aria-hidden className="pointer-events-none absolute -top-20 right-0 h-40 w-64 rounded-full bg-cyan-500/15 blur-[80px]" />
             <div className="relative mb-4 flex items-center justify-between">
               <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
-                <Inbox className="h-3.5 w-3.5" /> Your Inlet inbox
+                <Inbox className="h-3.5 w-3.5" /> {dict.inbox}
               </p>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10px] font-bold text-emerald-400">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> LIVE
@@ -237,7 +240,7 @@ export default function LiveDemo() {
                     <div className="flex items-center justify-between gap-3">
                       <p className="truncate text-sm font-bold">{l.name}</p>
                       {i === 0 && l.id !== 1 && (
-                        <span className="shrink-0 rounded-full bg-cyan-400 px-2 py-0.5 text-[10px] font-bold text-slate-950">NEW</span>
+                        <span className="shrink-0 rounded-full bg-cyan-400 px-2 py-0.5 text-[10px] font-bold text-slate-950">{dict.newBadge}</span>
                       )}
                     </div>
                     <p className="truncate text-xs text-slate-400">{l.email}</p>
@@ -256,7 +259,7 @@ export default function LiveDemo() {
                     className="flex items-center gap-2 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3.5 py-2.5 text-xs text-emerald-300"
                   >
                     <Mail className="h-3.5 w-3.5 shrink-0" />
-                    Branded auto-reply sent to <span className="truncate font-semibold">{autoReplyTo}</span>
+                    {dict.autoReplyTo} <span className="truncate font-semibold">{autoReplyTo}</span>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -265,9 +268,9 @@ export default function LiveDemo() {
             {/* live counters */}
             <div className="relative mt-5 grid grid-cols-3 divide-x divide-white/10 rounded-2xl border border-white/10 bg-white/5 py-3 text-center">
               {[
-                { label: 'Leads', value: leads.filter((l) => l.id !== 1).length + 1 },
-                { label: 'Spam blocked', value: blocked },
-                { label: 'Auto-replies', value: replies },
+                { label: dict.cLeads, value: leads.filter((l) => l.id !== 1).length + 1 },
+                { label: dict.cSpam, value: blocked },
+                { label: dict.cReplies, value: replies },
               ].map((s) => (
                 <div key={s.label}>
                   <p className="text-lg font-extrabold tabular-nums text-white">{s.value}</p>
@@ -279,7 +282,7 @@ export default function LiveDemo() {
         </div>
 
         <p className="mt-6 text-center text-xs text-slate-400">
-          Interactive simulation of the live pipeline — nothing you type here is sent or stored.
+          {dict.footnote}
         </p>
       </div>
     </section>

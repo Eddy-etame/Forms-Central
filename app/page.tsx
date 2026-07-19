@@ -238,7 +238,7 @@ export default async function Home() {
         </div>
 
         {/* ---------------- Playable demo ---------------- */}
-        <LazyDemoFlow />
+        <LazyDemoFlow dict={L.demo} />
 
         {/* ---------------- Features (dark band) ---------------- */}
         <section id="features" className="relative overflow-hidden bg-slate-950 py-24 text-white">

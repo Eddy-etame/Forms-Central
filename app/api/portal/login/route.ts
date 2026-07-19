@@ -23,11 +23,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: 'Too many attempts. Try again in a minute.' }, { status: 429 });
   }
 
-  const { data: user } = await supabase
-    .from('portal_users')
-    .select('id, parent_client_id, encrypted_password')
-    .eq('email', cleanEmail)
-    .maybeSingle();
+  // Auth goes through the SECURITY DEFINER function (migration_v20) — the
+  // password hash leaves the DB only via this one path. Falls back to a
+  // maybeSingle() query until v20 is applied.
+  type PortalUser = { id: string; parent_client_id: string; encrypted_password: string };
+  let user: PortalUser | null = null;
+  const authRpc = await supabase.rpc('auth_portal_user', { p_email: cleanEmail });
+  const rows = authRpc.data as unknown as PortalUser[] | null;
+  if (!authRpc.error && Array.isArray(rows)) {
+    user = rows[0] ?? null;
+  } else {
+    const fb = await supabase
+      .from('portal_users')
+      .select('id, parent_client_id, encrypted_password')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+    user = fb.data as unknown as PortalUser | null;
+  }
 
   if (!user || !user.encrypted_password || !verifyPassword(cleanPassword, user.encrypted_password)) {
     return NextResponse.json({ success: false, error: 'Incorrect email or password.' }, { status: 401 });

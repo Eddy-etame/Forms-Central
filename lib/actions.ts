@@ -61,9 +61,14 @@ export async function getDashboardStats() {
 
 export async function getClients() {
   await verifyAdminAuth();
+  // Read through the secret-free view (migration_v19) — the password hash is
+  // never fetched just to list clients. Fallback selects explicit columns
+  // (never '*', which would pull encrypted_password) until v19 is applied.
+  const safe = await supabase.from('clients_safe').select('*').order('created_at', { ascending: false });
+  if (!safe.error) return safe.data || [];
   const { data, error } = await supabase
     .from('clients')
-    .select('*')
+    .select('id, name, email, phone, logo_url, primary_color, font_family, sender_name, reply_to_email, two_factor_enabled, plan, created_at')
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];

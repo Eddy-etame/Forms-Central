@@ -46,36 +46,37 @@ export async function POST(req: Request) {
       );
     }
 
-    // Refuse duplicate accounts.
-    const { data: existing } = await supabase
-      .from('clients')
-      .select('id')
-      .eq('email', cleanEmail)
-      .maybeSingle();
-    if (existing) {
+    // Create through the SECURITY DEFINER function (migration_v19): uniqueness
+    // is enforced IN THE DATABASE (unique index on lower(email)), so a
+    // duplicate is impossible even under a race — it raises 'client_email_exists'.
+    // Falls back to a check-then-insert until v19 is applied.
+    const hashed = hashPassword(cleanPassword);
+    let client: { id: string } | null = null;
+    const createRpc = await supabase.rpc('create_client_secure', {
+      p_name: cleanName, p_email: cleanEmail, p_password: hashed, p_plan: 'free',
+    });
+    if (!createRpc.error && createRpc.data) {
+      client = { id: createRpc.data as string };
+    } else if (createRpc.error && (createRpc.error.code === '23505' || String(createRpc.error.message).includes('client_email_exists'))) {
       return NextResponse.json(
         { success: false, error: 'An account already exists with this email. Please sign in.' },
         { status: 409 }
       );
-    }
-
-    const { data: client, error } = await supabase
-      .from('clients')
-      .insert({
-        name: cleanName,
-        email: cleanEmail,
-        encrypted_password: hashPassword(cleanPassword),
-        plan: 'free',
-      })
-      .select('id')
-      .single();
-
-    if (error || !client) {
-      console.error('Signup insert error:', error);
-      return NextResponse.json(
-        { success: false, error: 'Could not create the account. Please try again.' },
-        { status: 500 }
-      );
+    } else {
+      // Fallback path (function absent pre-v19).
+      const { data: existing } = await supabase.from('clients').select('id').eq('email', cleanEmail).maybeSingle();
+      if (existing) {
+        return NextResponse.json(
+          { success: false, error: 'An account already exists with this email. Please sign in.' },
+          { status: 409 }
+        );
+      }
+      const ins = await supabase.from('clients').insert({ name: cleanName, email: cleanEmail, encrypted_password: hashed, plan: 'free' }).select('id').single();
+      if (ins.error || !ins.data) {
+        console.error('Signup insert error:', ins.error);
+        return NextResponse.json({ success: false, error: 'Could not create the account. Please try again.' }, { status: 500 });
+      }
+      client = ins.data;
     }
 
     const JWT_SECRET = process.env.JWT_SECRET;

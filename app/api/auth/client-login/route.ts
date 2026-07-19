@@ -31,14 +31,28 @@ export async function POST(req: Request) {
       );
     }
 
-    // Lookup client by email
-    const { data: client, error } = await supabase
-      .from('clients')
-      .select('id, encrypted_password, two_factor_enabled, email, name')
-      .eq('email', email.trim().toLowerCase())
-      .single();
+    // Auth lookup goes through the SECURITY DEFINER function (migration_v19) —
+    // the password hash can only leave the DB via this one audited path, never
+    // a raw table read. Falls back to a maybeSingle() query until v19 is
+    // applied (maybeSingle avoids the duplicate-row throw that historically
+    // surfaced as a false "Unknown account").
+    type ClientAuth = { id: string; encrypted_password: string; two_factor_enabled: boolean; email: string; name: string };
+    const normEmail = String(email).trim().toLowerCase();
+    let client: ClientAuth | null = null;
+    const authRpc = await supabase.rpc('auth_client_by_email', { p_email: normEmail });
+    const rpcRows = authRpc.data as unknown as ClientAuth[] | null;
+    if (!authRpc.error && Array.isArray(rpcRows)) {
+      client = rpcRows[0] ?? null;
+    } else {
+      const fb = await supabase
+        .from('clients')
+        .select('id, encrypted_password, two_factor_enabled, email, name')
+        .eq('email', normEmail)
+        .maybeSingle();
+      client = (fb.data as unknown as ClientAuth) ?? null;
+    }
 
-    if (error || !client || !client.encrypted_password) {
+    if (!client || !client.encrypted_password) {
       logSecurityEvent({ type: SEC.CLIENT_LOGIN_FAILED, severity: 'warn', actor: String(email).toLowerCase(), ip, detail: 'Unknown account' });
       return NextResponse.json(
         { success: false, error: 'Identifiants incorrects.' },

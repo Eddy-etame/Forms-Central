@@ -5,6 +5,8 @@ import {
 } from "lucide-react";
 import { NavBar } from "@/components/marketing/NavBar";
 import { Kicker } from "@/components/marketing/Kicker";
+import { getLocale } from "@/lib/i18n";
+import { getDictionary } from "@/lib/dictionaries";
 import HeroPreview from "@/components/marketing/HeroPreview";
 import { LogoBadge } from "@/components/Logo";
 import AiChat from "@/components/AiChat";
@@ -106,7 +108,9 @@ async function submitForm(fields) {
 }
 // No SMTP. No email library. No backend to run. That's the whole integration.`;
 
-export default function Home() {
+export default async function Home() {
+  const locale = await getLocale();
+  const t = getDictionary(locale).hero;
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -134,26 +138,26 @@ export default function Home() {
           {/* Cursor-reactive glow across the whole hero */}
           <SpotlightCard glow="rgba(56,189,248,0.07)" size={900} className="relative">
             <div className="relative mx-auto max-w-4xl px-6 pt-14 pb-9 text-center lg:pt-[4.5rem] fade-up">
-              <Kicker center className="mb-6">Self-hosted form backend · you own the data</Kicker>
+              <Kicker center className="mb-6">{t.kicker}</Kicker>
               <h1 className="text-balance text-5xl font-extrabold leading-[0.95] tracking-tight text-white sm:text-[5.25rem]">
-                One form backend for <span className="shimmer-text bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 bg-clip-text font-serif italic text-transparent">all your websites.</span>
+                {t.titleLead} <span className="shimmer-text bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 bg-clip-text font-serif italic text-transparent">{t.titleAccent}</span>
               </h1>
               <p className="mx-auto mt-6 max-w-xl text-balance text-lg leading-8 text-slate-300">
-                Every submission from every site, in one dashboard — with <strong className="text-white">no SMTP and no backend</strong>. Branded auto-replies and AI spam-blocking included.
+                {t.subtitle}
               </p>
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Magnetic>
                   <Link href="/client/signup" className="btn-shine btn-shine-soft inline-flex h-12 items-center gap-2 rounded-full bg-white px-7 text-base font-semibold text-slate-950 shadow-lg shadow-cyan-500/10 transition-all duration-300 hover:bg-slate-100 hover:shadow-xl hover:shadow-cyan-400/20">
-                    Start free <ArrowRight className="cta-arrow h-4 w-4" />
+                    {t.ctaPrimary} <ArrowRight className="cta-arrow h-4 w-4" />
                   </Link>
                 </Magnetic>
                 <Magnetic strength={0.18}>
                   <a href="#how" className="btn-shine inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-7 text-base font-medium text-white transition-all duration-300 hover:bg-white/10">
-                    See how it works
+                    {t.ctaSecondary}
                   </a>
                 </Magnetic>
               </div>
-              <p className="mt-5 text-xs text-slate-500">No credit card · no SMTP config · integrate in 2 minutes</p>
+              <p className="mt-5 text-xs text-slate-500">{t.reassure}</p>
             </div>
 
             {/* The inlet: streams flowing down into the product */}
@@ -181,7 +185,7 @@ export default function Home() {
 
             {/* Framework marquee */}
             <div className="relative mx-auto max-w-5xl px-6 pt-14 fade-up" style={{ animationDelay: "120ms" }}>
-              <p className="mb-5 text-center text-xs font-semibold uppercase tracking-widest text-slate-500">Drops into any stack</p>
+              <p className="mb-5 text-center text-xs font-semibold uppercase tracking-widest text-slate-500">{t.stack}</p>
               <div className="marquee-mask relative overflow-hidden">
                 <div className="flex w-max animate-marquee gap-3">
                   {[...Array(2)].flatMap((_, copy) =>

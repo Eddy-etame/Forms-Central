@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, Minus, ArrowRight } from "lucide-react";
 import { Kicker } from "@/components/marketing/Kicker";
+import { getLocale } from "@/lib/i18n";
+import { getDictionary } from "@/lib/dictionaries";
 import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
 import AiChat from "@/components/AiChat";
 import { PLANS } from "@/lib/plans";
@@ -179,7 +181,8 @@ function PlanCard({
   );
 }
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const t = getDictionary(await getLocale()).pricing;
   return (
     <>
       <script
@@ -197,13 +200,12 @@ export default function PricingPage() {
             <div className="aurora-b absolute -top-8 right-1/3 h-64 w-64 rounded-full bg-cyan-400/12 blur-[110px]" />
           </div>
           <div className="mx-auto max-w-3xl px-6 pt-16 pb-10 text-center lg:pt-24">
-            <Kicker center tone="light" className="mb-5">Pricing · usage-based, not per-form</Kicker>
+            <Kicker center tone="light" className="mb-5">{t.kicker}</Kicker>
             <h1 className="text-balance text-4xl font-extrabold tracking-tight sm:text-6xl">
-              Pay for leads, <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text font-serif italic text-transparent">not per form.</span>
+              {t.titleLead} <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text font-serif italic text-transparent">{t.titleAccent}</span>
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-600">
-              One backend for every site you build. Start free in two minutes — upgrade
-              only when your lead volume does.
+              {t.subtitle}
             </p>
           </div>
         </header>

@@ -2,9 +2,12 @@ import Link from "next/link";
 import { ArrowRight, LayoutDashboard } from "lucide-react";
 import { cookies } from "next/headers";
 import { verifyJWT } from "@/lib/jwt";
+import { getLocale } from "@/lib/i18n";
+import { getDictionary } from "@/lib/dictionaries";
 import { LogoBadge } from "@/components/Logo";
 import { Magnetic } from "@/components/marketing/Interactive";
 import { MobileMenu } from "@/components/marketing/MobileMenu";
+import { LanguageToggle } from "@/components/marketing/LanguageToggle";
 
 /** Is there a valid client session? Lets the marketing nav stay coherent for
  *  signed-in subscribers (no more "Sign in / Get started" — and the feeling of
@@ -25,7 +28,8 @@ async function hasClientSession(): Promise<boolean> {
  *  `variant="dark"` sits on the dark hero (landing); default stays light. */
 export async function NavBar({ variant = 'light' }: { variant?: 'light' | 'dark' }) {
   const dark = variant === 'dark';
-  const signedIn = await hasClientSession();
+  const [signedIn, locale] = await Promise.all([hasClientSession(), getLocale()]);
+  const t = getDictionary(locale).nav;
   return (
     <nav className={`sticky top-0 z-50 border-b backdrop-blur-xl ${dark ? 'border-white/5 bg-slate-950' : 'border-slate-200/70 bg-white/80'}`}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
@@ -34,13 +38,14 @@ export async function NavBar({ variant = 'light' }: { variant?: 'light' | 'dark'
           <span className={`font-semibold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>Inlet</span>
         </Link>
         <div className={`hidden items-center gap-8 text-sm md:flex ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
-          <Link href="/#features" className={`link-underline transition-colors ${dark ? 'hover:text-white' : 'hover:text-slate-900'}`}>Features</Link>
-          <Link href="/#how" className={`link-underline transition-colors ${dark ? 'hover:text-white' : 'hover:text-slate-900'}`}>How it works</Link>
-          <Link href="/docs" className={`link-underline transition-colors ${dark ? 'hover:text-white' : 'hover:text-slate-900'}`}>Docs</Link>
-          <Link href="/pricing" className={`link-underline transition-colors ${dark ? 'hover:text-white' : 'hover:text-slate-900'}`}>Pricing</Link>
-          <Link href="/#faq" className={`link-underline transition-colors ${dark ? 'hover:text-white' : 'hover:text-slate-900'}`}>FAQ</Link>
+          <Link href="/#features" className={`link-underline transition-colors ${dark ? 'hover:text-white' : 'hover:text-slate-900'}`}>{t.features}</Link>
+          <Link href="/#how" className={`link-underline transition-colors ${dark ? 'hover:text-white' : 'hover:text-slate-900'}`}>{t.how}</Link>
+          <Link href="/docs" className={`link-underline transition-colors ${dark ? 'hover:text-white' : 'hover:text-slate-900'}`}>{t.docs}</Link>
+          <Link href="/pricing" className={`link-underline transition-colors ${dark ? 'hover:text-white' : 'hover:text-slate-900'}`}>{t.pricing}</Link>
+          <Link href="/#faq" className={`link-underline transition-colors ${dark ? 'hover:text-white' : 'hover:text-slate-900'}`}>{t.faq}</Link>
         </div>
         <div className="flex items-center gap-3">
+          <LanguageToggle locale={locale} dark={dark} />
           {signedIn ? (
             <Magnetic strength={0.2}>
               <Link
@@ -51,12 +56,12 @@ export async function NavBar({ variant = 'light' }: { variant?: 'light' | 'dark'
                     : 'bg-slate-900 text-white hover:bg-slate-800 hover:shadow-md hover:shadow-blue-500/20'
                 }`}
               >
-                <LayoutDashboard className="h-3.5 w-3.5" /> Dashboard
+                <LayoutDashboard className="h-3.5 w-3.5" /> {t.dashboard}
               </Link>
             </Magnetic>
           ) : (
             <>
-              <Link href="/client/login" className={`link-underline hidden text-sm font-medium transition-colors sm:block ${dark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}>Sign in</Link>
+              <Link href="/client/login" className={`link-underline hidden text-sm font-medium transition-colors sm:block ${dark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}>{t.signIn}</Link>
               <Magnetic strength={0.2}>
                 <Link
                   href="/client/signup"
@@ -66,7 +71,7 @@ export async function NavBar({ variant = 'light' }: { variant?: 'light' | 'dark'
                       : 'bg-slate-900 text-white hover:bg-slate-800 hover:shadow-md hover:shadow-blue-500/20'
                   }`}
                 >
-                  Get started <ArrowRight className="cta-arrow h-3.5 w-3.5" />
+                  {t.getStarted} <ArrowRight className="cta-arrow h-3.5 w-3.5" />
                 </Link>
               </Magnetic>
             </>

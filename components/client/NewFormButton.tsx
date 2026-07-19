@@ -96,7 +96,7 @@ export default function NewFormButton({ prominent = false }: { prominent?: boole
       ) : (
         <button
           onClick={() => setOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:border-slate-300 transition-colors"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 hover:bg-blue-700 transition-colors"
         >
           <Plus className="h-4 w-4" /> New form
         </button>

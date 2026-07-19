@@ -64,14 +64,19 @@ body {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: none; }
 }
-.fade-up { animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* fill-mode: backwards (NOT both). `both` holds the final keyframe as a
+   lingering identity transform (matrix(1,0,0,1,0,0)), which turns this element
+   into the containing block for every position:fixed descendant and breaks
+   them. `backwards` reverts to the natural (transform-none) state after the
+   entrance, so fixed overlays (chatbot, ⌘K, toasts, modals) stay pinned. */
+.fade-up { animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 
 @media (prefers-reduced-motion: reduce) {
   .fade-up { animation: none; }
 }
 
 /* Route transition (app/template.tsx) — pure CSS, zero JS */
-.page-enter { animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.page-enter { animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 @media (prefers-reduced-motion: reduce) {
   .page-enter { animation: none; }
 }

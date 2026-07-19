@@ -129,11 +129,6 @@ function PlanCard({
     : "btn-shine btn-shine-soft group mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-slate-300 px-5 text-sm font-medium text-slate-800 transition-all duration-300 hover:border-slate-400 hover:shadow-md";
   const content = (
     <>
-      {highlight && (
-        <div className="absolute -top-3 left-7 inline-flex items-center rounded-md bg-cyan-400 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-slate-950">
-          Most popular
-        </div>
-      )}
       <h2 className="relative text-base font-bold">{name}</h2>
       <div className="relative mt-4 flex items-baseline gap-1.5">
         <span className="text-4xl font-extrabold tracking-tight">${price}</span>
@@ -159,6 +154,11 @@ function PlanCard({
   if (highlight) {
     return (
       <div className="relative rounded-3xl bg-gradient-to-b from-blue-500 to-violet-600 p-px shadow-2xl shadow-blue-500/20 transition-transform duration-300 hover:-translate-y-1 xl:-my-2">
+        {/* Badge lives on the OUTER wrapper (no overflow-hidden) so it isn't
+            clipped by the card's rounded, clipped inner container. */}
+        <div className="absolute -top-2.5 left-7 z-10 inline-flex items-center rounded-md bg-cyan-400 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-cyan-500/30">
+          Most popular
+        </div>
         <SpotlightCard
           glow="rgba(59,130,246,0.18)"
           className="flex h-full flex-col overflow-hidden rounded-[23px] bg-slate-950 p-7 text-white"

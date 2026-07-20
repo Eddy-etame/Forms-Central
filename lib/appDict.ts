@@ -38,6 +38,16 @@ interface AppDict {
     pricing: string; pricingHint: string;
     signOut: string; signOutHint: string;
   };
+  developer: {
+    title: string; subtitle: string;
+    lockTitle: string; lockBody: string; seePlans: string;
+    apiKeys: string; newKeyOnce: string; keyNamePlaceholder: string; creating: string; newKey: string;
+    loading: string; noKeys: string; lastUsed: string; neverUsed: string;
+    couldNotCreate: string; couldNotReach: string;
+    webhooksTitle: string; wDescA: string; wDescB: string; wDescC: string; wDescD: string;
+    createFormFirst: string; webhookPlaceholder: string; saving: string; save: string; saved: string; couldNotSave: string; networkError: string;
+    mcpTitle: string; mcpDescA: string; mcpDescStrong: string; mcpDescB: string; endpoint: string; toolsAvailable: string;
+  };
 }
 
 export const appDictionaries: Record<Locale, AppDict> = {
@@ -79,6 +89,18 @@ export const appDictionaries: Record<Locale, AppDict> = {
       pricing: 'Pricing & plans', pricingHint: 'Upgrade',
       signOut: 'Sign out', signOutHint: 'End session',
     },
+    developer: {
+      title: 'Developer', subtitle: 'API keys and the MCP server — let your AI assistant run your forms.',
+      lockTitle: 'API & MCP access starts on the Solo plan', lockBody: 'Connect Claude, Cursor or any MCP client and let it create forms and read your leads for you.', seePlans: 'See plans',
+      apiKeys: 'API keys', newKeyOnce: 'Your new key — shown only once, store it now', keyNamePlaceholder: 'Key name (e.g. claude-code)', creating: 'Creating…', newKey: 'New key',
+      loading: 'Loading…', noKeys: 'No active keys.', lastUsed: 'last used {date}', neverUsed: 'never used',
+      couldNotCreate: 'Could not create the key.', couldNotReach: 'Could not reach the server.',
+      webhooksTitle: 'Webhooks — every lead, POSTed to your app',
+      wDescA: 'Set an https endpoint per form and every stored lead arrives as a signed',
+      wDescB: 'POST — verify the', wDescC: 'header (snippet in the', wDescD: '). Delivery never blocks or loses a lead.',
+      createFormFirst: 'Create a form first — webhooks are configured per form.', webhookPlaceholder: 'https://api.yourapp.com/hooks/inlet (empty = disabled)', saving: 'Saving…', save: 'Save', saved: 'Saved.', couldNotSave: 'Could not save.', networkError: 'Network error.',
+      mcpTitle: 'MCP server — your AI runs your forms', mcpDescA: 'Connect Claude Code, Cursor, or any MCP client and your assistant can', mcpDescStrong: 'create forms, read leads, and fetch integration snippets', mcpDescB: 'without leaving the editor.', endpoint: 'Endpoint', toolsAvailable: 'Tools available:',
+    },
   },
   fr: {
     sidebar: {
@@ -117,6 +139,18 @@ export const appDictionaries: Record<Locale, AppDict> = {
       documentation: 'Documentation', documentationHint: 'Guide d’intégration',
       pricing: 'Tarifs & forfaits', pricingHint: 'Passer à un forfait supérieur',
       signOut: 'Se déconnecter', signOutHint: 'Terminer la session',
+    },
+    developer: {
+      title: 'Développeur', subtitle: 'Clés API et serveur MCP — laissez votre assistant IA piloter vos formulaires.',
+      lockTitle: 'L’accès API & MCP démarre au forfait Solo', lockBody: 'Connectez Claude, Cursor ou n’importe quel client MCP et laissez-le créer des formulaires et lire vos leads pour vous.', seePlans: 'Voir les forfaits',
+      apiKeys: 'Clés API', newKeyOnce: 'Votre nouvelle clé — affichée une seule fois, enregistrez-la maintenant', keyNamePlaceholder: 'Nom de la clé (ex. claude-code)', creating: 'Création…', newKey: 'Nouvelle clé',
+      loading: 'Chargement…', noKeys: 'Aucune clé active.', lastUsed: 'utilisée le {date}', neverUsed: 'jamais utilisée',
+      couldNotCreate: 'Impossible de créer la clé.', couldNotReach: 'Impossible de joindre le serveur.',
+      webhooksTitle: 'Webhooks — chaque lead, envoyé (POST) à votre application',
+      wDescA: 'Définissez un endpoint https par formulaire et chaque lead stocké arrive en POST signé',
+      wDescB: '— vérifiez l’en-tête', wDescC: '(extrait dans la', wDescD: '). La livraison ne bloque ni ne perd jamais un lead.',
+      createFormFirst: 'Créez d’abord un formulaire — les webhooks se configurent par formulaire.', webhookPlaceholder: 'https://api.votreapp.com/hooks/inlet (vide = désactivé)', saving: 'Enregistrement…', save: 'Enregistrer', saved: 'Enregistré.', couldNotSave: 'Impossible d’enregistrer.', networkError: 'Erreur réseau.',
+      mcpTitle: 'Serveur MCP — votre IA pilote vos formulaires', mcpDescA: 'Connectez Claude Code, Cursor ou n’importe quel client MCP et votre assistant peut', mcpDescStrong: 'créer des formulaires, lire les leads et récupérer des extraits d’intégration', mcpDescB: 'sans quitter l’éditeur.', endpoint: 'Endpoint', toolsAvailable: 'Outils disponibles :',
     },
   },
 };

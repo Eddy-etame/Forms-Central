@@ -27,6 +27,17 @@ interface AppDict {
     detailsTitle: string; receivedVia: string; // {date} {form} placeholders
     downloadFile: string;
   };
+  palette: {
+    quickActions: string; searchPlaceholder: string; nothingMatches: string; navigate: string; open: string;
+    gNavigate: string; gForms: string; gResources: string; gAccount: string;
+    overview: string; overviewHint: string;
+    clientPortals: string; clientPortalsHint: string;
+    devApi: string; devApiHint: string;
+    openForm: string;
+    documentation: string; documentationHint: string;
+    pricing: string; pricingHint: string;
+    signOut: string; signOutHint: string;
+  };
 }
 
 export const appDictionaries: Record<Locale, AppDict> = {
@@ -56,6 +67,18 @@ export const appDictionaries: Record<Locale, AppDict> = {
       receivedVia: 'Received {date} via {form}',
       downloadFile: 'Download file',
     },
+    palette: {
+      quickActions: 'Quick actions', searchPlaceholder: 'Search forms, pages, actions…',
+      nothingMatches: 'Nothing matches', navigate: 'navigate', open: 'open',
+      gNavigate: 'Navigate', gForms: 'Forms', gResources: 'Resources', gAccount: 'Account',
+      overview: 'Overview', overviewHint: 'Dashboard home',
+      clientPortals: 'Client portals', clientPortalsHint: 'End-client access',
+      devApi: 'Developer & API', devApiHint: 'Keys, MCP, webhooks',
+      openForm: 'Open form',
+      documentation: 'Documentation', documentationHint: 'Integration guide',
+      pricing: 'Pricing & plans', pricingHint: 'Upgrade',
+      signOut: 'Sign out', signOutHint: 'End session',
+    },
   },
   fr: {
     sidebar: {
@@ -82,6 +105,18 @@ export const appDictionaries: Record<Locale, AppDict> = {
       detailsTitle: 'Détails de la soumission',
       receivedVia: 'Reçu le {date} via {form}',
       downloadFile: 'Télécharger le fichier',
+    },
+    palette: {
+      quickActions: 'Actions rapides', searchPlaceholder: 'Rechercher formulaires, pages, actions…',
+      nothingMatches: 'Aucun résultat pour', navigate: 'naviguer', open: 'ouvrir',
+      gNavigate: 'Naviguer', gForms: 'Formulaires', gResources: 'Ressources', gAccount: 'Compte',
+      overview: 'Vue d’ensemble', overviewHint: 'Accueil du tableau de bord',
+      clientPortals: 'Portails clients', clientPortalsHint: 'Accès des clients finaux',
+      devApi: 'Développeur & API', devApiHint: 'Clés, MCP, webhooks',
+      openForm: 'Ouvrir le formulaire',
+      documentation: 'Documentation', documentationHint: 'Guide d’intégration',
+      pricing: 'Tarifs & forfaits', pricingHint: 'Passer à un forfait supérieur',
+      signOut: 'Se déconnecter', signOutHint: 'Terminer la session',
     },
   },
 };

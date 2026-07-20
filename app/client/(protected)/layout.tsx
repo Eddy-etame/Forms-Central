@@ -32,7 +32,8 @@ export default async function ClientProtectedLayout({ children }: { children: Re
   }
 
   const [forms, locale] = await Promise.all([getClientForms(), getLocale()]);
-  const t = getAppDict(locale).sidebar;
+  const dict = getAppDict(locale);
+  const t = dict.sidebar;
 
   return (
     // Dark-first workspace (devs live in dark). ThemeToggle flips the class;
@@ -63,7 +64,7 @@ export default async function ClientProtectedLayout({ children }: { children: Re
       </main>
 
       {/* ⌘K — keyboard-first navigation across the whole workspace */}
-      <CommandPalette forms={forms} />
+      <CommandPalette forms={forms} t={dict.palette} />
     </div>
   );
 }

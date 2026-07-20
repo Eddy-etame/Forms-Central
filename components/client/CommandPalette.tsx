@@ -6,6 +6,9 @@ import {
   Search, LayoutDashboard, Users, Terminal, FileText, BookOpen,
   CreditCard, LogOut, CornerDownLeft, Command,
 } from 'lucide-react';
+import type { AppDict } from '@/lib/appDict';
+
+type PaletteDict = AppDict['palette'];
 
 /**
  * ⌘K command palette for the client dashboard — keyboard-first navigation
@@ -22,7 +25,7 @@ interface PaletteItem {
   run: () => void;
 }
 
-export default function CommandPalette({ forms }: { forms: { id: string; name: string }[] }) {
+export default function CommandPalette({ forms, t }: { forms: { id: string; name: string }[]; t: PaletteDict }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -33,28 +36,28 @@ export default function CommandPalette({ forms }: { forms: { id: string; name: s
   const items = useMemo<PaletteItem[]>(() => {
     const go = (href: string) => () => { setOpen(false); router.push(href); };
     return [
-      { id: 'nav-overview', label: 'Overview', hint: 'Dashboard home', icon: LayoutDashboard, group: 'Navigate', run: go('/client/dashboard') },
-      { id: 'nav-clients', label: 'Client portals', hint: 'End-client access', icon: Users, group: 'Navigate', run: go('/client/dashboard/clients') },
-      { id: 'nav-dev', label: 'Developer & API', hint: 'Keys, MCP, webhooks', icon: Terminal, group: 'Navigate', run: go('/client/dashboard/developer') },
+      { id: 'nav-overview', label: t.overview, hint: t.overviewHint, icon: LayoutDashboard, group: t.gNavigate, run: go('/client/dashboard') },
+      { id: 'nav-clients', label: t.clientPortals, hint: t.clientPortalsHint, icon: Users, group: t.gNavigate, run: go('/client/dashboard/clients') },
+      { id: 'nav-dev', label: t.devApi, hint: t.devApiHint, icon: Terminal, group: t.gNavigate, run: go('/client/dashboard/developer') },
       ...forms.map((f) => ({
         id: `form-${f.id}`,
         label: f.name,
-        hint: 'Open form',
+        hint: t.openForm,
         icon: FileText,
-        group: 'Forms',
+        group: t.gForms,
         run: go(`/client/dashboard/forms/${f.id}`),
       })),
-      { id: 'res-docs', label: 'Documentation', hint: 'Integration guide', icon: BookOpen, group: 'Resources', run: go('/docs') },
-      { id: 'res-pricing', label: 'Pricing & plans', hint: 'Upgrade', icon: CreditCard, group: 'Resources', run: go('/pricing') },
+      { id: 'res-docs', label: t.documentation, hint: t.documentationHint, icon: BookOpen, group: t.gResources, run: go('/docs') },
+      { id: 'res-pricing', label: t.pricing, hint: t.pricingHint, icon: CreditCard, group: t.gResources, run: go('/pricing') },
       {
-        id: 'act-signout', label: 'Sign out', hint: 'End session', icon: LogOut, group: 'Account',
+        id: 'act-signout', label: t.signOut, hint: t.signOutHint, icon: LogOut, group: t.gAccount,
         run: async () => {
           try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {}
           window.location.href = '/client/login';
         },
       },
     ];
-  }, [forms, router]);
+  }, [forms, router, t]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -114,7 +117,7 @@ export default function CommandPalette({ forms }: { forms: { id: string; name: s
         aria-label="Open command palette"
       >
         <Command className="h-3.5 w-3.5" />
-        Quick actions
+        {t.quickActions}
         <kbd className="rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-[10px] text-slate-500">⌘K</kbd>
       </button>
 
@@ -130,7 +133,7 @@ export default function CommandPalette({ forms }: { forms: { id: string; name: s
                 value={query}
                 onChange={(e) => { setQuery(e.target.value); setActive(0); }}
                 onKeyDown={onInputKey}
-                placeholder="Search forms, pages, actions…"
+                placeholder={t.searchPlaceholder}
                 className="h-13 w-full bg-transparent py-4 text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-white"
               />
               <kbd className="rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-[10px] text-slate-400">esc</kbd>
@@ -139,7 +142,7 @@ export default function CommandPalette({ forms }: { forms: { id: string; name: s
             {/* Results */}
             <div ref={listRef} className="max-h-[46vh] overflow-y-auto p-2">
               {filtered.length === 0 ? (
-                <p className="px-3 py-8 text-center text-sm text-slate-400">Nothing matches &ldquo;{query}&rdquo;</p>
+                <p className="px-3 py-8 text-center text-sm text-slate-400">{t.nothingMatches} &ldquo;{query}&rdquo;</p>
               ) : (
                 groups.map(([group, groupItems]) => (
                   <div key={group} className="mb-1">
@@ -171,8 +174,8 @@ export default function CommandPalette({ forms }: { forms: { id: string; name: s
 
             {/* Footer */}
             <div className="flex items-center gap-4 border-t border-slate-100 bg-slate-50/70 px-4 py-2.5 text-[11px] text-slate-400 dark:border-slate-800 dark:bg-slate-950/50">
-              <span className="flex items-center gap-1"><kbd className="rounded border border-slate-200 bg-white px-1 font-mono">↑↓</kbd> navigate</span>
-              <span className="flex items-center gap-1"><kbd className="rounded border border-slate-200 bg-white px-1 font-mono">↵</kbd> open</span>
+              <span className="flex items-center gap-1"><kbd className="rounded border border-slate-200 bg-white px-1 font-mono">↑↓</kbd> {t.navigate}</span>
+              <span className="flex items-center gap-1"><kbd className="rounded border border-slate-200 bg-white px-1 font-mono">↵</kbd> {t.open}</span>
               <span className="ml-auto font-medium text-slate-300">Inlet</span>
             </div>
           </div>

@@ -78,6 +78,9 @@ interface AppDict {
     date: string; more: string; noData: string; file: string; viewDetails: string;
     fullSubmission: string; submittedAt: string; attachedDoc: string; downloadFile: string;
   };
+  admin: {
+    nav: { dashboard: string; analytics: string; revenue: string; forms: string; clients: string; emailHealth: string; security: string; logs: string; blacklist: string; myAtelier: string; signOut: string; adminLabel: string; lightMode: string; darkMode: string };
+  };
 }
 
 export const appDictionaries: Record<Locale, AppDict> = {
@@ -166,6 +169,9 @@ export const appDictionaries: Record<Locale, AppDict> = {
       date: 'Date', more: '… ({n} more)', noData: 'No data found.', file: 'File', viewDetails: 'View details →',
       fullSubmission: 'Full submission', submittedAt: 'Submitted {date}', attachedDoc: 'Attached document', downloadFile: 'Download file',
     },
+    admin: {
+      nav: { dashboard: 'Dashboard', analytics: 'Analytics', revenue: 'Revenue', forms: 'Forms', clients: 'Clients', emailHealth: 'Email health', security: 'Security', logs: 'Logs & failures', blacklist: 'Blacklist', myAtelier: 'My Atelier', signOut: 'Sign out', adminLabel: 'Admin', lightMode: 'Light mode', darkMode: 'Dark mode' },
+    },
   },
   fr: {
     sidebar: {
@@ -251,6 +257,9 @@ export const appDictionaries: Record<Locale, AppDict> = {
       structuredData: 'Données structurées', searchResults: 'Rechercher dans ces résultats…',
       date: 'Date', more: '… ({n} de plus)', noData: 'Aucune donnée trouvée.', file: 'Fichier', viewDetails: 'Voir les détails →',
       fullSubmission: 'Soumission complète', submittedAt: 'Soumis le {date}', attachedDoc: 'Document joint', downloadFile: 'Télécharger le fichier',
+    },
+    admin: {
+      nav: { dashboard: 'Tableau de bord', analytics: 'Analytique', revenue: 'Revenus', forms: 'Formulaires', clients: 'Clients', emailHealth: 'Santé e-mail', security: 'Sécurité', logs: 'Journaux & échecs', blacklist: 'Liste noire', myAtelier: 'Mon atelier', signOut: 'Se déconnecter', adminLabel: 'Admin', lightMode: 'Mode clair', darkMode: 'Mode sombre' },
     },
   },
 };

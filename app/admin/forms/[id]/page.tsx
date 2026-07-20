@@ -11,6 +11,8 @@ import { toast } from '@/components/ui/Toaster';
 import { BorderBeam } from '@/components/magicui/border-beam';
 import ShimmerButton from '@/components/magicui/shimmer-button';
 import BlurFade from '@/components/magicui/blur-fade';
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
 
 
 interface Submission {
@@ -38,6 +40,7 @@ interface Form {
 
 export default function FormDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const t = getAppDict(useLocale()).admin.formDetail;
   const { id: formId } = use(params);
   
   const [form, setForm] = useState<Form | null>(null);
@@ -87,10 +90,10 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
       const newStatus = !form.is_active;
       const res = await toggleFormStatus(form.id, newStatus);
       if (res && !res.success) {
-        toast.error(res.error || 'Could not update the form.');
+        toast.error(res.error || t.updateErr);
         return;
       }
-      toast.success(newStatus ? 'Form activated.' : 'Form paused.');
+      toast.success(newStatus ? t.activatedOk : t.pausedOk);
       setForm({ ...form, is_active: newStatus });
     } catch (err) {
       console.error('Failed to toggle form status:', err);
@@ -106,14 +109,14 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
       const { updateFormSettings } = await import('@/lib/actions');
       const res = await updateFormSettings(form.id, autoReplyEnabled, autoReplySubject, autoReplyMessage, successUrl, webhookUrl);
       if (res && !res.success) {
-        toast.error(res.error || 'Could not save the settings.');
+        toast.error(res.error || t.settingsErr);
         return;
       }
       setForm({ ...form, auto_reply_enabled: autoReplyEnabled, auto_reply_subject: autoReplySubject, auto_reply_message: autoReplyMessage, success_url: successUrl, webhook_url: webhookUrl });
-      toast.success('Settings updated.');
+      toast.success(t.settingsOk);
     } catch (err: any) {
       console.error('Error updating form settings:', err);
-      toast.error(err.message || 'Could not save the settings.');
+      toast.error(err.message || t.settingsErr);
     } finally {
       setUpdatingSettings(false);
     }
@@ -128,17 +131,17 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
       const newOrigins = corsInput.split(',').map(o => o.trim()).filter(o => o);
       const res = await updateFormOrigins(form.id, newOrigins);
       if (res && !res.success) {
-        toast.error(res.error || 'Could not save the CORS domains.');
+        toast.error(res.error || t.corsErr);
         return;
       }
       setForm({
         ...form,
         allowed_origins: newOrigins.length > 0 ? newOrigins : ['*']
       });
-      toast.success('CORS domains updated.');
+      toast.success(t.corsOk);
     } catch (err: any) {
       console.error('Error updating CORS:', err);
-      toast.error(err.message || 'Could not save the CORS domains.');
+      toast.error(err.message || t.corsErr);
     } finally {
       setUpdatingCors(false);
     }
@@ -163,9 +166,9 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
   if (!form) {
     return (
       <div className="text-center py-12">
-        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">Form not found</h3>
+        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">{t.notFoundTitle}</h3>
         <Link href="/admin/forms" className="text-sm text-slate-600 underline mt-2 block">
-          Back to list
+          {t.backToList}
         </Link>
       </div>
     );
@@ -178,7 +181,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
         href="/admin/forms"
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
       >
-        <ArrowLeft className="h-3.5 w-3.5" /> Back to forms
+        <ArrowLeft className="h-3.5 w-3.5" /> {t.backToForms}
       </Link>
 
       {/* Header section */}
@@ -186,7 +189,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
         <div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{form.name}</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Client destinataire : <span className="font-semibold text-slate-700 dark:text-slate-300">{form.clients?.name}</span> ({form.clients?.email})
+            {t.recipientClient} <span className="font-semibold text-slate-700 dark:text-slate-300">{form.clients?.name}</span> ({form.clients?.email})
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -195,7 +198,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
             className="text-xs py-2 px-4 shadow-sm"
             background={form.is_active ? '#64748b' : '#0f172a'}
           >
-            {form.is_active ? 'Deactivate form' : 'Activate form'}
+            {form.is_active ? t.deactivate : t.activate}
           </ShimmerButton>
         </div>
       </div>
@@ -207,9 +210,9 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
           <BlurFade delay={0.1}>
           <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs space-y-4 relative overflow-hidden group">
             <BorderBeam size={250} duration={12} delay={9} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" colorFrom="#0ea5e9" colorTo="#3b82f6" />
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm relative z-10">Direct HTML integration</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm relative z-10">{t.directIntegrationTitle}</h3>
             <p className="text-xs text-slate-500 relative z-10">
-              Copiez cette URL dans l&apos;attribut `action` de votre formulaire HTML standard.
+              {t.directIntegrationDesc}
             </p>
 
             <div className="flex items-center gap-2 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 p-2 text-xs font-mono text-slate-600 select-all overflow-x-auto">
@@ -223,7 +226,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
             </div>
 
             <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">Exemple de code HTML :</span>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">{t.htmlExampleLabel}</span>
               <pre className="rounded-lg bg-slate-950 p-3 text-[10px] text-slate-300 font-mono overflow-x-auto leading-relaxed">
 {`<form action="${window.location.origin}/api/submit/${form.id}" method="POST">
   <!-- Honeypot invisible -->
@@ -241,50 +244,50 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
           {/* Auto-Reply panel */}
           <BlurFade delay={0.15}>
           <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs space-y-4">
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Advanced settings & auto-reply</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">{t.advancedSettingsTitle}</h3>
             <p className="text-xs text-slate-500">
-              Configure the redirect page and the automatic confirmation email sent to the prospect.
+              {t.advancedSettingsDesc}
             </p>
-            
+
             <form onSubmit={handleSaveSettings} className="space-y-5 pt-2">
               <div className="space-y-1.5 border-b border-slate-50 pb-4">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Redirect URL (success)
+                  {t.redirectUrlLabel}
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. https://yoursite.com/thanks"
+                  placeholder={t.redirectUrlPlaceholder}
                   value={successUrl}
                   onChange={(e) => setSuccessUrl(e.target.value)}
                   disabled={updatingSettings}
                   className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
                 />
                 <span className="text-[9px] text-slate-400 block font-medium">
-                  Forces a redirect to this page after submission (overrides your frontend config). Leave empty to use the one in your code.
+                  {t.redirectUrlHint}
                 </span>
               </div>
 
               <div className="space-y-1.5 border-b border-slate-50 pb-4">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Webhook URL (signed POST per lead)
+                  {t.webhookUrlLabel}
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. https://api.yourapp.com/hooks/inlet"
+                  placeholder={t.webhookUrlPlaceholder}
                   value={webhookUrl}
                   onChange={(e) => setWebhookUrl(e.target.value)}
                   disabled={updatingSettings}
                   className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
                 />
                 <span className="text-[9px] text-slate-400 block font-medium">
-                  Every stored lead is POSTed here as JSON, HMAC-signed (X-Inlet-Signature). Must be https. Leave empty to disable.
+                  {t.webhookUrlHint}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-xs font-semibold text-slate-900 dark:text-white">Enable auto-reply</h4>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Sends a confirmation email to the address provided.</p>
+                  <h4 className="text-xs font-semibold text-slate-900 dark:text-white">{t.enableAutoReply}</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">{t.enableAutoReplyHint}</p>
                 </div>
                 <input
                   id="detail-auto-reply"
@@ -300,11 +303,11 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                 <div className="space-y-3 pt-1 border-t border-slate-50">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                      Objet de l'e-mail
+                      {t.subjectLabel}
                     </label>
                     <input
                       type="text"
-                      placeholder="We received your message"
+                      placeholder={t.subjectPlaceholder}
                       value={autoReplySubject}
                       onChange={(e) => setAutoReplySubject(e.target.value)}
                       disabled={updatingSettings}
@@ -315,10 +318,10 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
 
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                      Message (Texte brut)
+                      {t.messageLabel}
                     </label>
                     <textarea
-                      placeholder="e.g. Hi {{name}}, we received your request…"
+                      placeholder={t.messagePlaceholder}
                       value={autoReplyMessage}
                       onChange={(e) => setAutoReplyMessage(e.target.value)}
                       disabled={updatingSettings}
@@ -326,7 +329,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                       className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
                     />
                     <span className="text-[9px] text-slate-500 block font-medium">
-                      Use <code className="bg-slate-100 dark:bg-slate-800 text-slate-700 px-1 py-0.5 rounded text-[8px] font-mono">{"{{name}}"}</code> or <code className="bg-slate-100 dark:bg-slate-800 text-slate-700 px-1 py-0.5 rounded text-[8px] font-mono">{"{{nom}}"}</code> to dynamically include the sender's name. Leave empty to use the default message.
+                      {t.messageHintA} <code className="bg-slate-100 dark:bg-slate-800 text-slate-700 px-1 py-0.5 rounded text-[8px] font-mono">{"{{name}}"}</code> {t.messageHintB} <code className="bg-slate-100 dark:bg-slate-800 text-slate-700 px-1 py-0.5 rounded text-[8px] font-mono">{"{{nom}}"}</code> {t.messageHintC}
                     </span>
                   </div>
                 </div>
@@ -337,7 +340,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                 disabled={updatingSettings}
                 className="w-full text-xs py-2 mt-2"
               >
-                {updatingSettings ? 'Saving…' : 'Save settings'}
+                {updatingSettings ? t.saving : t.saveSettings}
               </Button>
             </form>
           </div>
@@ -345,16 +348,16 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
 
           <BlurFade delay={0.2}>
           <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs space-y-4">
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Configured CORS domains</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">{t.corsTitle}</h3>
             <p className="text-xs text-slate-500">
-              Specify allowed domains (comma-separated). Use `*` to allow all.
+              {t.corsDesc}
             </p>
-            
+
             <form onSubmit={handleSaveCors} className="space-y-4 pt-2">
               <div className="space-y-1.5">
                 <input
                   type="text"
-                  placeholder="https://yoursite.com, https://other.com"
+                  placeholder={t.corsPlaceholder}
                   value={corsInput}
                   onChange={(e) => setCorsInput(e.target.value)}
                   disabled={updatingCors}
@@ -379,7 +382,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                 disabled={updatingCors}
                 className="w-full text-xs py-2"
               >
-                {updatingCors ? 'Saving…' : 'Update CORS'}
+                {updatingCors ? t.saving : t.updateCors}
               </Button>
             </form>
           </div>
@@ -390,21 +393,21 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
         <div className="lg:col-span-2 space-y-6">
           <BlurFade delay={0.25}>
           <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs">
-            <h3 className="font-bold text-slate-900 dark:text-white text-base mb-6">Leads received ({submissions.length})</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white text-base mb-6">{t.leadsReceived.replace('{n}', String(submissions.length))}</h3>
 
             {submissions.length === 0 ? (
               <div className="py-12 text-center">
-                <span className="text-sm font-medium text-slate-400">No submissions yet.</span>
+                <span className="text-sm font-medium text-slate-400">{t.noSubmissions}</span>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
                   <thead className="bg-slate-50 dark:bg-slate-950/60 text-xs font-bold text-slate-700 dark:text-slate-200 uppercase border-b border-slate-100 dark:border-slate-800">
                     <tr>
-                      <th className="px-4 py-3">Date</th>
-                      <th className="px-4 py-3">IP</th>
-                      <th className="px-4 py-3">Preview</th>
-                      <th className="px-4 py-3 text-right">Action</th>
+                      <th className="px-4 py-3">{t.colDate}</th>
+                      <th className="px-4 py-3">{t.colIp}</th>
+                      <th className="px-4 py-3">{t.colPreview}</th>
+                      <th className="px-4 py-3 text-right">{t.colAction}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -429,7 +432,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                             onClick={() => setSelectedSub(sub)}
                             className="inline-flex items-center gap-1 text-xs text-slate-900 font-semibold hover:opacity-85"
                           >
-                            <Eye className="h-3.5 w-3.5" /> Details
+                            <Eye className="h-3.5 w-3.5" /> {t.details}
                           </button>
                         </td>
                       </tr>
@@ -448,15 +451,15 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
         <Modal
           isOpen={!!selectedSub}
           onClose={() => setSelectedSub(null)}
-          title="Submission details"
+          title={t.submissionDetailsTitle}
         >
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2 text-xs border-b border-slate-100 dark:border-slate-800 pb-3 text-slate-400 font-medium">
               <div>
-                Date: <span className="text-slate-800 font-semibold">{new Date(selectedSub.created_at).toLocaleString()}</span>
+                {t.dateLabel} <span className="text-slate-800 font-semibold">{new Date(selectedSub.created_at).toLocaleString()}</span>
               </div>
               <div className="text-right">
-                IP: <span className="text-slate-800 font-mono font-semibold">{selectedSub.ip_address}</span>
+                {t.ipLabel} <span className="text-slate-800 font-mono font-semibold">{selectedSub.ip_address}</span>
               </div>
             </div>
 
@@ -470,7 +473,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
             </div>
 
             <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800 mt-6">
-              <Button onClick={() => setSelectedSub(null)}>Close</Button>
+              <Button onClick={() => setSelectedSub(null)}>{t.close}</Button>
             </div>
           </div>
         </Modal>

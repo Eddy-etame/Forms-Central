@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { getForms, getClients, createForm, toggleFormStatus, deleteForm } from '@/lib/actions';
 import { toast, confirmDialog } from '@/components/ui/Toaster';
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
 
 interface Form {
   id: string;
@@ -27,6 +29,7 @@ interface Client {
 }
 
 export default function FormsPage() {
+  const t = getAppDict(useLocale()).admin.forms;
   const [forms, setForms] = useState<Form[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +70,7 @@ export default function FormsPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !clientId) {
-      setFormError('Nom et Client requis.');
+      setFormError(t.requiredErr);
       return;
     }
 
@@ -83,14 +86,14 @@ export default function FormsPage() {
     try {
       const res = await createForm(name, clientId, allowedOrigins, autoReplyEnabled, autoReplySubject, autoReplyMessage);
       if (res && !res.success) {
-        setFormError(res.error || 'Could not create the form.');
+        setFormError(res.error || t.createErr);
         return;
       }
       await loadFormsAndClients();
       setModalOpen(false);
     } catch (err: any) {
       console.error('Error creating form:', err);
-      setFormError(err.message || 'Could not create the form.');
+      setFormError(err.message || t.createErr);
     } finally {
       setSaving(false);
     }
@@ -100,10 +103,10 @@ export default function FormsPage() {
     try {
       const res = await toggleFormStatus(id, !currentStatus);
       if (res && !res.success) {
-        toast.error(res.error || 'Could not update the form.');
+        toast.error(res.error || t.updateErr);
         return;
       }
-      toast.success(!currentStatus ? 'Form activated.' : 'Form paused.');
+      toast.success(!currentStatus ? t.activatedOk : t.pausedOk);
       setForms(
         forms.map((f) => (f.id === id ? { ...f, is_active: !currentStatus } : f))
       );
@@ -114,9 +117,9 @@ export default function FormsPage() {
 
   const handleDelete = async (id: string) => {
     const ok = await confirmDialog({
-      title: 'Delete this form?',
-      body: 'The form and its settings are permanently deleted. Sites still posting to it will start receiving 404s.',
-      confirmLabel: 'Delete form',
+      title: t.deleteConfirmTitle,
+      body: t.deleteConfirmBody,
+      confirmLabel: t.deleteConfirmBtn,
       danger: true,
     });
     if (!ok) return;
@@ -124,20 +127,20 @@ export default function FormsPage() {
     try {
       const res = await deleteForm(id);
       if (res && !res.success) {
-        toast.error(res.error || 'Could not delete the form.');
+        toast.error(res.error || t.deleteErr);
         return;
       }
-      toast.success('Form deleted.');
+      toast.success(t.deletedOk);
       await loadFormsAndClients();
     } catch (err) {
       console.error('Error deleting form:', err);
-      toast.error('Could not delete the form.');
+      toast.error(t.deleteErr);
     }
   };
 
   const openCreateModal = () => {
     if (clients.length === 0) {
-      toast.info('Create at least one client first — every form belongs to a client.');
+      toast.info(t.needClientFirst);
       return;
     }
     setName('');
@@ -163,11 +166,11 @@ export default function FormsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Forms</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Configure your forms and get their integration links.</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{t.title}</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t.subtitle}</p>
         </div>
         <Button onClick={openCreateModal} className="flex items-center gap-1.5 px-3 py-2">
-          <Plus className="h-4 w-4" /> New form
+          <Plus className="h-4 w-4" /> {t.newForm}
         </Button>
       </div>
 
@@ -175,7 +178,7 @@ export default function FormsPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {forms.length === 0 ? (
           <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center">
-            <span className="text-sm font-medium text-slate-400">No forms yet.</span>
+            <span className="text-sm font-medium text-slate-400">{t.noForms}</span>
           </div>
         ) : (
           forms.map((form) => (
@@ -203,11 +206,11 @@ export default function FormsPage() {
                   </button>
                 </div>
                 <p className="text-xs text-slate-400 font-semibold mt-1">
-                  Client : {form.clients ? form.clients.name : 'Inconnu'}
+                  {t.client} : {form.clients ? form.clients.name : t.unknownClient}
                 </p>
                 <div className="mt-4">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
-                    CORS Origines
+                    {t.corsOrigins}
                   </span>
                   <p className="text-xs text-slate-500 font-mono mt-1 truncate">
                     {form.allowed_origins.join(', ')}
@@ -220,7 +223,7 @@ export default function FormsPage() {
                   href={`/admin/forms/${form.id}`}
                   className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-950 transition-colors"
                 >
-                  Integration
+                  {t.integration}
                 </Link>
                 <Button
                   variant="ghost"
@@ -236,7 +239,7 @@ export default function FormsPage() {
       </div>
 
       {/* Form Creation Modal */}
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Create a form">
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={t.modalTitle}>
         <form onSubmit={handleCreate} className="space-y-4">
           {formError && (
             <div className="rounded-lg bg-red-50 border border-red-100 p-3 text-xs text-red-600 font-medium">
@@ -245,10 +248,10 @@ export default function FormsPage() {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Form name</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">{t.formNameLabel}</label>
             <Input
               type="text"
-              placeholder="e.g. Acme contact form"
+              placeholder={t.formNamePlaceholder}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -257,7 +260,7 @@ export default function FormsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Recipient client</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">{t.recipientLabel}</label>
             <select
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
@@ -275,24 +278,24 @@ export default function FormsPage() {
 
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Allowed CORS origins (comma-separated)
+              {t.corsLabel}
             </label>
             <Input
               type="text"
-              placeholder="e.g. https://acme.com, https://blog.acme.com (or * for all)"
+              placeholder={t.corsPlaceholder}
               value={originsInput}
               onChange={(e) => setOriginsInput(e.target.value)}
               disabled={saving}
             />
             <span className="text-[10px] text-slate-400 block font-medium">
-              Comma-separate multiple sites. Use `*` to allow all.
+              {t.corsHint}
             </span>
           </div>
 
           <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between">
               <label htmlFor="auto-reply" className="text-xs font-semibold text-slate-700 cursor-pointer">
-                Auto-reply
+                {t.autoReply}
               </label>
               <input
                 id="auto-reply"
@@ -308,11 +311,11 @@ export default function FormsPage() {
               <div className="space-y-3 pl-4 border-l-2 border-slate-100 dark:border-slate-800">
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                    Objet de l'e-mail
+                    {t.subjectLabel}
                   </label>
                   <Input
                     type="text"
-                    placeholder="We received your message"
+                    placeholder={t.subjectPlaceholder}
                     value={autoReplySubject}
                     onChange={(e) => setAutoReplySubject(e.target.value)}
                     disabled={saving}
@@ -320,10 +323,10 @@ export default function FormsPage() {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                    Message de confirmation
+                    {t.messageLabel}
                   </label>
                   <textarea
-                    placeholder="e.g. Thanks for your message. We'll get back to you soon…"
+                    placeholder={t.messagePlaceholder}
                     value={autoReplyMessage}
                     onChange={(e) => setAutoReplyMessage(e.target.value)}
                     disabled={saving}
@@ -331,7 +334,7 @@ export default function FormsPage() {
                     className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
                   />
                   <span className="text-[10px] text-slate-400 block font-medium">
-                    Leave empty to use the default message (which includes the recipient client's name).
+                    {t.messageHint}
                   </span>
                 </div>
               </div>
@@ -345,10 +348,10 @@ export default function FormsPage() {
               onClick={() => setModalOpen(false)}
               disabled={saving}
             >
-              Annuler
+              {t.cancel}
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? 'Creating…' : 'Create'}
+              {saving ? t.creating : t.create}
             </Button>
           </div>
         </form>

@@ -97,6 +97,53 @@ interface AppDict {
       removeConfirmTitle: string; removeConfirmBody: string; removeConfirmBtn: string;
       removeErr: string; removedOk: string;
     };
+    forms: {
+      title: string; subtitle: string; newForm: string; noForms: string;
+      client: string; unknownClient: string; corsOrigins: string; integration: string;
+      requiredErr: string; createErr: string; activatedOk: string; pausedOk: string; updateErr: string;
+      deleteConfirmTitle: string; deleteConfirmBody: string; deleteConfirmBtn: string; deleteErr: string; deletedOk: string;
+      needClientFirst: string;
+      modalTitle: string; formNameLabel: string; formNamePlaceholder: string;
+      recipientLabel: string; corsLabel: string; corsPlaceholder: string; corsHint: string;
+      autoReply: string; subjectLabel: string; subjectPlaceholder: string;
+      messageLabel: string; messagePlaceholder: string; messageHint: string;
+      cancel: string; creating: string; create: string;
+    };
+    clients: {
+      title: string; subtitle: string; newClient: string; noClients: string;
+      requiredErr: string; saveErr: string;
+      deleteConfirmTitle: string; deleteConfirmBody: string; deleteConfirmBtn: string; deleteErr: string; deletedOk: string;
+      passwordErr: string; networkErr: string;
+      resetConfirmTitle: string; resetConfirmBody: string; resetConfirmBtn: string; resetOk: string; resetErr: string;
+      hide: string; show: string; resetPasswordTitle: string; edit: string; delete: string;
+      editModalTitle: string; createModalTitle: string;
+      clientNameLabel: string; clientNamePlaceholder: string;
+      emailLabel: string; emailPlaceholder: string;
+      phoneLabel: string; phonePlaceholder: string;
+      artDirectionTitle: string; logoUrlLabel: string; logoUrlPlaceholder: string;
+      primaryColorLabel: string; fontFamilyLabel: string; fontSans: string; fontSerif: string; fontMono: string;
+      customSenderTitle: string; paidBadge: string; customSenderDescA: string; customSenderDescC: string;
+      senderNameLabel: string; senderNamePlaceholder: string; senderNameHint: string;
+      replyToLabel: string; replyToPlaceholder: string; replyToHint: string;
+      securityTitle: string; twoFactorLabel: string; twoFactorHint: string; theirAddress: string;
+      cancel: string; saving: string; save: string;
+    };
+    formDetail: {
+      notFoundTitle: string; backToList: string; backToForms: string; recipientClient: string;
+      deactivate: string; activate: string; updateErr: string; activatedOk: string; pausedOk: string;
+      directIntegrationTitle: string; directIntegrationDesc: string; htmlExampleLabel: string;
+      advancedSettingsTitle: string; advancedSettingsDesc: string;
+      redirectUrlLabel: string; redirectUrlPlaceholder: string; redirectUrlHint: string;
+      webhookUrlLabel: string; webhookUrlPlaceholder: string; webhookUrlHint: string;
+      enableAutoReply: string; enableAutoReplyHint: string;
+      subjectLabel: string; subjectPlaceholder: string;
+      messageLabel: string; messagePlaceholder: string; messageHintA: string; messageHintB: string; messageHintC: string;
+      saving: string; saveSettings: string; settingsErr: string; settingsOk: string;
+      corsTitle: string; corsDesc: string; corsPlaceholder: string; updateCors: string; corsErr: string; corsOk: string;
+      leadsReceived: string; noSubmissions: string;
+      colDate: string; colIp: string; colPreview: string; colAction: string; details: string;
+      submissionDetailsTitle: string; dateLabel: string; ipLabel: string; close: string;
+    };
   };
 }
 
@@ -205,6 +252,55 @@ export const appDictionaries: Record<Locale, AppDict> = {
         removeConfirmTitle: 'Remove from blacklist?', removeConfirmBody: 'This target will be able to submit forms again immediately.', removeConfirmBtn: 'Remove',
         removeErr: 'Could not remove the target.', removedOk: 'Target removed from the blacklist.',
       },
+      forms: {
+        title: 'Forms', subtitle: 'Configure your forms and get their integration links.', newForm: 'New form', noForms: 'No forms yet.',
+        client: 'Client', unknownClient: 'Unknown', corsOrigins: 'CORS origins', integration: 'Integration',
+        requiredErr: 'Name and client are required.', createErr: 'Could not create the form.', activatedOk: 'Form activated.', pausedOk: 'Form paused.', updateErr: 'Could not update the form.',
+        deleteConfirmTitle: 'Delete this form?', deleteConfirmBody: 'The form and its settings are permanently deleted. Sites still posting to it will start receiving 404s.', deleteConfirmBtn: 'Delete form', deleteErr: 'Could not delete the form.', deletedOk: 'Form deleted.',
+        needClientFirst: 'Create at least one client first — every form belongs to a client.',
+        modalTitle: 'Create a form', formNameLabel: 'Form name', formNamePlaceholder: 'e.g. Acme contact form',
+        recipientLabel: 'Recipient client', corsLabel: 'Allowed CORS origins (comma-separated)', corsPlaceholder: 'e.g. https://acme.com, https://blog.acme.com (or * for all)', corsHint: 'Comma-separate multiple sites. Use `*` to allow all.',
+        autoReply: 'Auto-reply', subjectLabel: 'Email subject', subjectPlaceholder: 'We received your message',
+        messageLabel: 'Confirmation message', messagePlaceholder: "e.g. Thanks for your message. We'll get back to you soon…", messageHint: "Leave empty to use the default message (which includes the recipient client's name).",
+        cancel: 'Cancel', creating: 'Creating…', create: 'Create',
+      },
+      clients: {
+        title: 'Clients', subtitle: 'Manage the recipients who get form notifications.', newClient: 'New client', noClients: 'No clients yet.',
+        requiredErr: 'Name and email are required.', saveErr: 'Could not save the client.',
+        deleteConfirmTitle: 'Delete this client?', deleteConfirmBody: 'This permanently deletes the client and every form they own. Their leads stay in the database but lose their owner.', deleteConfirmBtn: 'Delete client', deleteErr: 'Could not delete the client.', deletedOk: 'Client deleted.',
+        passwordErr: 'Could not retrieve the password.', networkErr: 'Network error.',
+        resetConfirmTitle: 'Reset this client’s password?', resetConfirmBody: 'A new temporary password is generated and emailed to the client. Their current password stops working immediately.', resetConfirmBtn: 'Reset & email', resetOk: 'Password reset and emailed to the client.', resetErr: 'Could not reset the password.',
+        hide: 'Hide', show: 'Show', resetPasswordTitle: 'Reset password', edit: 'Edit', delete: 'Delete',
+        editModalTitle: 'Edit client', createModalTitle: 'Create a client',
+        clientNameLabel: 'Client name', clientNamePlaceholder: 'e.g. Acme Corp',
+        emailLabel: 'Email address', emailPlaceholder: 'e.g. contact@acme.com',
+        phoneLabel: 'Phone number (SMS)', phonePlaceholder: 'e.g. +1 555 123 4567',
+        artDirectionTitle: 'Email art direction', logoUrlLabel: 'Logo URL', logoUrlPlaceholder: 'https://.../logo.png',
+        primaryColorLabel: 'Primary color', fontFamilyLabel: 'Font family', fontSans: 'Sans-serif (default)', fontSerif: 'Serif (classic)', fontMono: 'Monospace (code)',
+        customSenderTitle: 'Custom sender', paidBadge: 'Paid',
+        customSenderDescA: 'How this client’s brand appears on the confirmation emails their customers receive. Applied only on paid plans. A true custom',
+        customSenderDescC: 'address activates once the client’s domain is verified.',
+        senderNameLabel: 'Sender display name', senderNamePlaceholder: 'e.g. Shu', senderNameHint: 'Shown as the sender name. Falls back to the client name if empty.',
+        replyToLabel: 'Reply-to address', replyToPlaceholder: 'e.g. contact@shu.com', replyToHint: 'Replies from their customers go here. Works today — no domain needed.',
+        securityTitle: 'Security', twoFactorLabel: 'Require two-factor sign-in', twoFactorHint: 'After their password, this client must enter a 6-digit code emailed to {email}.', theirAddress: 'their address',
+        cancel: 'Cancel', saving: 'Saving…', save: 'Save',
+      },
+      formDetail: {
+        notFoundTitle: 'Form not found', backToList: 'Back to list', backToForms: 'Back to forms', recipientClient: 'Recipient client:',
+        deactivate: 'Deactivate form', activate: 'Activate form', updateErr: 'Could not update the form.', activatedOk: 'Form activated.', pausedOk: 'Form paused.',
+        directIntegrationTitle: 'Direct HTML integration', directIntegrationDesc: 'Copy this URL into the `action` attribute of your standard HTML form.', htmlExampleLabel: 'HTML code example:',
+        advancedSettingsTitle: 'Advanced settings & auto-reply', advancedSettingsDesc: 'Configure the redirect page and the automatic confirmation email sent to the prospect.',
+        redirectUrlLabel: 'Redirect URL (success)', redirectUrlPlaceholder: 'e.g. https://yoursite.com/thanks', redirectUrlHint: 'Forces a redirect to this page after submission (overrides your frontend config). Leave empty to use the one in your code.',
+        webhookUrlLabel: 'Webhook URL (signed POST per lead)', webhookUrlPlaceholder: 'e.g. https://api.yourapp.com/hooks/inlet', webhookUrlHint: 'Every stored lead is POSTed here as JSON, HMAC-signed (X-Inlet-Signature). Must be https. Leave empty to disable.',
+        enableAutoReply: 'Enable auto-reply', enableAutoReplyHint: 'Sends a confirmation email to the address provided.',
+        subjectLabel: 'Email subject', subjectPlaceholder: 'We received your message',
+        messageLabel: 'Message (plain text)', messagePlaceholder: 'e.g. Hi {{name}}, we received your request…', messageHintA: 'Use', messageHintB: 'or', messageHintC: "to dynamically include the sender's name. Leave empty to use the default message.",
+        saving: 'Saving…', saveSettings: 'Save settings', settingsErr: 'Could not save the settings.', settingsOk: 'Settings updated.',
+        corsTitle: 'Configured CORS domains', corsDesc: 'Specify allowed domains (comma-separated). Use `*` to allow all.', corsPlaceholder: 'https://yoursite.com, https://other.com', updateCors: 'Update CORS', corsErr: 'Could not save the CORS domains.', corsOk: 'CORS domains updated.',
+        leadsReceived: 'Leads received ({n})', noSubmissions: 'No submissions yet.',
+        colDate: 'Date', colIp: 'IP', colPreview: 'Preview', colAction: 'Action', details: 'Details',
+        submissionDetailsTitle: 'Submission details', dateLabel: 'Date:', ipLabel: 'IP:', close: 'Close',
+      },
     },
   },
   fr: {
@@ -310,6 +406,55 @@ export const appDictionaries: Record<Locale, AppDict> = {
         requiredErr: 'La cible et le motif sont requis.', existsErr: 'Cette cible existe déjà ou est invalide.',
         removeConfirmTitle: 'Retirer de la liste noire ?', removeConfirmBody: 'Cette cible pourra à nouveau soumettre des formulaires immédiatement.', removeConfirmBtn: 'Retirer',
         removeErr: 'Impossible de retirer la cible.', removedOk: 'Cible retirée de la liste noire.',
+      },
+      forms: {
+        title: 'Formulaires', subtitle: 'Configurez vos formulaires et récupérez leurs liens d’intégration.', newForm: 'Nouveau formulaire', noForms: 'Aucun formulaire pour l’instant.',
+        client: 'Client', unknownClient: 'Inconnu', corsOrigins: 'Origines CORS', integration: 'Intégration',
+        requiredErr: 'Le nom et le client sont requis.', createErr: 'Impossible de créer le formulaire.', activatedOk: 'Formulaire activé.', pausedOk: 'Formulaire mis en pause.', updateErr: 'Impossible de mettre à jour le formulaire.',
+        deleteConfirmTitle: 'Supprimer ce formulaire ?', deleteConfirmBody: 'Le formulaire et ses paramètres sont supprimés définitivement. Les sites qui lui envoient encore des données recevront des erreurs 404.', deleteConfirmBtn: 'Supprimer le formulaire', deleteErr: 'Impossible de supprimer le formulaire.', deletedOk: 'Formulaire supprimé.',
+        needClientFirst: 'Créez d’abord au moins un client — chaque formulaire appartient à un client.',
+        modalTitle: 'Créer un formulaire', formNameLabel: 'Nom du formulaire', formNamePlaceholder: 'ex. Formulaire de contact Acme',
+        recipientLabel: 'Client destinataire', corsLabel: 'Origines CORS autorisées (séparées par des virgules)', corsPlaceholder: 'ex. https://acme.com, https://blog.acme.com (ou * pour tout autoriser)', corsHint: 'Séparez plusieurs sites par des virgules. Utilisez `*` pour tout autoriser.',
+        autoReply: 'Réponse automatique', subjectLabel: 'Objet de l’e-mail', subjectPlaceholder: 'Nous avons bien reçu votre message',
+        messageLabel: 'Message de confirmation', messagePlaceholder: 'ex. Merci pour votre message. Nous revenons vers vous rapidement…', messageHint: 'Laissez vide pour utiliser le message par défaut (qui inclut le nom du client destinataire).',
+        cancel: 'Annuler', creating: 'Création…', create: 'Créer',
+      },
+      clients: {
+        title: 'Clients', subtitle: 'Gérez les destinataires qui reçoivent les notifications de formulaires.', newClient: 'Nouveau client', noClients: 'Aucun client pour l’instant.',
+        requiredErr: 'Le nom et l’e-mail sont requis.', saveErr: 'Impossible de sauvegarder le client.',
+        deleteConfirmTitle: 'Supprimer ce client ?', deleteConfirmBody: 'Cette action supprime définitivement le client et tous les formulaires qui lui appartiennent. Leurs leads restent dans la base de données mais perdent leur propriétaire.', deleteConfirmBtn: 'Supprimer le client', deleteErr: 'Impossible de supprimer le client.', deletedOk: 'Client supprimé.',
+        passwordErr: 'Impossible de récupérer le mot de passe.', networkErr: 'Erreur réseau.',
+        resetConfirmTitle: 'Réinitialiser le mot de passe de ce client ?', resetConfirmBody: 'Un nouveau mot de passe temporaire est généré et envoyé par e-mail au client. Son mot de passe actuel cesse de fonctionner immédiatement.', resetConfirmBtn: 'Réinitialiser & envoyer', resetOk: 'Mot de passe réinitialisé et envoyé par e-mail au client.', resetErr: 'Impossible de réinitialiser le mot de passe.',
+        hide: 'Cacher', show: 'Voir', resetPasswordTitle: 'Réinitialiser le mot de passe', edit: 'Modifier', delete: 'Supprimer',
+        editModalTitle: 'Modifier le client', createModalTitle: 'Créer un client',
+        clientNameLabel: 'Nom du client', clientNamePlaceholder: 'ex. Acme Corp',
+        emailLabel: 'Adresse e-mail', emailPlaceholder: 'ex. contact@acme.com',
+        phoneLabel: 'Numéro de téléphone (SMS)', phonePlaceholder: 'ex. +1 555 123 4567',
+        artDirectionTitle: 'Direction artistique (e-mails)', logoUrlLabel: 'URL du logo', logoUrlPlaceholder: 'https://.../logo.png',
+        primaryColorLabel: 'Couleur principale', fontFamilyLabel: 'Police de caractères', fontSans: 'Sans-serif (par défaut)', fontSerif: 'Serif (classique)', fontMono: 'Monospace (code)',
+        customSenderTitle: 'Expéditeur personnalisé', paidBadge: 'Payant',
+        customSenderDescA: 'Comment la marque de ce client apparaît sur les e-mails de confirmation reçus par ses clients. Appliqué uniquement sur les forfaits payants. Une véritable adresse',
+        customSenderDescC: 'personnalisée s’active une fois le domaine du client vérifié.',
+        senderNameLabel: 'Nom d’affichage de l’expéditeur', senderNamePlaceholder: 'ex. Shu', senderNameHint: 'Affiché comme nom de l’expéditeur. Utilise le nom du client si laissé vide.',
+        replyToLabel: 'Adresse de réponse', replyToPlaceholder: 'ex. contact@shu.com', replyToHint: 'Les réponses de leurs clients arrivent ici. Fonctionne dès aujourd’hui — aucun domaine requis.',
+        securityTitle: 'Sécurité', twoFactorLabel: 'Exiger une connexion à deux facteurs', twoFactorHint: 'Après son mot de passe, ce client doit saisir un code à 6 chiffres envoyé à {email}.', theirAddress: 'son adresse',
+        cancel: 'Annuler', saving: 'Enregistrement…', save: 'Enregistrer',
+      },
+      formDetail: {
+        notFoundTitle: 'Formulaire introuvable', backToList: 'Retour à la liste', backToForms: 'Retour aux formulaires', recipientClient: 'Client destinataire :',
+        deactivate: 'Désactiver le formulaire', activate: 'Activer le formulaire', updateErr: 'Impossible de mettre à jour le formulaire.', activatedOk: 'Formulaire activé.', pausedOk: 'Formulaire mis en pause.',
+        directIntegrationTitle: 'Intégration HTML directe', directIntegrationDesc: 'Copiez cette URL dans l’attribut `action` de votre formulaire HTML standard.', htmlExampleLabel: 'Exemple de code HTML :',
+        advancedSettingsTitle: 'Paramètres avancés & réponse automatique', advancedSettingsDesc: 'Configurez la page de redirection et l’e-mail de confirmation automatique envoyé au prospect.',
+        redirectUrlLabel: 'URL de redirection (succès)', redirectUrlPlaceholder: 'ex. https://votresite.com/merci', redirectUrlHint: 'Force une redirection vers cette page après soumission (remplace la config de votre frontend). Laissez vide pour utiliser celle de votre code.',
+        webhookUrlLabel: 'URL de webhook (POST signé par lead)', webhookUrlPlaceholder: 'ex. https://api.votreapp.com/hooks/inlet', webhookUrlHint: 'Chaque lead enregistré est envoyé ici en JSON, signé par HMAC (X-Inlet-Signature). Doit être en https. Laissez vide pour désactiver.',
+        enableAutoReply: 'Activer la réponse automatique', enableAutoReplyHint: 'Envoie un e-mail de confirmation à l’adresse fournie.',
+        subjectLabel: 'Objet de l’e-mail', subjectPlaceholder: 'Nous avons bien reçu votre message',
+        messageLabel: 'Message (texte brut)', messagePlaceholder: 'ex. Bonjour {{name}}, nous avons bien reçu votre demande…', messageHintA: 'Utilisez', messageHintB: 'ou', messageHintC: 'pour inclure dynamiquement le nom de l’expéditeur. Laissez vide pour utiliser le message par défaut.',
+        saving: 'Enregistrement…', saveSettings: 'Enregistrer les paramètres', settingsErr: 'Impossible d’enregistrer les paramètres.', settingsOk: 'Paramètres mis à jour.',
+        corsTitle: 'Domaines CORS configurés', corsDesc: 'Précisez les domaines autorisés (séparés par des virgules). Utilisez `*` pour tout autoriser.', corsPlaceholder: 'https://votresite.com, https://autre.com', updateCors: 'Mettre à jour CORS', corsErr: 'Impossible d’enregistrer les domaines CORS.', corsOk: 'Domaines CORS mis à jour.',
+        leadsReceived: 'Leads reçus ({n})', noSubmissions: 'Aucune soumission pour l’instant.',
+        colDate: 'Date', colIp: 'IP', colPreview: 'Aperçu', colAction: 'Action', details: 'Détails',
+        submissionDetailsTitle: 'Détails de la soumission', dateLabel: 'Date :', ipLabel: 'IP :', close: 'Fermer',
       },
     },
   },

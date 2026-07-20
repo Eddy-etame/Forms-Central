@@ -28,16 +28,27 @@ export function hashApiKey(raw: string): string {
 export async function verifyApiKey(bearer: string | null | undefined): Promise<ApiKeyAuth | null> {
   if (!bearer || !bearer.startsWith('kef_')) return null;
 
-  const { data: key, error } = await supabase
-    .from('api_keys')
-    .select('id, client_id, revoked, clients(name, plan)')
-    .eq('key_hash', hashApiKey(bearer))
-    .maybeSingle();
+  // Verify through the SECURITY DEFINER function (migration_v21), consistent
+  // with the other auth paths. Falls back to a raw lookup until v21 is applied.
+  type KeyRow = { id: string; client_id: string; revoked: boolean; client_name: string; client_plan?: string };
+  let key: KeyRow | null = null;
+  const rpc = await supabase.rpc('verify_api_key', { p_hash: hashApiKey(bearer) });
+  const rows = rpc.data as unknown as KeyRow[] | null;
+  if (!rpc.error && Array.isArray(rows)) {
+    key = rows[0] ?? null;
+  } else {
+    const fb = await supabase
+      .from('api_keys')
+      .select('id, client_id, revoked, clients(name, plan)')
+      .eq('key_hash', hashApiKey(bearer))
+      .maybeSingle();
+    if (fb.data) {
+      const c = fb.data.clients as unknown as { name: string; plan?: string } | null;
+      key = { id: fb.data.id, client_id: fb.data.client_id, revoked: fb.data.revoked, client_name: c?.name || '', client_plan: c?.plan };
+    }
+  }
 
-  if (error || !key || key.revoked) return null;
-
-  const client = key.clients as unknown as { name: string; plan?: string } | null;
-  if (!client) return null;
+  if (!key || key.revoked || !key.client_name) return null;
 
   // Fire-and-forget usage timestamp.
   supabase.from('api_keys').update({ last_used_at: new Date().toISOString() }).eq('id', key.id)
@@ -45,8 +56,8 @@ export async function verifyApiKey(bearer: string | null | undefined): Promise<A
 
   return {
     clientId: key.client_id,
-    clientName: client.name,
-    plan: getPlan(client.plan),
+    clientName: key.client_name,
+    plan: getPlan(key.client_plan),
     keyId: key.id,
   };
 }

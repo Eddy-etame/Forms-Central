@@ -48,6 +48,16 @@ interface AppDict {
     createFormFirst: string; webhookPlaceholder: string; saving: string; save: string; saved: string; couldNotSave: string; networkError: string;
     mcpTitle: string; mcpDescA: string; mcpDescStrong: string; mcpDescB: string; endpoint: string; toolsAvailable: string;
   };
+  endClients: {
+    title: string; subtitle: string; newBtn: string;
+    lockTitle: string; lockBody: string; seePlans: string;
+    createdMsg: string; portalUrl: string; email: string; tempPassword: string;
+    namePlaceholder: string; emailPlaceholder: string; creating: string; createBtn: string;
+    portalLogin: string; count: string; loading: string;
+    emptyTitle: string; emptyBody: string;
+    formsTheySee: string; noneAssigned: string; assignForm: string;
+    couldNotCreate: string; couldNotReach: string;
+  };
 }
 
 export const appDictionaries: Record<Locale, AppDict> = {
@@ -101,6 +111,16 @@ export const appDictionaries: Record<Locale, AppDict> = {
       createFormFirst: 'Create a form first — webhooks are configured per form.', webhookPlaceholder: 'https://api.yourapp.com/hooks/inlet (empty = disabled)', saving: 'Saving…', save: 'Save', saved: 'Saved.', couldNotSave: 'Could not save.', networkError: 'Network error.',
       mcpTitle: 'MCP server — your AI runs your forms', mcpDescA: 'Connect Claude Code, Cursor, or any MCP client and your assistant can', mcpDescStrong: 'create forms, read leads, and fetch integration snippets', mcpDescB: 'without leaving the editor.', endpoint: 'Endpoint', toolsAvailable: 'Tools available:',
     },
+    endClients: {
+      title: 'End-clients', subtitle: 'Give each client a private, branded portal to view only their own leads.', newBtn: 'New end-client',
+      lockTitle: 'Client portals start on the Solo plan', lockBody: 'Create white-label portals so each client logs in and sees only their leads.', seePlans: 'See plans',
+      createdMsg: 'End-client created — share these credentials now (the password is shown only once):', portalUrl: 'Portal URL', email: 'Email', tempPassword: 'Temporary password',
+      namePlaceholder: 'Client name (e.g. Acme Corp)', emailPlaceholder: 'client@company.com', creating: 'Creating…', createBtn: 'Create end-client',
+      portalLogin: 'Portal login:', count: '{n} / {limit} end-clients', loading: 'Loading…',
+      emptyTitle: 'No end-clients yet', emptyBody: 'Create one, then assign the forms whose leads they should see.',
+      formsTheySee: 'Forms they can see', noneAssigned: 'None assigned yet.', assignForm: '+ Assign a form…',
+      couldNotCreate: 'Could not create the end-client.', couldNotReach: 'Could not reach the server.',
+    },
   },
   fr: {
     sidebar: {
@@ -151,6 +171,16 @@ export const appDictionaries: Record<Locale, AppDict> = {
       wDescB: '— vérifiez l’en-tête', wDescC: '(extrait dans la', wDescD: '). La livraison ne bloque ni ne perd jamais un lead.',
       createFormFirst: 'Créez d’abord un formulaire — les webhooks se configurent par formulaire.', webhookPlaceholder: 'https://api.votreapp.com/hooks/inlet (vide = désactivé)', saving: 'Enregistrement…', save: 'Enregistrer', saved: 'Enregistré.', couldNotSave: 'Impossible d’enregistrer.', networkError: 'Erreur réseau.',
       mcpTitle: 'Serveur MCP — votre IA pilote vos formulaires', mcpDescA: 'Connectez Claude Code, Cursor ou n’importe quel client MCP et votre assistant peut', mcpDescStrong: 'créer des formulaires, lire les leads et récupérer des extraits d’intégration', mcpDescB: 'sans quitter l’éditeur.', endpoint: 'Endpoint', toolsAvailable: 'Outils disponibles :',
+    },
+    endClients: {
+      title: 'Clients finaux', subtitle: 'Offrez à chaque client un portail privé à sa marque pour consulter uniquement ses propres leads.', newBtn: 'Nouveau client final',
+      lockTitle: 'Les portails clients démarrent au forfait Solo', lockBody: 'Créez des portails en marque blanche pour que chaque client se connecte et ne voie que ses leads.', seePlans: 'Voir les forfaits',
+      createdMsg: 'Client final créé — partagez ces identifiants maintenant (le mot de passe n’est affiché qu’une seule fois) :', portalUrl: 'URL du portail', email: 'E-mail', tempPassword: 'Mot de passe temporaire',
+      namePlaceholder: 'Nom du client (ex. Acme Corp)', emailPlaceholder: 'client@entreprise.com', creating: 'Création…', createBtn: 'Créer le client final',
+      portalLogin: 'Connexion au portail :', count: '{n} / {limit} clients finaux', loading: 'Chargement…',
+      emptyTitle: 'Aucun client final pour l’instant', emptyBody: 'Créez-en un, puis affectez les formulaires dont il doit voir les leads.',
+      formsTheySee: 'Formulaires qu’il peut voir', noneAssigned: 'Aucun affecté pour l’instant.', assignForm: '+ Affecter un formulaire…',
+      couldNotCreate: 'Impossible de créer le client final.', couldNotReach: 'Impossible de joindre le serveur.',
     },
   },
 };

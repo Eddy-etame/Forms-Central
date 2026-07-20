@@ -5,6 +5,7 @@ import { Users, Plus, Trash2, Check, Copy, Lock, X, Link2 } from 'lucide-react';
 
 type Form = { id: string; name: string };
 type EndClient = { id: string; name: string; email: string; created_at: string; forms: Form[] };
+type ECDict = import('@/lib/appDict').AppDict['endClients'];
 
 function Copyable({ value, label }: { value: string; label: string }) {
   const [copied, setCopied] = useState(false);
@@ -25,7 +26,7 @@ function Copyable({ value, label }: { value: string; label: string }) {
   );
 }
 
-export default function EndClientsPanel() {
+export default function EndClientsPanel({ t }: { t: ECDict }) {
   const [users, setUsers] = useState<EndClient[]>([]);
   const [unassigned, setUnassigned] = useState<Form[]>([]);
   const [enabled, setEnabled] = useState(true);
@@ -70,10 +71,10 @@ export default function EndClientsPanel() {
         setName(''); setEmail(''); setShowForm(false);
         load();
       } else {
-        setError(data.error || 'Could not create the end-client.');
+        setError(data.error || t.couldNotCreate);
         if (res.status === 402) setEnabled(false);
       }
-    } catch { setError('Could not reach the server.'); } finally { setBusy(false); }
+    } catch { setError(t.couldNotReach); } finally { setBusy(false); }
   }
 
   async function assign(formId: string, portalUserId: string | null, doAssign: boolean) {
@@ -97,16 +98,16 @@ export default function EndClientsPanel() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">End-clients</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Give each client a private, branded portal to view only their own leads.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{t.title}</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t.subtitle}</p>
         </div>
         {enabled && (
           <button
             onClick={() => { setShowForm((v) => !v); setCreated(null); }}
             disabled={atLimit}
-            className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors disabled:opacity-50"
           >
-            <Plus className="h-4 w-4" /> New end-client
+            <Plus className="h-4 w-4" /> {t.newBtn}
           </button>
         )}
       </div>
@@ -114,18 +115,18 @@ export default function EndClientsPanel() {
       {!enabled && !loading && (
         <div className="rounded-2xl border border-slate-200 bg-slate-50 dark:bg-slate-950/60 p-6 text-center">
           <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-900"><Lock className="h-4.5 w-4.5 text-white" /></div>
-          <p className="font-semibold text-slate-900 dark:text-white">Client portals start on the Solo plan</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-slate-500 dark:text-slate-400">Create white-label portals so each client logs in and sees only their leads.</p>
-          <a href="/pricing" className="mt-4 inline-flex h-10 items-center justify-center rounded-full bg-slate-900 px-5 text-sm font-medium text-white hover:bg-slate-800 transition-colors">See plans</a>
+          <p className="font-semibold text-slate-900 dark:text-white">{t.lockTitle}</p>
+          <p className="mx-auto mt-1 max-w-md text-sm text-slate-500 dark:text-slate-400">{t.lockBody}</p>
+          <a href="/pricing" className="mt-4 inline-flex h-10 items-center justify-center rounded-full bg-slate-900 px-5 text-sm font-medium text-white hover:bg-slate-800 transition-colors">{t.seePlans}</a>
         </div>
       )}
 
       {created && (
-        <div className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
-          <p className="text-sm font-semibold text-emerald-900">End-client created — share these credentials now (the password is shown only once):</p>
-          <Copyable label="Portal URL" value={portalUrl} />
-          <Copyable label="Email" value={created.email} />
-          <Copyable label="Temporary password" value={created.password} />
+        <div className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-500/30 dark:bg-emerald-500/10">
+          <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-300">{t.createdMsg}</p>
+          <Copyable label={t.portalUrl} value={portalUrl} />
+          <Copyable label={t.email} value={created.email} />
+          <Copyable label={t.tempPassword} value={created.password} />
         </div>
       )}
 
@@ -133,30 +134,30 @@ export default function EndClientsPanel() {
         <form onSubmit={create} className="space-y-3 rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-5">
           {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 p-3 text-xs font-medium text-red-600">{error}</p>}
           <div className="grid gap-3 sm:grid-cols-2">
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Client name (e.g. Acme Corp)" className="rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
-            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="client@company.com" className="rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t.namePlaceholder} className="rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500" />
+            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder={t.emailPlaceholder} className="rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500" />
           </div>
-          <button type="submit" disabled={busy} className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors disabled:opacity-50">
-            {busy ? 'Creating…' : 'Create end-client'}
+          <button type="submit" disabled={busy} className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors disabled:opacity-50">
+            {busy ? t.creating : t.createBtn}
           </button>
         </form>
       )}
 
       {enabled && (
         <div className="flex items-center gap-2 text-xs text-slate-400">
-          <Link2 className="h-3.5 w-3.5" /> Portal login: <code className="text-slate-600 dark:text-slate-400">{portalUrl}</code>
-          {limit !== null && <span className="ml-auto">{users.length} / {limit} end-clients</span>}
+          <Link2 className="h-3.5 w-3.5" /> {t.portalLogin} <code className="text-slate-600 dark:text-slate-400">{portalUrl}</code>
+          {limit !== null && <span className="ml-auto">{t.count.replace('{n}', String(users.length)).replace('{limit}', String(limit))}</span>}
         </div>
       )}
 
       {loading ? (
-        <p className="text-sm text-slate-400">Loading…</p>
+        <p className="text-sm text-slate-400">{t.loading}</p>
       ) : (
         enabled && users.length === 0 ? (
-          <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-10 text-center">
-            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100"><Users className="h-5 w-5 text-slate-500" /></div>
-            <p className="font-semibold text-slate-900 dark:text-white">No end-clients yet</p>
-            <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">Create one, then assign the forms whose leads they should see.</p>
+          <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-10 text-center dark:border-slate-800 dark:bg-slate-900">
+            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800"><Users className="h-5 w-5 text-slate-500" /></div>
+            <p className="font-semibold text-slate-900 dark:text-white">{t.emptyTitle}</p>
+            <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">{t.emptyBody}</p>
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
@@ -172,10 +173,10 @@ export default function EndClientsPanel() {
                   </button>
                 </div>
 
-                <p className="mt-4 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Forms they can see</p>
+                <p className="mt-4 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{t.formsTheySee}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {u.forms.length === 0 ? (
-                    <span className="text-xs text-slate-400">None assigned yet.</span>
+                    <span className="text-xs text-slate-400">{t.noneAssigned}</span>
                   ) : (
                     u.forms.map((f) => (
                       <span key={f.id} className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
@@ -190,9 +191,9 @@ export default function EndClientsPanel() {
                   <select
                     onChange={(e) => { if (e.target.value) assign(e.target.value, u.id, true); e.target.value = ''; }}
                     defaultValue=""
-                    className="mt-3 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-none focus:border-blue-400"
+                    className="mt-3 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-none focus:border-blue-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300"
                   >
-                    <option value="" disabled>+ Assign a form…</option>
+                    <option value="" disabled>{t.assignForm}</option>
                     {unassigned.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
                   </select>
                 )}

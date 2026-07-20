@@ -5,6 +5,7 @@ import { verifyPassword, needsRehash, hashPassword } from '@/lib/passwords';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 import { logSecurityEvent, SEC } from '@/lib/securityEvents';
 import { cookies } from 'next/headers';
+import { getLocale } from '@/lib/i18n';
 
 export async function POST(req: Request) {
   try {
@@ -84,7 +85,7 @@ export async function POST(req: Request) {
         const { createOtpChallenge } = await import('@/lib/otp');
         const { sendOtpEmail } = await import('@/lib/email');
         const { challengeId, code } = await createOtpChallenge('client', client.id);
-        await sendOtpEmail(client.email, code);
+        await sendOtpEmail(client.email, code, await getLocale());
         return NextResponse.json({ success: true, require2fa: true, challengeId });
       } catch (otpErr) {
         console.error('2FA challenge error:', otpErr);

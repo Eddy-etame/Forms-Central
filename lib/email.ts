@@ -102,8 +102,10 @@ export async function sendLeadEmail(
   payload: Record<string, string>,
   ipAddress: string,
   companyName?: string,
-  branding?: any
+  branding?: any,
+  lang: string = 'fr'
 ): Promise<boolean> {
+  const isEn = lang.toLowerCase() === 'en';
   const senderEmailKey = Object.keys(payload).find(k => k.toLowerCase() === 'email');
   const senderEmail = senderEmailKey ? payload[senderEmailKey] : undefined;
 
@@ -115,11 +117,14 @@ export async function sendLeadEmail(
       clientName: companyName || 'Client',
       formName,
       payload: { ...payload, 'IP Address': ipAddress },
-      branding: branding || {}
+      branding: branding || {},
+      lang: isEn ? 'en' : 'fr',
     })
   );
 
-  const textContent = `Nouveau lead reçu\nFormulaire : ${formName}\nIP : ${ipAddress}\n\nDonnées :\n${Object.entries(payload).map(([k, v]) => `- ${k}: ${v}`).join('\n')}`;
+  const textContent = isEn
+    ? `New lead received\nForm: ${formName}\nIP: ${ipAddress}\n\nData:\n${Object.entries(payload).map(([k, v]) => `- ${k}: ${v}`).join('\n')}`
+    : `Nouveau lead reçu\nFormulaire : ${formName}\nIP : ${ipAddress}\n\nDonnées :\n${Object.entries(payload).map(([k, v]) => `- ${k}: ${v}`).join('\n')}`;
 
   const result = await sendWithFallback({
     from: getSenderAddress(companyName ? `${companyName} Forms` : undefined),
@@ -188,7 +193,8 @@ export async function sendAutoReplyEmail(
       clientName,
       formName,
       customMessage: parsedCustomMessage,
-      branding: branding || {}
+      branding: branding || {},
+      lang: isEn ? 'en' : 'fr',
     })
   );
 
@@ -224,8 +230,10 @@ export async function sendClientWelcomeEmail(
   clientName: string,
   rawPassword?: string,
   resetUrl?: string,
-  branding?: any
+  branding?: any,
+  lang: string = 'fr'
 ): Promise<boolean> {
+  const isEn = lang.toLowerCase() === 'en';
   console.log(`[EMAIL] Preparing client welcome/reset email for: ${toEmail}`);
 
   const htmlContent = await render(
@@ -234,17 +242,22 @@ export async function sendClientWelcomeEmail(
       clientEmail: toEmail,
       rawPassword,
       resetUrl,
-      branding: branding || {}
+      branding: branding || {},
+      lang: isEn ? 'en' : 'fr',
     })
   );
 
-  const subject = resetUrl 
-    ? `Réinitialisation de votre mot de passe - ${clientName}`
-    : `Vos accès Espace Client - ${clientName}`;
+  const subject = resetUrl
+    ? (isEn ? `Password reset - ${clientName}` : `Réinitialisation de votre mot de passe - ${clientName}`)
+    : (isEn ? `Your Client Portal access - ${clientName}` : `Vos accès Espace Client - ${clientName}`);
 
   const textContent = resetUrl
-    ? `Bonjour ${clientName},\n\nVous avez demandé la réinitialisation de votre mot de passe. Voici votre nouveau mot de passe temporaire : ${rawPassword}\n\nConnectez-vous sur votre espace.`
-    : `Bonjour ${clientName},\n\nVotre espace client a été créé.\n\nEmail: ${toEmail}\nMot de passe: ${rawPassword}\n\nConservez cet email précieusement.`;
+    ? (isEn
+        ? `Hello ${clientName},\n\nYou requested a password reset. Here is your new temporary password: ${rawPassword}\n\nSign in to your portal.`
+        : `Bonjour ${clientName},\n\nVous avez demandé la réinitialisation de votre mot de passe. Voici votre nouveau mot de passe temporaire : ${rawPassword}\n\nConnectez-vous sur votre espace.`)
+    : (isEn
+        ? `Hello ${clientName},\n\nYour client portal has been created.\n\nEmail: ${toEmail}\nPassword: ${rawPassword}\n\nKeep this email safe.`
+        : `Bonjour ${clientName},\n\nVotre espace client a été créé.\n\nEmail: ${toEmail}\nMot de passe: ${rawPassword}\n\nConservez cet email précieusement.`);
 
   const result = await sendWithFallback({
     from: getSenderAddress('Espace Client'),
@@ -261,13 +274,18 @@ export async function sendClientWelcomeEmail(
  * Two-factor sign-in code (email OTP). Self-contained HTML; the 6-digit code
  * expires in 10 minutes and can be used once.
  */
-export async function sendOtpEmail(toEmail: string, code: string): Promise<boolean> {
-  const text =
-    `Your Inlet sign-in code is ${code}\n\n` +
-    `It expires in 10 minutes and can be used once. ` +
-    `If you didn't try to sign in, change your password.`;
+export async function sendOtpEmail(toEmail: string, code: string, lang: string = 'fr'): Promise<boolean> {
+  const isEn = lang.toLowerCase() === 'en';
 
-  const html = `
+  const text = isEn
+    ? `Your Inlet sign-in code is ${code}\n\n` +
+      `It expires in 10 minutes and can be used once. ` +
+      `If you didn't try to sign in, change your password.`
+    : `Votre code de connexion Inlet est ${code}\n\n` +
+      `Il expire dans 10 minutes et ne peut être utilisé qu'une seule fois. ` +
+      `Si vous n'avez pas essayé de vous connecter, changez votre mot de passe.`;
+
+  const html = isEn ? `
   <div style="background:#f6f7f9;padding:32px 0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
     <div style="max-width:480px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;">
       <div style="background:#0f172a;padding:20px 28px;color:#fff;font-weight:700;font-size:16px;">Inlet</div>
@@ -282,12 +300,27 @@ export async function sendOtpEmail(toEmail: string, code: string): Promise<boole
         </p>
       </div>
     </div>
+  </div>` : `
+  <div style="background:#f6f7f9;padding:32px 0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
+    <div style="max-width:480px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;">
+      <div style="background:#0f172a;padding:20px 28px;color:#fff;font-weight:700;font-size:16px;">Inlet</div>
+      <div style="padding:28px;color:#0f172a;">
+        <h1 style="margin:0 0 12px;font-size:20px;">Votre code de connexion</h1>
+        <p style="margin:0 0 20px;color:#475569;font-size:14px;line-height:1.6;">
+          Saisissez ce code pour terminer la connexion. Il expire dans <strong>10 minutes</strong>.
+        </p>
+        <div style="font-size:34px;font-weight:800;letter-spacing:10px;background:#f1f5f9;border-radius:12px;padding:16px 0;text-align:center;color:#0f172a;">${code}</div>
+        <p style="margin:22px 0 0;color:#94a3b8;font-size:12px;line-height:1.6;">
+          Si vous n'avez pas essayé de vous connecter, quelqu'un a peut-être votre mot de passe — changez-le immédiatement.
+        </p>
+      </div>
+    </div>
   </div>`;
 
   const result = await sendWithFallback({
     from: getSenderAddress('Inlet'),
     to: toEmail,
-    subject: `${code} is your Inlet sign-in code`,
+    subject: isEn ? `${code} is your Inlet sign-in code` : `${code} est votre code de connexion Inlet`,
     text,
     html,
   });
@@ -298,13 +331,18 @@ export async function sendOtpEmail(toEmail: string, code: string): Promise<boole
  * Password reset email (English, self-contained). The link carries a single-use
  * token that expires in one hour.
  */
-export async function sendPasswordResetEmail(toEmail: string, resetUrl: string): Promise<boolean> {
-  const text =
-    `Reset your Inlet password:\n${resetUrl}\n\n` +
-    `This link expires in 1 hour and can be used once. ` +
-    `If you didn't request a reset, you can safely ignore this email.`;
+export async function sendPasswordResetEmail(toEmail: string, resetUrl: string, lang: string = 'fr'): Promise<boolean> {
+  const isEn = lang.toLowerCase() === 'en';
 
-  const html = `
+  const text = isEn
+    ? `Reset your Inlet password:\n${resetUrl}\n\n` +
+      `This link expires in 1 hour and can be used once. ` +
+      `If you didn't request a reset, you can safely ignore this email.`
+    : `Réinitialisez votre mot de passe Inlet :\n${resetUrl}\n\n` +
+      `Ce lien expire dans 1 heure et ne peut être utilisé qu'une seule fois. ` +
+      `Si vous n'avez pas demandé cette réinitialisation, ignorez simplement cet email.`;
+
+  const html = isEn ? `
   <div style="background:#f6f7f9;padding:32px 0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
     <div style="max-width:480px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;">
       <div style="background:#0f172a;padding:20px 28px;color:#fff;font-weight:700;font-size:16px;">Inlet</div>
@@ -322,12 +360,30 @@ export async function sendPasswordResetEmail(toEmail: string, resetUrl: string):
         </p>
       </div>
     </div>
+  </div>` : `
+  <div style="background:#f6f7f9;padding:32px 0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
+    <div style="max-width:480px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;">
+      <div style="background:#0f172a;padding:20px 28px;color:#fff;font-weight:700;font-size:16px;">Inlet</div>
+      <div style="padding:28px;color:#0f172a;">
+        <h1 style="margin:0 0 12px;font-size:20px;">Réinitialisez votre mot de passe</h1>
+        <p style="margin:0 0 20px;color:#475569;font-size:14px;line-height:1.6;">
+          Nous avons reçu une demande de réinitialisation de votre mot de passe Inlet. Cliquez sur le bouton ci-dessous pour en choisir un nouveau.
+          Ce lien expire dans <strong>1 heure</strong> et ne peut être utilisé qu'une seule fois.
+        </p>
+        <a href="${resetUrl}" style="display:inline-block;background:#0f172a;color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600;font-size:14px;">Réinitialiser le mot de passe</a>
+        <p style="margin:22px 0 0;color:#94a3b8;font-size:12px;line-height:1.6;">
+          Si vous n'avez pas demandé ceci, ignorez cet email — votre mot de passe reste inchangé.<br/>
+          Ou collez ce lien dans votre navigateur :<br/>
+          <span style="color:#2563eb;word-break:break-all;">${resetUrl}</span>
+        </p>
+      </div>
+    </div>
   </div>`;
 
   const result = await sendWithFallback({
     from: getSenderAddress('Inlet'),
     to: toEmail,
-    subject: 'Reset your Inlet password',
+    subject: isEn ? 'Reset your Inlet password' : 'Réinitialisez votre mot de passe Inlet',
     text,
     html,
   });

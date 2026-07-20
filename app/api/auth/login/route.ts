@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 import { logSecurityEvent, SEC } from '@/lib/securityEvents';
 import { issueAdminSession } from '@/lib/adminSession';
+import { getLocale } from '@/lib/i18n';
 
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
         const { createOtpChallenge } = await import('@/lib/otp');
         const { sendOtpEmail } = await import('@/lib/email');
         const { challengeId, code } = await createOtpChallenge('admin', 'admin');
-        await sendOtpEmail(twoFaEmail, code);
+        await sendOtpEmail(twoFaEmail, code, await getLocale());
         return NextResponse.json({ success: true, require2fa: true, challengeId });
       } catch (otpErr) {
         console.error('Admin 2FA challenge error:', otpErr);

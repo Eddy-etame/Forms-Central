@@ -763,7 +763,7 @@ export async function POST(
       emailBudget -= 1;
       if (form.client_id) logEmailSend(form.client_id, formId, 'lead');
       // Asynchronously send SMTP email
-      sendLeadEmail(clientEmail, form.name, cleanPayload, ipAddress, clientName, branding).catch(err => {
+      sendLeadEmail(clientEmail, form.name, cleanPayload, ipAddress, clientName, branding, lang).catch(err => {
         console.error('SMTP Background error:', err);
         logFailure(formId, 'SMTP_FAILED', `Failed to send lead email: ${err.message || err}`, cleanPayload);
       });

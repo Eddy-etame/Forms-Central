@@ -5,6 +5,7 @@ import { encryptPassword, decryptPassword, generateRandomPassword } from './cryp
 import { sendClientWelcomeEmail } from './email';
 import { PLANS, getPlan } from './plans';
 import { getConfiguredAccountSlots } from './mailAccounts';
+import { getLocale } from './i18n';
 
 // Helper: Ensure the request is authenticated via cookies (read on the server)
 async function verifyAdminAuth() {
@@ -125,9 +126,10 @@ export async function saveClient(
       if (error) throw error;
 
       // Send the client welcome email with their password
+      const welcomeLocale = await getLocale();
       await sendClientWelcomeEmail(email, name, rawPassword, undefined, {
         logo_url, primary_color, font_family
-      }).catch(err => console.error("Error sending welcome email:", err));
+      }, welcomeLocale).catch(err => console.error("Error sending welcome email:", err));
     }
     return { success: true };
   } catch (err: any) {
@@ -166,11 +168,12 @@ export async function triggerPasswordReset(id: string) {
       .eq('id', id);
     if (updateError) throw updateError;
 
+    const resetLocale = await getLocale();
     await sendClientWelcomeEmail(client.email, client.name, rawPassword, "true", {
-      logo_url: client.logo_url, 
-      primary_color: client.primary_color, 
+      logo_url: client.logo_url,
+      primary_color: client.primary_color,
       font_family: client.font_family
-    }).catch(err => console.error("Error sending password reset email:", err));
+    }, resetLocale).catch(err => console.error("Error sending password reset email:", err));
 
     return { success: true };
   } catch (err: any) {

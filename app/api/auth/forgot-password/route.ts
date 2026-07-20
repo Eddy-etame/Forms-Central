@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { sendPasswordResetEmail } from '@/lib/email';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
+import { getLocale } from '@/lib/i18n';
 
 /**
  * Start a password reset. Always responds success (never reveals whether an
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
   await supabase.from('clients').update({ reset_token: hash, reset_token_expires: expires }).eq('id', client.id);
 
   const resetUrl = `${new URL(req.url).origin}/client/reset-password?token=${raw}`;
-  sendPasswordResetEmail(cleanEmail, resetUrl).catch((e) => console.error('reset email error:', e));
+  sendPasswordResetEmail(cleanEmail, resetUrl, await getLocale()).catch((e) => console.error('reset email error:', e));
 
   return NextResponse.json({ success: true });
 }

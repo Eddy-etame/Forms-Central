@@ -35,7 +35,7 @@ function CopyRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default function NewFormButton({ prominent = false }: { prominent?: boolean }) {
+export default function NewFormButton({ prominent = false, label }: { prominent?: boolean; label?: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
@@ -91,14 +91,14 @@ export default function NewFormButton({ prominent = false }: { prominent?: boole
           onClick={() => setOpen(true)}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-blue-700 transition-colors"
         >
-          <Plus className="h-4 w-4" /> Create your first form
+          <Plus className="h-4 w-4" /> {label || 'Create your first form'}
         </button>
       ) : (
         <button
           onClick={() => setOpen(true)}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 hover:bg-blue-700 transition-colors"
         >
-          <Plus className="h-4 w-4" /> New form
+          <Plus className="h-4 w-4" /> {label || 'New form'}
         </button>
       )}
 

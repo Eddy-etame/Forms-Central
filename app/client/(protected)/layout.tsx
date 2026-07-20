@@ -2,6 +2,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { verifyJWT } from '@/lib/jwt';
 import { getClientForms } from '@/lib/actions';
+import { getLocale } from '@/lib/i18n';
+import { getAppDict } from '@/lib/appDict';
 import ClientSidebar from '@/components/client/ClientSidebar';
 import CommandPalette from '@/components/client/CommandPalette';
 import { LogoBadge } from '@/components/Logo';
@@ -29,7 +31,8 @@ export default async function ClientProtectedLayout({ children }: { children: Re
     }
   }
 
-  const forms = await getClientForms();
+  const [forms, locale] = await Promise.all([getClientForms(), getLocale()]);
+  const t = getAppDict(locale).sidebar;
 
   return (
     // Dark-first workspace (devs live in dark). ThemeToggle flips the class;
@@ -51,7 +54,7 @@ export default async function ClientProtectedLayout({ children }: { children: Re
 
       {/* Sidebar */}
       <div className="hidden lg:block shrink-0">
-        <ClientSidebar forms={forms} />
+        <ClientSidebar forms={forms} t={t} />
       </div>
 
       {/* Main Content Area */}

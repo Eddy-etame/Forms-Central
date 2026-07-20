@@ -6,6 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import NewFormButton from './NewFormButton';
 import OnboardingChecklist from './OnboardingChecklist';
+import type { AppDict } from '@/lib/appDict';
+
+type DashDict = AppDict['dashboard'];
 
 interface DashboardStats {
   allTime: number;
@@ -16,7 +19,7 @@ interface DashboardStats {
   formPerformance: { name: string, count: number }[];
 }
 
-export default function GlobalDashboardClient({ stats, forms = [] }: { stats: DashboardStats; forms?: { id: string; name: string }[] }) {
+export default function GlobalDashboardClient({ stats, forms = [], t }: { stats: DashboardStats; forms?: { id: string; name: string }[]; t: DashDict }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
 
@@ -75,19 +78,19 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight dark:text-white">Overview</h1>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight dark:text-white">{t.title}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Manage your forms and review your latest leads.
+            {t.subtitle}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <NewFormButton />
+          <NewFormButton label={t.newForm} />
           <button
             onClick={exportToCSV}
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:border-slate-300 hover:text-slate-900 transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             <Download className="h-4 w-4" />
-            Export CSV
+            {t.exportCsv}
           </button>
         </div>
       </div>
@@ -116,8 +119,8 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
             <div className="relative flex flex-wrap items-center gap-4">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-xl">🎉</span>
               <div>
-                <p className="text-base font-bold">Your first lead just landed.</p>
-                <p className="text-sm text-slate-300">The integration works — every submission from here on arrives exactly like this.</p>
+                <p className="text-base font-bold">{t.firstLeadTitle}</p>
+                <p className="text-sm text-slate-300">{t.firstLeadBody}</p>
               </div>
             </div>
           </div>
@@ -133,22 +136,21 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600">
             <FileText className="h-6 w-6 text-white" />
           </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Create your first form</h3>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.createFirstTitle}</h3>
           <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
-            Name it, copy two values into your website, and submissions start landing
-            here — with spam blocked and branded auto-replies sent for you.
+            {t.createFirstBody}
           </p>
           <div className="mt-5 flex justify-center">
-            <NewFormButton prominent />
+            <NewFormButton prominent label={t.createFirstTitle} />
           </div>
         </motion.div>
       )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {[
-          { label: "Total leads", value: stats?.allTime || 0, icon: Users, hint: "All-time volume", trend: TrendingUp, tone: "text-blue-600 dark:text-blue-400", tile: "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400", glow: "from-blue-500/15" },
-          { label: "Last 7 days", value: stats?.past7Days || 0, icon: CalendarDays, hint: "Recent momentum", trend: TrendingUp, tone: "text-emerald-600 dark:text-emerald-400", tile: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400", glow: "from-emerald-500/15" },
-          { label: "Active forms", value: stats?.formsCount || 0, icon: FileText, hint: "Conversion sources", trend: FileText, tone: "text-violet-600 dark:text-violet-400", tile: "bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400", glow: "from-violet-500/15" },
+          { label: t.totalLeads, value: stats?.allTime || 0, icon: Users, hint: t.allTimeVolume, trend: TrendingUp, tone: "text-blue-600 dark:text-blue-400", tile: "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400", glow: "from-blue-500/15" },
+          { label: t.last7, value: stats?.past7Days || 0, icon: CalendarDays, hint: t.recentMomentum, trend: TrendingUp, tone: "text-emerald-600 dark:text-emerald-400", tile: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400", glow: "from-emerald-500/15" },
+          { label: t.activeForms, value: stats?.formsCount || 0, icon: FileText, hint: t.conversionSources, trend: FileText, tone: "text-violet-600 dark:text-violet-400", tile: "bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400", glow: "from-violet-500/15" },
         ].map((c, i) => (
           <motion.div
             key={c.label}
@@ -181,8 +183,8 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
             <div className="mb-6 flex items-center gap-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"><BarChart3 className="h-[18px] w-[18px]" /></span>
               <div>
-                <h3 className="font-bold leading-tight text-slate-900 dark:text-white">Submission trend</h3>
-                <p className="text-xs text-slate-500">Last 30 days</p>
+                <h3 className="font-bold leading-tight text-slate-900 dark:text-white">{t.submissionTrend}</h3>
+                <p className="text-xs text-slate-500">{t.last30}</p>
               </div>
             </div>
             <div className="h-[250px] w-full">
@@ -214,13 +216,13 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
             <div className="mb-6 flex items-center gap-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400"><FileText className="h-[18px] w-[18px]" /></span>
               <div>
-                <h3 className="font-bold leading-tight text-slate-900 dark:text-white">Top forms</h3>
-                <p className="text-xs text-slate-500">By share of leads</p>
+                <h3 className="font-bold leading-tight text-slate-900 dark:text-white">{t.topForms}</h3>
+                <p className="text-xs text-slate-500">{t.byShare}</p>
               </div>
             </div>
             <div className="flex-1 space-y-4 overflow-y-auto">
               {stats?.formPerformance.length === 0 ? (
-                <p className="text-sm text-slate-500 text-center mt-10">No data yet.</p>
+                <p className="text-sm text-slate-500 text-center mt-10">{t.noData}</p>
               ) : (
                 stats?.formPerformance.map((form, idx) => {
                   const total = stats.allTime || 1;
@@ -256,9 +258,9 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-500/15">
             <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
           </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Advanced analytics unlocks at 15 leads</h3>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.analyticsLockTitle}</h3>
           <p className="mt-2 text-sm text-slate-600 max-w-md mx-auto dark:text-slate-400">
-            Charts and performance stats unlock automatically once you reach <strong>15 leads</strong>. Only {15 - (stats?.allTime || 0)} more to go!
+            {t.analyticsLockBody.replace('{n}', String(15 - (stats?.allTime || 0)))}
           </p>
         </motion.div>
       )}
@@ -270,12 +272,12 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
         className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 dark:border-slate-800 dark:bg-slate-900/60">
-          <h3 className="font-bold text-slate-900 dark:text-white">Lead database</h3>
+          <h3 className="font-bold text-slate-900 dark:text-white">{t.leadDatabase}</h3>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Search name, email…" 
+            <input
+              type="text"
+              placeholder={t.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-4 py-2 w-full sm:w-64 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500"
@@ -286,17 +288,17 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-white border-b border-slate-100 text-xs font-semibold uppercase text-slate-400 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-500">
               <tr>
-                <th className="px-6 py-4">Date</th>
-                <th className="px-6 py-4">Form</th>
-                <th className="px-6 py-4">Primary identity</th>
-                <th className="px-6 py-4">Preview</th>
+                <th className="px-6 py-4">{t.colDate}</th>
+                <th className="px-6 py-4">{t.colForm}</th>
+                <th className="px-6 py-4">{t.colIdentity}</th>
+                <th className="px-6 py-4">{t.colPreview}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
               {filteredLeads.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
-                    No leads match your search.
+                    {t.noMatch}
                   </td>
                 </tr>
               ) : (
@@ -306,7 +308,7 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
                   });
                   const nameKey = Object.keys(lead.payload).find(k => k.toLowerCase() === 'nom' || k.toLowerCase() === 'name');
                   const emailKey = Object.keys(lead.payload).find(k => k.toLowerCase() === 'email');
-                  const name = nameKey ? lead.payload[nameKey] : 'Unknown';
+                  const name = nameKey ? lead.payload[nameKey] : t.unknown;
                   const email = emailKey ? lead.payload[emailKey] : '—';
                   
                   const otherData = Object.entries(lead.payload).filter(([k]) => k !== nameKey && k !== emailKey);
@@ -376,9 +378,9 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
             >
               <div className="border-b border-slate-100 bg-slate-50 px-6 py-4 flex items-center justify-between shrink-0 dark:border-slate-800 dark:bg-slate-900">
                 <div>
-                  <h3 className="font-bold text-slate-900 text-lg dark:text-white">Submission details</h3>
+                  <h3 className="font-bold text-slate-900 text-lg dark:text-white">{t.detailsTitle}</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Received {new Date(selectedLead.created_at).toLocaleString('en-GB')} via <strong>{selectedLead.forms?.name}</strong>
+                    {t.receivedVia.replace('{date}', new Date(selectedLead.created_at).toLocaleString()).replace('{form}', selectedLead.forms?.name || t.unknown)}
                   </p>
                 </div>
                 <button 
@@ -412,7 +414,7 @@ export default function GlobalDashboardClient({ stats, forms = [] }: { stats: Da
                               className="inline-flex items-center justify-center gap-2 rounded bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 transition-colors self-start"
                             >
                               <Download className="h-3 w-3" />
-                              Download file
+                              {t.downloadFile}
                             </a>
                           </div>
                         ) : (

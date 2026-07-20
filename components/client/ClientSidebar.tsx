@@ -8,7 +8,9 @@ import { cn } from '@/lib/utils';
 import { LogoBadge } from '@/components/Logo';
 import ThemeToggle from '@/components/client/ThemeToggle';
 
-export default function ClientSidebar({ forms }: { forms: { id: string, name: string }[] }) {
+type SidebarDict = { general: string; overview: string; developer: string; endClients: string; yourForms: string; noForms: string; signOut: string; lightMode: string; darkMode: string };
+
+export default function ClientSidebar({ forms, t }: { forms: { id: string, name: string }[]; t: SidebarDict }) {
   const pathname = usePathname();
 
   return (
@@ -24,7 +26,7 @@ export default function ClientSidebar({ forms }: { forms: { id: string, name: st
         {/* Main Nav */}
         <div className="flex flex-col gap-1">
           <p className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
-            General
+            {t.general}
           </p>
           <Link href="/client/dashboard" className="relative px-3 py-2 rounded-lg text-sm font-medium transition-colors group">
             {pathname === '/client/dashboard' && (
@@ -39,7 +41,7 @@ export default function ClientSidebar({ forms }: { forms: { id: string, name: st
               pathname === '/client/dashboard' ? "text-blue-700 dark:text-blue-400" : "text-slate-600 group-hover:text-slate-900 dark:text-slate-400 dark:group-hover:text-white"
             )}>
               <LayoutDashboard className="mr-3 h-4 w-4" />
-              Overview
+              {t.overview}
             </span>
           </Link>
           <Link href="/client/dashboard/developer" className="relative px-3 py-2 rounded-lg text-sm font-medium transition-colors group">
@@ -55,7 +57,7 @@ export default function ClientSidebar({ forms }: { forms: { id: string, name: st
               pathname === '/client/dashboard/developer' ? "text-blue-700 dark:text-blue-400" : "text-slate-600 group-hover:text-slate-900 dark:text-slate-400 dark:group-hover:text-white"
             )}>
               <KeyRound className="mr-3 h-4 w-4" />
-              Developer
+              {t.developer}
             </span>
           </Link>
           <Link href="/client/dashboard/clients" className="relative px-3 py-2 rounded-lg text-sm font-medium transition-colors group">
@@ -71,7 +73,7 @@ export default function ClientSidebar({ forms }: { forms: { id: string, name: st
               pathname === '/client/dashboard/clients' ? "text-blue-700 dark:text-blue-400" : "text-slate-600 group-hover:text-slate-900 dark:text-slate-400 dark:group-hover:text-white"
             )}>
               <Users className="mr-3 h-4 w-4" />
-              End-clients
+              {t.endClients}
             </span>
           </Link>
         </div>
@@ -79,10 +81,10 @@ export default function ClientSidebar({ forms }: { forms: { id: string, name: st
         {/* Forms Nav */}
         <div className="flex flex-col gap-1">
           <p className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
-            Your forms
+            {t.yourForms}
           </p>
           {forms.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-slate-500 italic">No forms connected yet.</p>
+            <p className="px-3 py-2 text-xs text-slate-500 italic">{t.noForms}</p>
           ) : (
             forms.map((form) => {
               const isActive = pathname === `/client/dashboard/forms/${form.id}`;
@@ -117,7 +119,7 @@ export default function ClientSidebar({ forms }: { forms: { id: string, name: st
       </div>
 
       <div className="mt-auto p-4 border-t border-slate-200 dark:border-slate-800 space-y-1">
-        <ThemeToggle className="w-full" />
+        <ThemeToggle className="w-full" lightLabel={t.lightMode} darkLabel={t.darkMode} />
         <button
           onClick={async () => {
             // Actually destroy the session server-side before leaving.
@@ -127,7 +129,7 @@ export default function ClientSidebar({ forms }: { forms: { id: string, name: st
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors dark:hover:bg-red-500/10"
         >
           <LogOut className="h-4 w-4" />
-          Sign out
+          {t.signOut}
         </button>
       </div>
     </aside>

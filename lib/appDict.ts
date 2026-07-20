@@ -80,6 +80,12 @@ interface AppDict {
   };
   admin: {
     nav: { dashboard: string; analytics: string; revenue: string; forms: string; clients: string; emailHealth: string; security: string; logs: string; blacklist: string; myAtelier: string; signOut: string; adminLabel: string; lightMode: string; darkMode: string };
+    home: {
+      title: string; subtitle: string; loading: string;
+      forms: string; clients: string; leadsReceived: string; blacklist: string;
+      recentSubmissions: string; recentSubtitle: string; viewAll: string;
+      noLeads: string; unknownForm: string; submissionId: string;
+    };
   };
 }
 
@@ -171,6 +177,12 @@ export const appDictionaries: Record<Locale, AppDict> = {
     },
     admin: {
       nav: { dashboard: 'Dashboard', analytics: 'Analytics', revenue: 'Revenue', forms: 'Forms', clients: 'Clients', emailHealth: 'Email health', security: 'Security', logs: 'Logs & failures', blacklist: 'Blacklist', myAtelier: 'My Atelier', signOut: 'Sign out', adminLabel: 'Admin', lightMode: 'Light mode', darkMode: 'Dark mode' },
+      home: {
+        title: 'Dashboard', subtitle: 'Overview of your form service activity.', loading: 'Loading…',
+        forms: 'Forms', clients: 'Clients', leadsReceived: 'Leads received', blacklist: 'Blacklist',
+        recentSubmissions: 'Recent submissions', recentSubtitle: 'The 5 most recent leads across your forms.', viewAll: 'View all',
+        noLeads: 'No leads yet.', unknownForm: 'Unknown form', submissionId: 'Submission ID:',
+      },
     },
   },
   fr: {
@@ -260,6 +272,12 @@ export const appDictionaries: Record<Locale, AppDict> = {
     },
     admin: {
       nav: { dashboard: 'Tableau de bord', analytics: 'Analytique', revenue: 'Revenus', forms: 'Formulaires', clients: 'Clients', emailHealth: 'Santé e-mail', security: 'Sécurité', logs: 'Journaux & échecs', blacklist: 'Liste noire', myAtelier: 'Mon atelier', signOut: 'Se déconnecter', adminLabel: 'Admin', lightMode: 'Mode clair', darkMode: 'Mode sombre' },
+      home: {
+        title: 'Tableau de bord', subtitle: 'Vue d’ensemble de l’activité de votre service de formulaires.', loading: 'Chargement…',
+        forms: 'Formulaires', clients: 'Clients', leadsReceived: 'Leads reçus', blacklist: 'Liste noire',
+        recentSubmissions: 'Soumissions récentes', recentSubtitle: 'Les 5 derniers leads sur l’ensemble de vos formulaires.', viewAll: 'Tout voir',
+        noLeads: 'Aucun lead pour l’instant.', unknownForm: 'Formulaire inconnu', submissionId: 'ID de soumission :',
+      },
     },
   },
 };

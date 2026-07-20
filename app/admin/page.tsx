@@ -6,6 +6,8 @@ import { FileText, Users, ShieldAlert, ArrowRight, Activity } from 'lucide-react
 import { StatsCard } from '@/components/admin/StatsCard';
 import { getDashboardStats } from '@/lib/actions';
 import BlurFade from '@/components/magicui/blur-fade';
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
 
 interface Submission {
   id: string;
@@ -18,6 +20,7 @@ interface Submission {
 }
 
 export default function Dashboard() {
+  const t = getAppDict(useLocale()).admin.home;
   const [stats, setStats] = useState({
     formsCount: 0,
     clientsCount: 0,
@@ -56,7 +59,7 @@ export default function Dashboard() {
       <div className="flex h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-900 border-t-transparent" />
-          <span className="text-sm font-medium text-slate-500">Loading…</span>
+          <span className="text-sm font-medium text-slate-500">{t.loading}</span>
         </div>
       </div>
     );
@@ -66,23 +69,23 @@ export default function Dashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Dashboard</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400">Overview of your form service activity.</p>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{t.title}</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{t.subtitle}</p>
       </div>
 
       {/* Stats Cards grid */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <BlurFade delay={0.1}>
-          <StatsCard title="Forms" value={stats.formsCount} icon={FileText} />
+          <StatsCard title={t.forms} value={stats.formsCount} icon={FileText} />
         </BlurFade>
         <BlurFade delay={0.15}>
-          <StatsCard title="Clients" value={stats.clientsCount} icon={Users} />
+          <StatsCard title={t.clients} value={stats.clientsCount} icon={Users} />
         </BlurFade>
         <BlurFade delay={0.2}>
-          <StatsCard title="Leads received" value={stats.submissionsCount} icon={Activity} />
+          <StatsCard title={t.leadsReceived} value={stats.submissionsCount} icon={Activity} />
         </BlurFade>
         <BlurFade delay={0.25}>
-          <StatsCard title="Blacklist" value={stats.blacklistCount} icon={ShieldAlert} />
+          <StatsCard title={t.blacklist} value={stats.blacklistCount} icon={ShieldAlert} />
         </BlurFade>
       </div>
 
@@ -91,14 +94,14 @@ export default function Dashboard() {
       <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-xs">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Recent submissions</h3>
-            <p className="text-xs text-slate-400 font-medium">The 5 most recent leads across your forms.</p>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">{t.recentSubmissions}</h3>
+            <p className="text-xs text-slate-400 font-medium">{t.recentSubtitle}</p>
           </div>
           <Link
             href="/admin/submissions"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-900 dark:text-white hover:opacity-80 transition-opacity"
           >
-            View all <ArrowRight className="h-3 w-3" />
+            {t.viewAll} <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
 
@@ -106,7 +109,7 @@ export default function Dashboard() {
           {recentSubmissions.length === 0 ? (
             <BlurFade delay={0.3}>
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <span className="text-sm font-medium text-slate-400">No leads yet.</span>
+                <span className="text-sm font-medium text-slate-400">{t.noLeads}</span>
               </div>
             </BlurFade>
           ) : (
@@ -116,10 +119,10 @@ export default function Dashboard() {
                   <div className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
                     <div className="space-y-1">
                       <span className="text-xs font-semibold text-slate-400">
-                        {sub.forms ? sub.forms.name : 'Unknown form'}
+                        {sub.forms ? sub.forms.name : t.unknownForm}
                       </span>
                       <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                        Submission ID: <span className="font-mono text-xs font-medium bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 px-1 py-0.5 rounded-sm">{sub.id.substring(0, 8)}...</span>
+                        {t.submissionId} <span className="font-mono text-xs font-medium bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 px-1 py-0.5 rounded-sm">{sub.id.substring(0, 8)}...</span>
                       </h4>
                     </div>
                     <div className="text-right space-y-1">

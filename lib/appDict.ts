@@ -58,6 +58,14 @@ interface AppDict {
     formsTheySee: string; noneAssigned: string; assignForm: string;
     couldNotCreate: string; couldNotReach: string;
   };
+  formPage: {
+    formView: string; subtitle: string; exportCsv: string;
+    totalSubmissions: string; forThisForm: string; trend30: string;
+    moreDataTitle: string; moreDataBody: string;
+    structuredData: string; searchResults: string;
+    date: string; more: string; noData: string; file: string; viewDetails: string;
+    fullSubmission: string; submittedAt: string; attachedDoc: string; downloadFile: string;
+  };
 }
 
 export const appDictionaries: Record<Locale, AppDict> = {
@@ -121,6 +129,14 @@ export const appDictionaries: Record<Locale, AppDict> = {
       formsTheySee: 'Forms they can see', noneAssigned: 'None assigned yet.', assignForm: '+ Assign a form…',
       couldNotCreate: 'Could not create the end-client.', couldNotReach: 'Could not reach the server.',
     },
+    formPage: {
+      formView: 'Form view', subtitle: 'Data and files submitted through this form.', exportCsv: 'Export CSV',
+      totalSubmissions: 'Total submissions', forThisForm: 'For this form', trend30: 'Trend (last 30 days)',
+      moreDataTitle: 'More data needed', moreDataBody: 'The chart unlocks at 10 submissions.',
+      structuredData: 'Structured data', searchResults: 'Search these results…',
+      date: 'Date', more: '… ({n} more)', noData: 'No data found.', file: 'File', viewDetails: 'View details →',
+      fullSubmission: 'Full submission', submittedAt: 'Submitted {date}', attachedDoc: 'Attached document', downloadFile: 'Download file',
+    },
   },
   fr: {
     sidebar: {
@@ -181,6 +197,14 @@ export const appDictionaries: Record<Locale, AppDict> = {
       emptyTitle: 'Aucun client final pour l’instant', emptyBody: 'Créez-en un, puis affectez les formulaires dont il doit voir les leads.',
       formsTheySee: 'Formulaires qu’il peut voir', noneAssigned: 'Aucun affecté pour l’instant.', assignForm: '+ Affecter un formulaire…',
       couldNotCreate: 'Impossible de créer le client final.', couldNotReach: 'Impossible de joindre le serveur.',
+    },
+    formPage: {
+      formView: 'Vue du formulaire', subtitle: 'Données et fichiers soumis via ce formulaire.', exportCsv: 'Exporter CSV',
+      totalSubmissions: 'Total des soumissions', forThisForm: 'Pour ce formulaire', trend30: 'Tendance (30 derniers jours)',
+      moreDataTitle: 'Plus de données nécessaires', moreDataBody: 'Le graphique se débloque à 10 soumissions.',
+      structuredData: 'Données structurées', searchResults: 'Rechercher dans ces résultats…',
+      date: 'Date', more: '… ({n} de plus)', noData: 'Aucune donnée trouvée.', file: 'Fichier', viewDetails: 'Voir les détails →',
+      fullSubmission: 'Soumission complète', submittedAt: 'Soumis le {date}', attachedDoc: 'Document joint', downloadFile: 'Télécharger le fichier',
     },
   },
 };

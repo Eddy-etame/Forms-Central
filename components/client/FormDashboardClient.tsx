@@ -13,7 +13,9 @@ interface SingleFormStats {
   dailyTrends: { date: string, count: number }[];
 }
 
-export default function FormDashboardClient({ stats }: { stats: SingleFormStats }) {
+type FormPageDict = import('@/lib/appDict').AppDict['formPage'];
+
+export default function FormDashboardClient({ stats, t }: { stats: SingleFormStats; t: FormPageDict }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
 
@@ -75,11 +77,11 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
         <div className="flex flex-col gap-1">
           <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 w-fit mb-2 border border-blue-100">
             <FileText className="h-3 w-3" />
-            Form view
+            {t.formView}
           </div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{stats?.formName}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Data and files submitted through this form.
+            {t.subtitle}
           </p>
         </div>
         <button 
@@ -87,7 +89,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 transition-colors"
         >
           <Download className="h-4 w-4" />
-          Export CSV ({stats?.allTime})
+          {t.exportCsv} ({stats?.allTime})
         </button>
       </div>
 
@@ -101,10 +103,10 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
           <div className="absolute -right-4 -top-4 rounded-full bg-blue-50 p-8">
             <BarChart3 className="h-8 w-8 text-blue-500" />
           </div>
-          <p className="text-sm font-medium text-slate-500">Total submissions</p>
+          <p className="text-sm font-medium text-slate-500">{t.totalSubmissions}</p>
           <h3 className="mt-2 text-4xl font-bold text-slate-900 dark:text-white">{stats?.allTime || 0}</h3>
           <div className="mt-4 flex items-center text-sm text-blue-600 font-medium">
-            <TrendingUp className="mr-1 h-4 w-4" /> For this form
+            <TrendingUp className="mr-1 h-4 w-4" /> {t.forThisForm}
           </div>
         </motion.div>
 
@@ -115,7 +117,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
             transition={{ delay: 0.2 }}
             className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-sm"
           >
-            <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm">Trend (last 30 days)</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm">{t.trend30}</h3>
             <div className="h-[120px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats?.dailyTrends || []}>
@@ -137,8 +139,8 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
             className="rounded-2xl border border-blue-100 bg-blue-50/50 p-6 shadow-sm flex items-center justify-center flex-col text-center"
           >
             <TrendingUp className="h-6 w-6 text-blue-400 mb-2" />
-            <p className="text-sm font-semibold text-slate-900 dark:text-white">More data needed</p>
-            <p className="text-xs text-slate-500">The chart unlocks at 10 submissions.</p>
+            <p className="text-sm font-semibold text-slate-900 dark:text-white">{t.moreDataTitle}</p>
+            <p className="text-xs text-slate-500">{t.moreDataBody}</p>
           </motion.div>
         )}
       </div>
@@ -150,15 +152,15 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
         className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden flex flex-col"
       >
         <div className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="font-bold text-slate-900 dark:text-white">Structured data</h3>
+          <h3 className="font-bold text-slate-900 dark:text-white">{t.structuredData}</h3>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input 
               type="text" 
-              placeholder="Search these results…" 
+              placeholder={t.searchResults} 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-4 py-2 w-full sm:w-64 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="pl-9 pr-4 py-2 w-full sm:w-64 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500"
             />
           </div>
         </div>
@@ -166,20 +168,20 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
           <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
             <thead className="bg-white border-b border-slate-100 dark:border-slate-800 text-xs font-semibold uppercase text-slate-400">
               <tr>
-                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4">{t.date}</th>
                 {tableColumns.map(col => (
                   <th key={col} className="px-6 py-4">{col.replace(/_/g, ' ')}</th>
                 ))}
                 {schemaKeys.length > 5 && (
-                  <th className="px-6 py-4 text-slate-300">… ({schemaKeys.length - 5} more)</th>
+                  <th className="px-6 py-4 text-slate-300">{t.more.replace("{n}", String(schemaKeys.length - 5))}</th>
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
               {filteredLeads.length === 0 ? (
                 <tr>
                   <td colSpan={tableColumns.length + 2} className="px-6 py-12 text-center text-slate-500">
-                    No data found.
+                    {t.noData}
                   </td>
                 </tr>
               ) : (
@@ -192,9 +194,9 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                     <tr 
                       key={lead.id} 
                       onClick={() => setSelectedLead(lead)}
-                      className="hover:bg-blue-50/50 cursor-pointer transition-colors"
+                      className="hover:bg-blue-50/50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
                     >
-                      <td className="whitespace-nowrap px-6 py-4 font-medium text-slate-900">
+                      <td className="whitespace-nowrap px-6 py-4 font-medium text-slate-900 dark:text-slate-200">
                         {date}
                       </td>
                       
@@ -210,7 +212,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                                 onClick={(e) => e.stopPropagation()}
                                 className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200 transition-colors"
                               >
-                                <Paperclip className="h-3 w-3" /> File
+                                <Paperclip className="h-3 w-3" /> {t.file}
                               </a>
                             ) : (
                               <div className="max-w-[200px] truncate" title={String(val || '')}>
@@ -223,7 +225,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                       
                       {schemaKeys.length > 5 && (
                         <td className="px-6 py-4 text-xs text-blue-600 font-medium">
-                          View details &rarr;
+                          {t.viewDetails}
                         </td>
                       )}
                     </tr>
@@ -249,18 +251,18 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col max-h-[90vh]"
+              className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-white dark:bg-slate-900 dark:border dark:border-slate-800 shadow-2xl flex flex-col max-h-[90vh]"
             >
               <div className="border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 px-6 py-4 flex items-center justify-between shrink-0">
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-lg">Full submission</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-lg">{t.fullSubmission}</h3>
                   <p className="text-xs text-slate-500">
-                    Submitted {new Date(selectedLead.created_at).toLocaleString('en-GB')}
+                    {t.submittedAt.replace("{date}", new Date(selectedLead.created_at).toLocaleString())}
                   </p>
                 </div>
                 <button 
                   onClick={() => setSelectedLead(null)}
-                  className="rounded-full p-2 hover:bg-slate-200 transition-colors"
+                  className="rounded-full p-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
                   <X className="h-5 w-5 text-slate-500" />
                 </button>
@@ -291,7 +293,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                             ) : (
                               <div className="h-16 w-full rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
                                 <Paperclip className="h-6 w-6 text-blue-400 mr-2" />
-                                <span className="text-sm font-medium text-blue-700">Attached document</span>
+                                <span className="text-sm font-medium text-blue-700">{t.attachedDoc}</span>
                               </div>
                             )}
                             <a 
@@ -301,7 +303,7 @@ export default function FormDashboardClient({ stats }: { stats: SingleFormStats 
                               className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition-colors w-full"
                             >
                               <Download className="h-4 w-4" />
-                              Download file
+                              {t.downloadFile}
                             </a>
                           </div>
                         ) : (

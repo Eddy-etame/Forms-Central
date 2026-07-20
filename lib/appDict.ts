@@ -86,6 +86,17 @@ interface AppDict {
       recentSubmissions: string; recentSubtitle: string; viewAll: string;
       noLeads: string; unknownForm: string; submissionId: string;
     };
+    blacklist: {
+      title: string; subtitle: string; banTarget: string;
+      noActive: string; colDate: string; colTarget: string; colType: string; colReason: string; colAction: string; remove: string;
+      modalTitle: string; targetLabel: string; targetPlaceholder: string;
+      typeLabel: string; typeIp: string; typeFingerprint: string; typeHost: string;
+      reasonLabel: string; reasonPlaceholder: string;
+      cancel: string; banning: string; submitBan: string;
+      requiredErr: string; existsErr: string;
+      removeConfirmTitle: string; removeConfirmBody: string; removeConfirmBtn: string;
+      removeErr: string; removedOk: string;
+    };
   };
 }
 
@@ -183,6 +194,17 @@ export const appDictionaries: Record<Locale, AppDict> = {
         recentSubmissions: 'Recent submissions', recentSubtitle: 'The 5 most recent leads across your forms.', viewAll: 'View all',
         noLeads: 'No leads yet.', unknownForm: 'Unknown form', submissionId: 'Submission ID:',
       },
+      blacklist: {
+        title: 'Security blacklist', subtitle: 'View and manage banned IPs, fingerprints and hosts.', banTarget: 'Ban a target',
+        noActive: 'No active bans.', colDate: 'Date', colTarget: 'Target', colType: 'Type', colReason: 'Reason', colAction: 'Action', remove: 'Remove',
+        modalTitle: 'Ban a target', targetLabel: 'Target to ban (IP, fingerprint or host)', targetPlaceholder: 'e.g. 198.51.100.42 or a VPS hostname',
+        typeLabel: 'Target type', typeIp: 'IP address', typeFingerprint: 'Fingerprint', typeHost: 'Host (reverse DNS domain)',
+        reasonLabel: 'Ban reason', reasonPlaceholder: 'e.g. Spam observed from this server',
+        cancel: 'Cancel', banning: 'Banning…', submitBan: 'Ban target',
+        requiredErr: 'Target and reason are required.', existsErr: 'That target already exists or is invalid.',
+        removeConfirmTitle: 'Remove from blacklist?', removeConfirmBody: 'This target will be able to submit forms again immediately.', removeConfirmBtn: 'Remove',
+        removeErr: 'Could not remove the target.', removedOk: 'Target removed from the blacklist.',
+      },
     },
   },
   fr: {
@@ -277,6 +299,17 @@ export const appDictionaries: Record<Locale, AppDict> = {
         forms: 'Formulaires', clients: 'Clients', leadsReceived: 'Leads reçus', blacklist: 'Liste noire',
         recentSubmissions: 'Soumissions récentes', recentSubtitle: 'Les 5 derniers leads sur l’ensemble de vos formulaires.', viewAll: 'Tout voir',
         noLeads: 'Aucun lead pour l’instant.', unknownForm: 'Formulaire inconnu', submissionId: 'ID de soumission :',
+      },
+      blacklist: {
+        title: 'Liste noire de sécurité', subtitle: 'Consultez et gérez les IP, empreintes et hôtes bannis.', banTarget: 'Bannir une cible',
+        noActive: 'Aucun bannissement actif.', colDate: 'Date', colTarget: 'Cible', colType: 'Type', colReason: 'Raison', colAction: 'Action', remove: 'Retirer',
+        modalTitle: 'Bannir une cible', targetLabel: 'Cible à bannir (IP, empreinte ou hôte)', targetPlaceholder: 'ex. 198.51.100.42 ou un nom d’hôte VPS',
+        typeLabel: 'Type de cible', typeIp: 'Adresse IP', typeFingerprint: 'Empreinte (fingerprint)', typeHost: 'Hôte (domaine DNS inversé)',
+        reasonLabel: 'Motif du bannissement', reasonPlaceholder: 'ex. Spam observé depuis ce serveur',
+        cancel: 'Annuler', banning: 'Bannissement…', submitBan: 'Bannir la cible',
+        requiredErr: 'La cible et le motif sont requis.', existsErr: 'Cette cible existe déjà ou est invalide.',
+        removeConfirmTitle: 'Retirer de la liste noire ?', removeConfirmBody: 'Cette cible pourra à nouveau soumettre des formulaires immédiatement.', removeConfirmBtn: 'Retirer',
+        removeErr: 'Impossible de retirer la cible.', removedOk: 'Cible retirée de la liste noire.',
       },
     },
   },

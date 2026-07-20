@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { getBlacklist, addBlacklist, removeBlacklist } from '@/lib/actions';
 import { toast, confirmDialog } from '@/components/ui/Toaster';
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
 
 interface BlacklistEntry {
   id: string;
@@ -17,6 +19,7 @@ interface BlacklistEntry {
 }
 
 export default function BlacklistPage() {
+  const t = getAppDict(useLocale()).admin.blacklist;
   const [blacklist, setBlacklist] = useState<BlacklistEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,7 +49,7 @@ export default function BlacklistPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!target || !reason) {
-      setFormError('Target and reason are required.');
+      setFormError(t.requiredErr);
       return;
     }
 
@@ -56,14 +59,14 @@ export default function BlacklistPage() {
     try {
       const res = await addBlacklist(target, type, reason);
       if (res && !res.success) {
-        setFormError(res.error || 'That target already exists or is invalid.');
+        setFormError(res.error || t.existsErr);
         return;
       }
       await loadBlacklist();
       setModalOpen(false);
     } catch (err: any) {
       console.error('Error creating blacklist entry:', err);
-      setFormError(err.message || 'That target already exists or is invalid.');
+      setFormError(err.message || t.existsErr);
     } finally {
       setSaving(false);
     }
@@ -71,9 +74,9 @@ export default function BlacklistPage() {
 
   const handleDelete = async (id: string) => {
     const ok = await confirmDialog({
-      title: 'Remove from blacklist?',
-      body: 'This target will be able to submit forms again immediately.',
-      confirmLabel: 'Remove',
+      title: t.removeConfirmTitle,
+      body: t.removeConfirmBody,
+      confirmLabel: t.removeConfirmBtn,
       danger: true,
     });
     if (!ok) return;
@@ -81,14 +84,14 @@ export default function BlacklistPage() {
     try {
       const res = await removeBlacklist(id);
       if (res && !res.success) {
-        toast.error(res.error || 'Could not remove the target.');
+        toast.error(res.error || t.removeErr);
         return;
       }
-      toast.success('Target removed from the blacklist.');
+      toast.success(t.removedOk);
       await loadBlacklist();
     } catch (err) {
       console.error('Error deleting blacklist entry:', err);
-      toast.error('Could not remove the target.');
+      toast.error(t.removeErr);
     }
   };
 
@@ -105,8 +108,8 @@ export default function BlacklistPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Security blacklist</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">View and manage banned IPs, fingerprints and hosts.</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{t.title}</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t.subtitle}</p>
         </div>
         <Button onClick={() => {
           setTarget('');
@@ -114,7 +117,7 @@ export default function BlacklistPage() {
           setFormError('');
           setModalOpen(true);
         }} className="flex items-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-500 text-white font-medium border border-red-600 rounded-lg">
-          <Plus className="h-4 w-4" /> Bannir une cible
+          <Plus className="h-4 w-4" /> {t.banTarget}
         </Button>
       </div>
 
@@ -123,18 +126,18 @@ export default function BlacklistPage() {
         {blacklist.length === 0 ? (
           <div className="py-12 text-center flex flex-col items-center justify-center">
             <ShieldAlert className="h-10 w-10 text-slate-300" />
-            <span className="text-sm font-medium text-slate-400 mt-2">No active bans.</span>
+            <span className="text-sm font-medium text-slate-400 mt-2">{t.noActive}</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
               <thead className="bg-slate-50 dark:bg-slate-950/60 text-xs font-bold text-slate-700 dark:text-slate-200 uppercase border-b border-slate-100 dark:border-slate-800">
                 <tr>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Cible</th>
-                  <th className="px-4 py-3">Type</th>
-                  <th className="px-4 py-3">Raison</th>
-                  <th className="px-4 py-3 text-right">Action</th>
+                  <th className="px-4 py-3">{t.colDate}</th>
+                  <th className="px-4 py-3">{t.colTarget}</th>
+                  <th className="px-4 py-3">{t.colType}</th>
+                  <th className="px-4 py-3">{t.colReason}</th>
+                  <th className="px-4 py-3 text-right">{t.colAction}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -170,7 +173,7 @@ export default function BlacklistPage() {
                         onClick={() => handleDelete(entry.id)}
                         className="inline-flex items-center gap-1 text-xs text-red-600 font-semibold hover:opacity-85"
                       >
-                        <Trash2 className="h-3.5 w-3.5" /> Retirer
+                        <Trash2 className="h-3.5 w-3.5" /> {t.remove}
                       </button>
                     </td>
                   </tr>
@@ -182,7 +185,7 @@ export default function BlacklistPage() {
       </div>
 
       {/* Ban Creation Modal */}
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Ban a target">
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={t.modalTitle}>
         <form onSubmit={handleCreate} className="space-y-4">
           {formError && (
             <div className="rounded-lg bg-red-50 border border-red-100 p-3 text-xs text-red-600 font-medium">
@@ -191,10 +194,10 @@ export default function BlacklistPage() {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Target to ban (IP, fingerprint or host)</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">{t.targetLabel}</label>
             <Input
               type="text"
-              placeholder="e.g. 198.51.100.42 or a VPS hostname"
+              placeholder={t.targetPlaceholder}
               value={target}
               onChange={(e) => setTarget(e.target.value)}
               required
@@ -203,25 +206,25 @@ export default function BlacklistPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type de cible</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">{t.typeLabel}</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as 'ip' | 'fingerprint' | 'host')}
               required
               disabled={saving}
-              className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
+              className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
             >
-              <option value="ip">Adresse IP</option>
-              <option value="fingerprint">Fingerprint</option>
-              <option value="host">Host (reverse DNS domain)</option>
+              <option value="ip">{t.typeIp}</option>
+              <option value="fingerprint">{t.typeFingerprint}</option>
+              <option value="host">{t.typeHost}</option>
             </select>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Motif du bannissement</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">{t.reasonLabel}</label>
             <Input
               type="text"
-              placeholder="e.g. Spam observed from this server"
+              placeholder={t.reasonPlaceholder}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               required
@@ -236,10 +239,10 @@ export default function BlacklistPage() {
               onClick={() => setModalOpen(false)}
               disabled={saving}
             >
-              Annuler
+              {t.cancel}
             </Button>
             <Button type="submit" className="bg-red-600 hover:bg-red-500 border-red-600 text-white" disabled={saving}>
-              {saving ? 'Banning…' : 'Ban target'}
+              {saving ? t.banning : t.submitBan}
             </Button>
           </div>
         </form>

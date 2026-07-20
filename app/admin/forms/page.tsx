@@ -263,7 +263,7 @@ export default function FormsPage() {
               onChange={(e) => setClientId(e.target.value)}
               required
               disabled={saving}
-              className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
+              className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
             >
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -328,7 +328,7 @@ export default function FormsPage() {
                     onChange={(e) => setAutoReplyMessage(e.target.value)}
                     disabled={saving}
                     rows={3}
-                    className="flex w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
+                    className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
                   />
                   <span className="text-[10px] text-slate-400 block font-medium">
                     Leave empty to use the default message (which includes the recipient client's name).

@@ -279,7 +279,7 @@ export default function ClientsPage() {
                       variant="ghost" 
                       onClick={() => handleTogglePassword(client.id)}
                       disabled={loadingPassword[client.id]}
-                      className="h-7 px-2 text-[10px] uppercase font-bold tracking-wider text-slate-500 hover:text-slate-900"
+                      className="h-7 px-2 text-[10px] uppercase font-bold tracking-wider text-slate-500 hover:text-slate-900 dark:hover:text-white"
                     >
                       {loadingPassword[client.id] ? "..." : visiblePasswords[client.id] ? t.hide : t.show}
                     </Button>
@@ -299,7 +299,7 @@ export default function ClientsPage() {
                 <Button 
                   variant="ghost" 
                   onClick={() => openEditModal(client)}
-                  className="px-2 py-1.5 text-slate-500 hover:text-slate-900 text-xs gap-1"
+                  className="px-2 py-1.5 text-slate-500 hover:text-slate-900 dark:hover:text-white text-xs gap-1"
                 >
                   <Edit2 className="h-3.5 w-3.5" /> {t.edit}
                 </Button>

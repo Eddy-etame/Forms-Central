@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { getFailuresLogs } from '@/lib/actions';
 import BlurFade from '@/components/magicui/blur-fade';
 import { Activity, AlertTriangle, PlayCircle, PauseCircle } from 'lucide-react';
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
 
 interface FailureLog {
   id: string;
@@ -16,6 +18,7 @@ interface FailureLog {
 }
 
 export default function LogsPage() {
+  const t = getAppDict(useLocale()).admin.logs;
   const [logs, setLogs] = useState<FailureLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLive, setIsLive] = useState(false);
@@ -57,20 +60,20 @@ export default function LogsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Logs & Échecs</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Track SMTP failures, honeypot triggers and anti-spam blocks.</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{t.title}</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t.subtitle}</p>
         </div>
-        
+
         <button
           onClick={() => setIsLive(!isLive)}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-            isLive 
-              ? 'bg-red-100 text-red-700 hover:bg-red-200 border border-red-200' 
+            isLive
+              ? 'bg-red-100 text-red-700 hover:bg-red-200 border border-red-200'
               : 'bg-white text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-slate-200 shadow-xs'
           }`}
         >
           {isLive ? <PauseCircle className="w-4 h-4 animate-pulse" /> : <PlayCircle className="w-4 h-4 text-emerald-500" />}
-          {isLive ? 'Mode Live (1s)' : 'Polling (2m)'}
+          {isLive ? t.liveMode : t.pollingMode}
         </button>
       </div>
 
@@ -78,19 +81,19 @@ export default function LogsPage() {
         <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
-              <thead className="bg-slate-50 dark:bg-slate-950/60 text-slate-900 border-b border-slate-200 dark:border-slate-800 font-semibold">
+              <thead className="bg-slate-50 dark:bg-slate-950/60 text-slate-900 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800 font-semibold">
                 <tr>
-                  <th className="px-6 py-4">Horodatage</th>
-                  <th className="px-6 py-4">Type d'Erreur</th>
-                  <th className="px-6 py-4">Form</th>
-                  <th className="px-6 py-4">Message</th>
+                  <th className="px-6 py-4">{t.colTimestamp}</th>
+                  <th className="px-6 py-4">{t.colErrorType}</th>
+                  <th className="px-6 py-4">{t.colForm}</th>
+                  <th className="px-6 py-4">{t.colMessage}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {loading && logs.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
-                      Loading logs…
+                      {t.loadingLogs}
                     </td>
                   </tr>
                 ) : logs.length === 0 ? (
@@ -98,7 +101,7 @@ export default function LogsPage() {
                     <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
                       <div className="flex flex-col items-center justify-center">
                         <Activity className="w-8 h-8 mb-2 text-slate-300" />
-                        No failures logged.
+                        {t.noFailures}
                       </div>
                     </td>
                   </tr>
@@ -118,7 +121,7 @@ export default function LogsPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">
-                        {log.forms?.name || <span className="text-slate-400 italic">Inconnu</span>}
+                        {log.forms?.name || <span className="text-slate-400 italic">{t.unknownForm}</span>}
                       </td>
                       <td className="px-6 py-4 text-xs font-mono bg-slate-50 dark:bg-slate-950/60 rounded mt-2 mb-2 p-2 max-w-md truncate">
                         {log.error_message}

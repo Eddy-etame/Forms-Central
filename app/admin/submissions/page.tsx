@@ -5,6 +5,9 @@ import { Eye, FileText, Download } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { getSubmissions } from '@/lib/actions';
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
+import type { AppDict } from '@/lib/appDict';
 
 interface Submission {
   id: string;
@@ -18,8 +21,8 @@ interface Submission {
   } | null;
 }
 
-function formatPayloadPreview(payload: Record<string, string>): string {
-  if (!payload || Object.keys(payload).length === 0) return 'No data';
+function formatPayloadPreview(payload: Record<string, string>, t: AppDict['admin']['submissions']): string {
+  if (!payload || Object.keys(payload).length === 0) return t.noData;
   
   const entries = Object.entries(payload)
     .filter(([k]) => k !== '_gotcha')
@@ -38,6 +41,7 @@ function formatPayloadPreview(payload: Record<string, string>): string {
 }
 
 export default function SubmissionsPage() {
+  const t = getAppDict(useLocale()).admin.submissions;
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSub, setSelectedSub] = useState<Submission | null>(null);
@@ -64,11 +68,11 @@ export default function SubmissionsPage() {
     submissions.forEach(sub => Object.keys(sub.payload).forEach(k => allKeys.add(k)));
     const keysArray = Array.from(allKeys).filter(k => k !== '_gotcha');
     
-    const headers = ['Date', 'Form', 'IP', ...keysArray];
-    
+    const headers = [t.colDate, t.colForm, 'IP', ...keysArray];
+
     const rows = submissions.map(sub => {
       const date = new Date(sub.created_at).toLocaleString('en-GB');
-      const formName = sub.forms ? sub.forms.name : 'Inconnu';
+      const formName = sub.forms ? sub.forms.name : t.unknownForm;
       const ip = sub.ip_address || '';
       
       const payloadCols = keysArray.map(key => {
@@ -105,16 +109,16 @@ export default function SubmissionsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Leads / Submissions</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Every message received across all your forms.</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{t.title}</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t.subtitle}</p>
         </div>
-        <Button 
-          onClick={handleExportCSV} 
+        <Button
+          onClick={handleExportCSV}
           disabled={submissions.length === 0}
           className="flex items-center gap-2 bg-slate-900 text-white hover:bg-slate-800"
         >
           <Download className="w-4 h-4" />
-          Exporter en CSV
+          {t.exportCsv}
         </Button>
       </div>
 
@@ -123,18 +127,18 @@ export default function SubmissionsPage() {
         {submissions.length === 0 ? (
           <div className="py-12 text-center flex flex-col items-center justify-center">
             <FileText className="h-10 w-10 text-slate-300" />
-            <span className="text-sm font-medium text-slate-400 mt-2">No leads yet.</span>
+            <span className="text-sm font-medium text-slate-400 mt-2">{t.noLeads}</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
               <thead className="bg-slate-50 dark:bg-slate-950/60 text-xs font-bold text-slate-700 dark:text-slate-200 uppercase border-b border-slate-100 dark:border-slate-800">
                 <tr>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Form</th>
-                  <th className="px-4 py-3">IP</th>
-                  <th className="px-4 py-3">Data preview</th>
-                  <th className="px-4 py-3 text-right">Action</th>
+                  <th className="px-4 py-3">{t.colDate}</th>
+                  <th className="px-4 py-3">{t.colForm}</th>
+                  <th className="px-4 py-3">{t.colIp}</th>
+                  <th className="px-4 py-3">{t.colDataPreview}</th>
+                  <th className="px-4 py-3 text-right">{t.colAction}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -149,18 +153,18 @@ export default function SubmissionsPage() {
                       })}
                     </td>
                     <td className="px-4 py-3.5 text-xs font-semibold text-slate-800 dark:text-slate-200">
-                      {sub.forms ? sub.forms.name : 'Inconnu'}
+                      {sub.forms ? sub.forms.name : t.unknownForm}
                     </td>
                     <td className="px-4 py-3.5 font-mono text-xs">{sub.ip_address}</td>
                     <td className="px-4 py-3.5 max-w-[300px] truncate text-xs text-slate-700 font-medium">
-                      {formatPayloadPreview(sub.payload)}
+                      {formatPayloadPreview(sub.payload, t)}
                     </td>
                     <td className="px-4 py-3.5 text-right">
                       <button
                         onClick={() => setSelectedSub(sub)}
-                        className="inline-flex items-center gap-1 text-xs text-slate-900 font-semibold hover:opacity-85"
+                        className="inline-flex items-center gap-1 text-xs text-slate-900 dark:text-white font-semibold hover:opacity-85"
                       >
-                        <Eye className="h-3.5 w-3.5" /> Details
+                        <Eye className="h-3.5 w-3.5" /> {t.details}
                       </button>
                     </td>
                   </tr>
@@ -176,21 +180,21 @@ export default function SubmissionsPage() {
         <Modal
           isOpen={!!selectedSub}
           onClose={() => setSelectedSub(null)}
-          title="Lead details"
+          title={t.leadDetailsTitle}
         >
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2 text-xs border-b border-slate-100 dark:border-slate-800 pb-3 text-slate-400 font-medium">
               <div>
-                Date: <span className="text-slate-800 font-semibold">{new Date(selectedSub.created_at).toLocaleString()}</span>
+                {t.dateLabel} <span className="text-slate-800 font-semibold">{new Date(selectedSub.created_at).toLocaleString()}</span>
               </div>
               <div className="text-right">
-                IP: <span className="text-slate-800 font-mono font-semibold">{selectedSub.ip_address}</span>
+                {t.ipLabel} <span className="text-slate-800 font-mono font-semibold">{selectedSub.ip_address}</span>
               </div>
             </div>
 
             {selectedSub.fingerprint && (
               <div className="text-[10px] text-slate-400 font-mono">
-                Fingerprint: <span className="bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 px-1 py-0.5 rounded-sm">{selectedSub.fingerprint}</span>
+                {t.fingerprintLabel} <span className="bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 px-1 py-0.5 rounded-sm">{selectedSub.fingerprint}</span>
               </div>
             )}
 
@@ -204,7 +208,7 @@ export default function SubmissionsPage() {
             </div>
 
             <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800 mt-6">
-              <Button onClick={() => setSelectedSub(null)}>Close</Button>
+              <Button onClick={() => setSelectedSub(null)}>{t.close}</Button>
             </div>
           </div>
         </Modal>

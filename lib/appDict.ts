@@ -144,6 +144,59 @@ interface AppDict {
       colDate: string; colIp: string; colPreview: string; colAction: string; details: string;
       submissionDetailsTitle: string; dateLabel: string; ipLabel: string; close: string;
     };
+    email: {
+      title: string; subtitle: string; refresh: string;
+      outageTitle: string; outageBody: string;
+      statSendingAccounts: string; statSendingAccountsHint: string;
+      statOutages24h: string; statOutages24hHint: string;
+      statLastOutage: string; statLastOutageHintSome: string; statLastOutageHintNone: string;
+      loadingAccounts: string; noAccountsA: string; noAccountsB: string;
+      accountPrefix: string; fromLabel: string; failures24hLabel: string; noRecentFailures: string;
+      footerA: string; footerB: string;
+      statusHealthy: string; statusRecovering: string; statusFailing: string; statusDisabled: string;
+      justNow: string; minAgo: string; hourAgo: string; dayAgo: string; noneDash: string;
+    };
+    security: {
+      title: string; subtitle: string; refresh: string;
+      migrationStrong: string; migrationA: string; migrationB: string;
+      statFailedLogins: string; statRateBlocks: string; statAdminFails: string;
+      noisiestIps: string;
+      colWhen: string; colEvent: string; colActor: string; colIp: string; colDetail: string;
+      loadingEvents: string; noEvents: string; dash: string;
+      justNow: string; minAgo: string; hourAgo: string; dayAgo: string;
+      evAdminLoginOk: string; evAdminLoginFailed: string; evClientLoginOk: string; evClientLoginFailed: string;
+      evPortalLoginFailed: string; evRateLimitBlock: string; evPasswordResetRequest: string;
+    };
+    logs: {
+      title: string; subtitle: string; liveMode: string; pollingMode: string;
+      colTimestamp: string; colErrorType: string; colForm: string; colMessage: string;
+      loadingLogs: string; noFailures: string; unknownForm: string;
+    };
+    analytics: {
+      title: string; subtitleDisabled: string; subtitleEnabled: string;
+      notEnabledA: string; notEnabledB: string; refresh: string;
+      kpiViewsToday: string; kpiViewsTodayHint: string;
+      kpiVisitorsToday: string; kpiVisitorsTodayHint: string;
+      kpiViews7d: string; kpiViews7dHint: string;
+      kpiViewsAllTime: string; kpiViewsAllTimeHint: string;
+      last30Days: string; chartViews: string; chartVisitors: string;
+      topPages: string; topReferrers: string; devices: string; countries: string; noData: string;
+      recentVisitors: string; colWhen: string; colPage: string; colReferrer: string; colDevice: string; colCountry: string;
+      direct: string; noVisits: string; dash: string;
+    };
+    revenue: {
+      title: string; subtitle: string; couldNotLoad: string;
+      kpiMrr: string; kpiMrrHint: string; kpiPaid: string; kpiPaidHint: string;
+      kpiConversion: string; kpiConversionHint: string; kpiArpu: string; kpiArpuHint: string;
+      planMix: string; perMonth: string; paying: string; free: string;
+      growth6mo: string; newSignups: string; newPaid: string;
+      recentPaidAccounts: string; colAccount: string; colPlan: string; colSince: string; noPaidYet: string;
+    };
+    submissions: {
+      title: string; subtitle: string; exportCsv: string; noLeads: string; noData: string;
+      colDate: string; colForm: string; colIp: string; colDataPreview: string; colAction: string; details: string; unknownForm: string;
+      leadDetailsTitle: string; dateLabel: string; ipLabel: string; fingerprintLabel: string; close: string;
+    };
   };
 }
 
@@ -301,6 +354,59 @@ export const appDictionaries: Record<Locale, AppDict> = {
         colDate: 'Date', colIp: 'IP', colPreview: 'Preview', colAction: 'Action', details: 'Details',
         submissionDetailsTitle: 'Submission details', dateLabel: 'Date:', ipLabel: 'IP:', close: 'Close',
       },
+      email: {
+        title: 'Email health', subtitle: 'Live status of every sending account. A suspended or rate-limited provider shows here the moment it fails.', refresh: 'Refresh',
+        outageTitle: 'No account can send right now', outageBody: 'Every configured account is disabled or failing. New leads will still be captured, but notification & auto-reply emails are not going out. Re-enable an account or add a fresh provider.',
+        statSendingAccounts: 'Sending accounts', statSendingAccountsHint: 'active / configured',
+        statOutages24h: 'Outages (24h)', statOutages24hHint: 'all-accounts-failed events',
+        statLastOutage: 'Last outage', statLastOutageHintSome: 'most recent total failure', statLastOutageHintNone: 'none recorded',
+        loadingAccounts: 'Loading account status…', noAccountsA: 'No sending accounts configured. Add', noAccountsB: 'credentials to your environment.',
+        accountPrefix: 'Account ', fromLabel: 'from', failures24hLabel: 'Failures (24h):', noRecentFailures: 'no recent failures',
+        footerA: 'Disable a suspended account cleanly by setting', footerB: 'in your environment — it drops out of rotation without deleting its credentials.',
+        statusHealthy: 'Healthy', statusRecovering: 'Recovering', statusFailing: 'Failing', statusDisabled: 'Disabled',
+        justNow: 'just now', minAgo: '{n}m ago', hourAgo: '{n}h ago', dayAgo: '{n}d ago', noneDash: '—',
+      },
+      security: {
+        title: 'Security', subtitle: 'Live audit trail — failed logins, rate-limit blocks and account activity across the platform.', refresh: 'Refresh',
+        migrationStrong: 'One-time setup:', migrationA: 'run', migrationB: 'in the Supabase SQL editor to enable the audit trail. Events are already being recorded once the table exists.',
+        statFailedLogins: 'Failed logins (24h)', statRateBlocks: 'Rate-limit blocks (24h)', statAdminFails: 'Admin login failures (24h)',
+        noisiestIps: 'Noisiest source IPs (24h)',
+        colWhen: 'When', colEvent: 'Event', colActor: 'Actor', colIp: 'IP', colDetail: 'Detail',
+        loadingEvents: 'Loading events…', noEvents: 'No security events recorded yet — all quiet.', dash: '—',
+        justNow: 'just now', minAgo: '{n}m ago', hourAgo: '{n}h ago', dayAgo: '{n}d ago',
+        evAdminLoginOk: 'Admin login', evAdminLoginFailed: 'Admin login failed', evClientLoginOk: 'Client login', evClientLoginFailed: 'Client login failed',
+        evPortalLoginFailed: 'Portal login failed', evRateLimitBlock: 'Rate limit block', evPasswordResetRequest: 'Password reset request',
+      },
+      logs: {
+        title: 'Logs & failures', subtitle: 'Track SMTP failures, honeypot triggers and anti-spam blocks.', liveMode: 'Live mode (1s)', pollingMode: 'Polling (2m)',
+        colTimestamp: 'Timestamp', colErrorType: 'Error type', colForm: 'Form', colMessage: 'Message',
+        loadingLogs: 'Loading logs…', noFailures: 'No failures logged.', unknownForm: 'Unknown',
+      },
+      analytics: {
+        title: 'Traffic analytics', subtitleDisabled: 'Who visits, what they view, where they come from.', subtitleEnabled: 'First-party, privacy-safe (IPs are hashed). Refreshes automatically.',
+        notEnabledA: "Analytics isn't enabled yet. Run", notEnabledB: 'in Supabase, then this page fills in automatically.', refresh: 'Refresh',
+        kpiViewsToday: 'Views today', kpiViewsTodayHint: 'page views (24h)',
+        kpiVisitorsToday: 'Visitors today', kpiVisitorsTodayHint: 'unique sessions (24h)',
+        kpiViews7d: 'Views · 7 days', kpiViews7dHint: '{n} unique visitors',
+        kpiViewsAllTime: 'Views · all time', kpiViewsAllTimeHint: 'since tracking began',
+        last30Days: 'Last 30 days', chartViews: 'Views', chartVisitors: 'Visitors',
+        topPages: 'Top pages', topReferrers: 'Top referrers', devices: 'Devices', countries: 'Countries', noData: 'No data yet.',
+        recentVisitors: 'Recent visitors', colWhen: 'When', colPage: 'Page', colReferrer: 'Referrer', colDevice: 'Device', colCountry: 'Country',
+        direct: 'Direct', noVisits: 'No visits recorded yet.', dash: '—',
+      },
+      revenue: {
+        title: 'Revenue & subscribers', subtitle: "Who's paying, monthly recurring revenue, and growth.", couldNotLoad: 'Could not load revenue.',
+        kpiMrr: 'MRR', kpiMrrHint: '{arr} ARR', kpiPaid: 'Paid subscribers', kpiPaidHint: 'of {n} accounts',
+        kpiConversion: 'Conversion', kpiConversionHint: 'paid ÷ total accounts', kpiArpu: 'ARPU', kpiArpuHint: 'avg revenue / paying user',
+        planMix: 'Plan mix', perMonth: '/mo', paying: 'Paying', free: 'Free',
+        growth6mo: 'Growth · last 6 months', newSignups: 'New signups', newPaid: 'New paid',
+        recentPaidAccounts: 'Recent paid accounts', colAccount: 'Account', colPlan: 'Plan', colSince: 'Since', noPaidYet: "No paid subscribers yet — they'll appear here as accounts upgrade.",
+      },
+      submissions: {
+        title: 'Leads / Submissions', subtitle: 'Every message received across all your forms.', exportCsv: 'Export CSV', noLeads: 'No leads yet.', noData: 'No data',
+        colDate: 'Date', colForm: 'Form', colIp: 'IP', colDataPreview: 'Data preview', colAction: 'Action', details: 'Details', unknownForm: 'Unknown',
+        leadDetailsTitle: 'Lead details', dateLabel: 'Date:', ipLabel: 'IP:', fingerprintLabel: 'Fingerprint:', close: 'Close',
+      },
     },
   },
   fr: {
@@ -455,6 +561,59 @@ export const appDictionaries: Record<Locale, AppDict> = {
         leadsReceived: 'Leads reçus ({n})', noSubmissions: 'Aucune soumission pour l’instant.',
         colDate: 'Date', colIp: 'IP', colPreview: 'Aperçu', colAction: 'Action', details: 'Détails',
         submissionDetailsTitle: 'Détails de la soumission', dateLabel: 'Date :', ipLabel: 'IP :', close: 'Fermer',
+      },
+      email: {
+        title: 'Santé e-mail', subtitle: 'État en direct de chaque compte d’envoi. Un fournisseur suspendu ou limité apparaît ici dès qu’il échoue.', refresh: 'Actualiser',
+        outageTitle: 'Aucun compte ne peut envoyer pour le moment', outageBody: 'Tous les comptes configurés sont désactivés ou en échec. Les nouveaux leads continuent d’être capturés, mais les e-mails de notification et de réponse automatique ne partent plus. Réactivez un compte ou ajoutez un nouveau fournisseur.',
+        statSendingAccounts: 'Comptes d’envoi', statSendingAccountsHint: 'actifs / configurés',
+        statOutages24h: 'Pannes (24h)', statOutages24hHint: 'événements « tous comptes en échec »',
+        statLastOutage: 'Dernière panne', statLastOutageHintSome: 'échec total le plus récent', statLastOutageHintNone: 'aucune enregistrée',
+        loadingAccounts: 'Chargement de l’état des comptes…', noAccountsA: 'Aucun compte d’envoi configuré. Ajoutez des identifiants', noAccountsB: 'à votre environnement.',
+        accountPrefix: 'Compte ', fromLabel: 'depuis', failures24hLabel: 'Échecs (24h) :', noRecentFailures: 'aucun échec récent',
+        footerA: 'Désactivez proprement un compte suspendu en définissant', footerB: 'dans votre environnement — il sort de la rotation sans supprimer ses identifiants.',
+        statusHealthy: 'Sain', statusRecovering: 'En rétablissement', statusFailing: 'En échec', statusDisabled: 'Désactivé',
+        justNow: 'à l’instant', minAgo: 'il y a {n}m', hourAgo: 'il y a {n}h', dayAgo: 'il y a {n}j', noneDash: '—',
+      },
+      security: {
+        title: 'Sécurité', subtitle: 'Journal d’audit en direct — connexions échouées, blocages de débit et activité des comptes sur la plateforme.', refresh: 'Actualiser',
+        migrationStrong: 'Configuration unique :', migrationA: 'exécutez', migrationB: 'dans l’éditeur SQL Supabase pour activer le journal d’audit. Les événements sont déjà enregistrés dès que la table existe.',
+        statFailedLogins: 'Connexions échouées (24h)', statRateBlocks: 'Blocages de débit (24h)', statAdminFails: 'Échecs de connexion admin (24h)',
+        noisiestIps: 'IP sources les plus actives (24h)',
+        colWhen: 'Quand', colEvent: 'Événement', colActor: 'Acteur', colIp: 'IP', colDetail: 'Détail',
+        loadingEvents: 'Chargement des événements…', noEvents: 'Aucun événement de sécurité enregistré pour l’instant — tout est calme.', dash: '—',
+        justNow: 'à l’instant', minAgo: 'il y a {n}m', hourAgo: 'il y a {n}h', dayAgo: 'il y a {n}j',
+        evAdminLoginOk: 'Connexion admin', evAdminLoginFailed: 'Échec de connexion admin', evClientLoginOk: 'Connexion client', evClientLoginFailed: 'Échec de connexion client',
+        evPortalLoginFailed: 'Échec de connexion portail', evRateLimitBlock: 'Blocage de débit', evPasswordResetRequest: 'Demande de réinitialisation du mot de passe',
+      },
+      logs: {
+        title: 'Journaux & échecs', subtitle: 'Suivez les échecs SMTP, les déclenchements de pot de miel et les blocages anti-spam.', liveMode: 'Mode direct (1s)', pollingMode: 'Actualisation (2m)',
+        colTimestamp: 'Horodatage', colErrorType: 'Type d’erreur', colForm: 'Formulaire', colMessage: 'Message',
+        loadingLogs: 'Chargement des journaux…', noFailures: 'Aucun échec enregistré.', unknownForm: 'Inconnu',
+      },
+      analytics: {
+        title: 'Analytique du trafic', subtitleDisabled: 'Qui visite, ce qu’ils consultent, d’où ils viennent.', subtitleEnabled: 'First-party, respectueux de la vie privée (IP hachées). Actualisation automatique.',
+        notEnabledA: 'L’analytique n’est pas encore activée. Exécutez', notEnabledB: 'dans Supabase, puis cette page se remplit automatiquement.', refresh: 'Actualiser',
+        kpiViewsToday: 'Vues aujourd’hui', kpiViewsTodayHint: 'pages vues (24h)',
+        kpiVisitorsToday: 'Visiteurs aujourd’hui', kpiVisitorsTodayHint: 'sessions uniques (24h)',
+        kpiViews7d: 'Vues · 7 jours', kpiViews7dHint: '{n} visiteurs uniques',
+        kpiViewsAllTime: 'Vues · total', kpiViewsAllTimeHint: 'depuis le début du suivi',
+        last30Days: '30 derniers jours', chartViews: 'Vues', chartVisitors: 'Visiteurs',
+        topPages: 'Pages les plus vues', topReferrers: 'Meilleurs référents', devices: 'Appareils', countries: 'Pays', noData: 'Aucune donnée pour l’instant.',
+        recentVisitors: 'Visiteurs récents', colWhen: 'Quand', colPage: 'Page', colReferrer: 'Référent', colDevice: 'Appareil', colCountry: 'Pays',
+        direct: 'Direct', noVisits: 'Aucune visite enregistrée pour l’instant.', dash: '—',
+      },
+      revenue: {
+        title: 'Revenus & abonnés', subtitle: 'Qui paie, revenu récurrent mensuel, et croissance.', couldNotLoad: 'Impossible de charger les revenus.',
+        kpiMrr: 'MRR', kpiMrrHint: '{arr} ARR', kpiPaid: 'Abonnés payants', kpiPaidHint: 'sur {n} comptes',
+        kpiConversion: 'Conversion', kpiConversionHint: 'payants ÷ total des comptes', kpiArpu: 'ARPU', kpiArpuHint: 'revenu moyen / utilisateur payant',
+        planMix: 'Répartition des forfaits', perMonth: '/mois', paying: 'Payants', free: 'Gratuits',
+        growth6mo: 'Croissance · 6 derniers mois', newSignups: 'Nouvelles inscriptions', newPaid: 'Nouveaux payants',
+        recentPaidAccounts: 'Comptes payants récents', colAccount: 'Compte', colPlan: 'Forfait', colSince: 'Depuis', noPaidYet: 'Aucun abonné payant pour l’instant — ils apparaîtront ici dès qu’un compte passe au payant.',
+      },
+      submissions: {
+        title: 'Leads / Soumissions', subtitle: 'Chaque message reçu sur l’ensemble de vos formulaires.', exportCsv: 'Exporter en CSV', noLeads: 'Aucun lead pour l’instant.', noData: 'Aucune donnée',
+        colDate: 'Date', colForm: 'Formulaire', colIp: 'IP', colDataPreview: 'Aperçu des données', colAction: 'Action', details: 'Détails', unknownForm: 'Inconnu',
+        leadDetailsTitle: 'Détails du lead', dateLabel: 'Date :', ipLabel: 'IP :', fingerprintLabel: 'Empreinte :', close: 'Fermer',
       },
     },
   },

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { DollarSign, Users, TrendingUp, CreditCard, ArrowUpRight } from 'lucide-react';
 import { getRevenueStats } from '@/lib/actions';
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
 
 type Stats = {
   total: number;
@@ -31,6 +33,7 @@ function Kpi({ icon: Icon, label, value, hint, tone }: { icon: any; label: strin
 }
 
 export default function RevenuePage() {
+  const t = getAppDict(useLocale()).admin.revenue;
   const [s, setS] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -45,7 +48,7 @@ export default function RevenuePage() {
   if (loading) {
     return <div className="flex h-[60vh] items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-900 border-t-transparent" /></div>;
   }
-  if (!s) return <p className="text-sm text-slate-500 dark:text-slate-400">Could not load revenue.</p>;
+  if (!s) return <p className="text-sm text-slate-500 dark:text-slate-400">{t.couldNotLoad}</p>;
 
   const maxPlan = Math.max(1, ...s.planBreakdown.map((p) => p.count));
   const money = (n: number) => `$${n.toLocaleString('en-US')}`;
@@ -53,26 +56,26 @@ export default function RevenuePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Revenue &amp; subscribers</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400">Who&apos;s paying, monthly recurring revenue, and growth.</p>
+        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t.title}</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{t.subtitle}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi icon={DollarSign} label="MRR" value={money(s.mrr)} hint={`${money(s.mrr * 12)} ARR`} tone="bg-emerald-500" />
-        <Kpi icon={CreditCard} label="Paid subscribers" value={s.paid.toLocaleString('en-US')} hint={`of ${s.total.toLocaleString('en-US')} accounts`} tone="bg-blue-500" />
-        <Kpi icon={TrendingUp} label="Conversion" value={`${(s.conversion * 100).toFixed(1)}%`} hint="paid ÷ total accounts" tone="bg-violet-500" />
-        <Kpi icon={Users} label="ARPU" value={money(Math.round(s.arpu))} hint="avg revenue / paying user" tone="bg-slate-700" />
+        <Kpi icon={DollarSign} label={t.kpiMrr} value={money(s.mrr)} hint={t.kpiMrrHint.replace('{arr}', money(s.mrr * 12))} tone="bg-emerald-500" />
+        <Kpi icon={CreditCard} label={t.kpiPaid} value={s.paid.toLocaleString('en-US')} hint={t.kpiPaidHint.replace('{n}', s.total.toLocaleString('en-US'))} tone="bg-blue-500" />
+        <Kpi icon={TrendingUp} label={t.kpiConversion} value={`${(s.conversion * 100).toFixed(1)}%`} hint={t.kpiConversionHint} tone="bg-violet-500" />
+        <Kpi icon={Users} label={t.kpiArpu} value={money(Math.round(s.arpu))} hint={t.kpiArpuHint} tone="bg-slate-700" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-5">
         {/* Plan breakdown */}
         <div className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-5 lg:col-span-2">
-          <div className="mb-4 text-sm font-bold text-slate-900 dark:text-white">Plan mix</div>
+          <div className="mb-4 text-sm font-bold text-slate-900 dark:text-white">{t.planMix}</div>
           <div className="space-y-3">
             {s.planBreakdown.map((p) => (
               <div key={p.name}>
                 <div className="mb-1 flex items-center justify-between text-xs">
-                  <span className="font-medium text-slate-700 dark:text-slate-300">{p.name} {p.price > 0 && <span className="text-slate-400">· ${p.price}/mo</span>}</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">{p.name} {p.price > 0 && <span className="text-slate-400">· ${p.price}{t.perMonth}</span>}</span>
                   <span className="font-bold tabular-nums text-slate-900 dark:text-white">{p.count}</span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
@@ -82,24 +85,24 @@ export default function RevenuePage() {
             ))}
           </div>
           <div className="mt-4 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3 text-xs">
-            <span className="text-slate-500">Paying</span>
+            <span className="text-slate-500">{t.paying}</span>
             <span className="font-bold text-emerald-600">{s.paid}</span>
-            <span className="text-slate-500">Free</span>
+            <span className="text-slate-500">{t.free}</span>
             <span className="font-bold text-slate-700 dark:text-slate-200">{s.free}</span>
           </div>
         </div>
 
         {/* Monthly growth */}
         <div className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-5 lg:col-span-3">
-          <div className="mb-4 text-sm font-bold text-slate-900 dark:text-white">Growth · last 6 months</div>
+          <div className="mb-4 text-sm font-bold text-slate-900 dark:text-white">{t.growth6mo}</div>
           <div className="h-[220px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={s.months}>
                 <XAxis dataKey="label" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} cursor={{ fill: '#f1f5f9' }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="signups" name="New signups" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="upgrades" name="New paid" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="signups" name={t.newSignups} fill="#cbd5e1" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="upgrades" name={t.newPaid} fill="#3b82f6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -108,15 +111,15 @@ export default function RevenuePage() {
 
       {/* Recent upgrades */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <div className="border-b border-slate-100 dark:border-slate-800 px-5 py-4 text-sm font-bold text-slate-900 dark:text-white">Recent paid accounts</div>
+        <div className="border-b border-slate-100 dark:border-slate-800 px-5 py-4 text-sm font-bold text-slate-900 dark:text-white">{t.recentPaidAccounts}</div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-100 dark:border-slate-800 text-xs font-semibold uppercase text-slate-400">
-              <tr><th className="px-5 py-3">Account</th><th className="px-5 py-3">Plan</th><th className="px-5 py-3">Since</th></tr>
+              <tr><th className="px-5 py-3">{t.colAccount}</th><th className="px-5 py-3">{t.colPlan}</th><th className="px-5 py-3">{t.colSince}</th></tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {s.recentUpgrades.length === 0 ? (
-                <tr><td colSpan={3} className="px-5 py-10 text-center text-slate-400">No paid subscribers yet — they&apos;ll appear here as accounts upgrade.</td></tr>
+                <tr><td colSpan={3} className="px-5 py-10 text-center text-slate-400">{t.noPaidYet}</td></tr>
               ) : s.recentUpgrades.map((u, i) => (
                 <tr key={i} className="hover:bg-slate-50">
                   <td className="px-5 py-3 font-medium text-slate-800 dark:text-slate-200">{u.email}</td>

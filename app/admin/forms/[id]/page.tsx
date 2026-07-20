@@ -179,7 +179,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
       {/* Back link */}
       <Link
         href="/admin/forms"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"
       >
         <ArrowLeft className="h-3.5 w-3.5" /> {t.backToForms}
       </Link>
@@ -430,7 +430,7 @@ export default function FormDetailsPage({ params }: { params: Promise<{ id: stri
                         <td className="px-4 py-3.5 text-right">
                           <button
                             onClick={() => setSelectedSub(sub)}
-                            className="inline-flex items-center gap-1 text-xs text-slate-900 font-semibold hover:opacity-85"
+                            className="inline-flex items-center gap-1 text-xs text-slate-900 dark:text-white font-semibold hover:opacity-85"
                           >
                             <Eye className="h-3.5 w-3.5" /> {t.details}
                           </button>

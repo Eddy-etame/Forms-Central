@@ -199,7 +199,7 @@ export default function FormsPage() {
                     className="text-slate-400 hover:text-slate-800 transition-colors"
                   >
                     {form.is_active ? (
-                      <ToggleRight className="h-6 w-6 text-slate-900" />
+                      <ToggleRight className="h-6 w-6 text-slate-900 dark:text-white" />
                     ) : (
                       <ToggleLeft className="h-6 w-6 text-slate-300" />
                     )}

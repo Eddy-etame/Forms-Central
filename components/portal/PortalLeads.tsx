@@ -2,11 +2,14 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Search, X, Inbox, Download } from 'lucide-react';
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
 
 type Lead = { id: string; form_id: string; payload: Record<string, unknown>; created_at: string };
 type Form = { id: string; name: string };
 
 export default function PortalLeads() {
+  const t = getAppDict(useLocale()).portal.home;
   const [forms, setForms] = useState<Form[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +32,7 @@ export default function PortalLeads() {
     })();
   }, []);
 
-  const formName = (id: string) => forms.find((f) => f.id === id)?.name ?? 'Form';
+  const formName = (id: string) => forms.find((f) => f.id === id)?.name ?? t.formFallback;
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -44,7 +47,7 @@ export default function PortalLeads() {
     if (filtered.length === 0) return;
     const keys = new Set<string>();
     filtered.forEach((l) => Object.keys(l.payload).forEach((k) => keys.add(k)));
-    const cols = ['Date', 'Form', ...keys];
+    const cols = [t.colDate, t.colForm, ...keys];
     const rows = filtered.map((l) => {
       const base = [new Date(l.created_at).toLocaleString('en-GB'), formName(l.form_id)];
       const vals = [...keys].map((k) => {
@@ -62,7 +65,7 @@ export default function PortalLeads() {
     URL.revokeObjectURL(url);
   }
 
-  if (loading) return <p className="text-sm text-slate-400">Loading your leads…</p>;
+  if (loading) return <p className="text-sm text-slate-400">{t.loadingLeads}</p>;
 
   if (forms.length === 0) {
     return (
@@ -70,9 +73,9 @@ export default function PortalLeads() {
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
           <Inbox className="h-6 w-6 text-slate-400" />
         </div>
-        <h2 className="text-lg font-bold text-slate-900">No leads yet</h2>
+        <h2 className="text-lg font-bold text-slate-900">{t.emptyTitle}</h2>
         <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
-          When your forms receive submissions, they&apos;ll appear here in real time.
+          {t.emptyBody}
         </p>
       </div>
     );
@@ -82,14 +85,16 @@ export default function PortalLeads() {
     <div className="space-y-6">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Your leads</h1>
-          <p className="mt-1 text-sm text-slate-500">{leads.length} total across {forms.length} form{forms.length > 1 ? 's' : ''}</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">{t.yourLeads}</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            {(forms.length > 1 ? t.totalAcrossMany : t.totalAcrossOne).replace('{n}', String(leads.length)).replace('{m}', String(forms.length))}
+          </p>
         </div>
         <button
           onClick={exportCsv}
           className="inline-flex items-center gap-2 self-start rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:border-slate-300 transition-colors"
         >
-          <Download className="h-4 w-4" /> Export CSV
+          <Download className="h-4 w-4" /> {t.exportCsv}
         </button>
       </div>
 
@@ -99,7 +104,7 @@ export default function PortalLeads() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search leads…"
+            placeholder={t.searchPlaceholder}
             className="w-full rounded-lg border border-slate-200 py-2.5 pl-9 pr-4 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
           />
         </div>
@@ -109,7 +114,7 @@ export default function PortalLeads() {
             onChange={(e) => setFormFilter(e.target.value)}
             className="rounded-lg border border-slate-200 py-2.5 px-3 text-sm outline-none focus:border-blue-400"
           >
-            <option value="all">All forms</option>
+            <option value="all">{t.allForms}</option>
             {forms.map((f) => (
               <option key={f.id} value={f.id}>{f.name}</option>
             ))}
@@ -122,14 +127,14 @@ export default function PortalLeads() {
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-100 text-xs font-semibold uppercase text-slate-400">
               <tr>
-                <th className="px-6 py-4">Date</th>
-                <th className="px-6 py-4">Form</th>
-                <th className="px-6 py-4">Preview</th>
+                <th className="px-6 py-4">{t.colDate}</th>
+                <th className="px-6 py-4">{t.colForm}</th>
+                <th className="px-6 py-4">{t.colPreview}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.length === 0 ? (
-                <tr><td colSpan={3} className="px-6 py-12 text-center text-slate-500">No leads match your search.</td></tr>
+                <tr><td colSpan={3} className="px-6 py-12 text-center text-slate-500">{t.noMatch}</td></tr>
               ) : (
                 filtered.map((l) => (
                   <tr key={l.id} onClick={() => setSelected(l)} className="cursor-pointer hover:bg-slate-50 transition-colors">
@@ -160,10 +165,10 @@ export default function PortalLeads() {
           <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Submission</h3>
+                <h3 className="text-lg font-bold text-slate-900">{t.submissionTitle}</h3>
                 <p className="text-xs text-slate-500">{new Date(selected.created_at).toLocaleString('en-GB')} · {formName(selected.form_id)}</p>
               </div>
-              <button onClick={() => setSelected(null)} aria-label="Close" className="rounded-full p-2 hover:bg-slate-200 transition-colors">
+              <button onClick={() => setSelected(null)} aria-label={t.close} className="rounded-full p-2 hover:bg-slate-200 transition-colors">
                 <X className="h-5 w-5 text-slate-500" />
               </button>
             </div>
@@ -175,7 +180,7 @@ export default function PortalLeads() {
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{k.replace(/_/g, ' ')}</p>
                     {isFile ? (
                       <a href={`/api/download?url=${encodeURIComponent(String(v))}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:underline">
-                        <Download className="h-3.5 w-3.5" /> Download file
+                        <Download className="h-3.5 w-3.5" /> {t.downloadFile}
                       </a>
                     ) : (
                       <p className="whitespace-pre-wrap break-words text-sm font-medium text-slate-900">{String(v)}</p>

@@ -4,9 +4,11 @@
 export default function SignOutLink({
   className,
   redirectTo = '/client/login',
+  label = 'Sign out',
 }: {
   className?: string;
   redirectTo?: string;
+  label?: string;
 }) {
   return (
     <button
@@ -16,7 +18,7 @@ export default function SignOutLink({
       }}
       className={className}
     >
-      Sign out
+      {label}
     </button>
   );
 }

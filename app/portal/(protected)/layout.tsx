@@ -3,6 +3,8 @@ import { getPortalSession } from '@/lib/portalAuth';
 import { supabase } from '@/lib/supabase';
 import { getPlan } from '@/lib/plans';
 import SignOutLink from '@/components/client/SignOutLink';
+import { getLocale } from '@/lib/i18n';
+import { getAppDict } from '@/lib/appDict';
 
 /**
  * End-client portal shell. White-labeled to the developer's brand
@@ -13,12 +15,14 @@ export default async function PortalProtectedLayout({ children }: { children: Re
   const session = await getPortalSession();
   if (!session) redirect('/portal/login');
 
-  const [{ data: pu }, { data: parent }] = await Promise.all([
+  const [{ data: pu }, { data: parent }, locale] = await Promise.all([
     supabase.from('portal_users').select('name').eq('id', session.portalUserId).maybeSingle(),
     supabase.from('clients').select('name, logo_url, primary_color, plan').eq('id', session.parentClientId).maybeSingle(),
+    getLocale(),
   ]);
+  const t = getAppDict(locale).portal.layout;
 
-  const brandName = parent?.name || 'Client portal';
+  const brandName = parent?.name || t.defaultBrandName;
   const accent = parent?.primary_color || '#0F172A';
   const whiteLabel = getPlan(parent?.plan).whiteLabel;
 
@@ -40,7 +44,7 @@ export default async function PortalProtectedLayout({ children }: { children: Re
               {pu?.name && <p className="text-xs text-slate-400">{pu.name}</p>}
             </div>
           </div>
-          <SignOutLink redirectTo="/portal/login" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors" />
+          <SignOutLink redirectTo="/portal/login" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors" label={t.signOut} />
         </div>
       </header>
 
@@ -48,7 +52,7 @@ export default async function PortalProtectedLayout({ children }: { children: Re
 
       {!whiteLabel && (
         <footer className="mx-auto max-w-6xl px-6 pb-8 text-center text-xs text-slate-400">
-          Powered by Inlet
+          {t.poweredBy}
         </footer>
       )}
     </div>

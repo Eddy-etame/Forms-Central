@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
 
 export default function PortalLoginPage() {
+  const t = getAppDict(useLocale()).portal.login;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,12 +26,12 @@ export default function PortalLoginPage() {
       if (res.ok && data.success) {
         window.location.href = '/portal';
       } else if (res.status === 429) {
-        setError('Too many attempts. Please wait a minute and try again.');
+        setError(t.errTooMany);
       } else {
-        setError(data.error || 'Incorrect email or password.');
+        setError(data.error || t.errIncorrect);
       }
     } catch {
-      setError('Could not reach the server.');
+      setError(t.errNetwork);
     } finally {
       setLoading(false);
     }
@@ -41,8 +44,8 @@ export default function PortalLoginPage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-white font-bold text-lg shadow-sm">
             ●
           </div>
-          <h1 className="mt-6 text-2xl font-bold text-slate-900 tracking-tight">Client portal</h1>
-          <p className="mt-1.5 text-sm text-slate-500">Sign in to view your leads.</p>
+          <h1 className="mt-6 text-2xl font-bold text-slate-900 tracking-tight">{t.title}</h1>
+          <p className="mt-1.5 text-sm text-slate-500">{t.subtitle}</p>
         </div>
 
         <form className="mt-8 space-y-4" onSubmit={handleLogin}>
@@ -52,7 +55,7 @@ export default function PortalLoginPage() {
             </div>
           )}
           <div className="space-y-1.5">
-            <label htmlFor="email" className="text-xs font-semibold text-slate-700">Email</label>
+            <label htmlFor="email" className="text-xs font-semibold text-slate-700">{t.emailLabel}</label>
             <input
               id="email"
               type="email"
@@ -65,7 +68,7 @@ export default function PortalLoginPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor="password" className="text-xs font-semibold text-slate-700">Password</label>
+            <label htmlFor="password" className="text-xs font-semibold text-slate-700">{t.passwordLabel}</label>
             <input
               id="password"
               type="password"
@@ -82,7 +85,7 @@ export default function PortalLoginPage() {
             disabled={loading}
             className="w-full rounded-lg bg-slate-900 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors disabled:opacity-50"
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? t.signingIn : t.signIn}
           </button>
         </form>
       </div>

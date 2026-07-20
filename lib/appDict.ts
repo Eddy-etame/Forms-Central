@@ -198,6 +198,23 @@ interface AppDict {
       leadDetailsTitle: string; dateLabel: string; ipLabel: string; fingerprintLabel: string; close: string;
     };
   };
+  portal: {
+    login: {
+      title: string; subtitle: string; emailLabel: string; passwordLabel: string;
+      signingIn: string; signIn: string; errTooMany: string; errIncorrect: string; errNetwork: string;
+    };
+    layout: {
+      defaultBrandName: string; poweredBy: string; signOut: string;
+    };
+    home: {
+      title: string;
+      loadingLeads: string; emptyTitle: string; emptyBody: string;
+      yourLeads: string; totalAcrossOne: string; totalAcrossMany: string;
+      exportCsv: string; searchPlaceholder: string; allForms: string; formFallback: string;
+      colDate: string; colForm: string; colPreview: string; noMatch: string;
+      submissionTitle: string; close: string; downloadFile: string;
+    };
+  };
 }
 
 export const appDictionaries: Record<Locale, AppDict> = {
@@ -408,6 +425,24 @@ export const appDictionaries: Record<Locale, AppDict> = {
         leadDetailsTitle: 'Lead details', dateLabel: 'Date:', ipLabel: 'IP:', fingerprintLabel: 'Fingerprint:', close: 'Close',
       },
     },
+    portal: {
+      login: {
+        title: 'Client portal', subtitle: 'Sign in to view your leads.', emailLabel: 'Email', passwordLabel: 'Password',
+        signingIn: 'Signing in…', signIn: 'Sign in',
+        errTooMany: 'Too many attempts. Please wait a minute and try again.', errIncorrect: 'Incorrect email or password.', errNetwork: 'Could not reach the server.',
+      },
+      layout: {
+        defaultBrandName: 'Client portal', poweredBy: 'Powered by Inlet', signOut: 'Sign out',
+      },
+      home: {
+        title: 'Your leads',
+        loadingLeads: 'Loading your leads…', emptyTitle: 'No leads yet', emptyBody: "When your forms receive submissions, they'll appear here in real time.",
+        yourLeads: 'Your leads', totalAcrossOne: '{n} total across {m} form', totalAcrossMany: '{n} total across {m} forms',
+        exportCsv: 'Export CSV', searchPlaceholder: 'Search leads…', allForms: 'All forms', formFallback: 'Form',
+        colDate: 'Date', colForm: 'Form', colPreview: 'Preview', noMatch: 'No leads match your search.',
+        submissionTitle: 'Submission', close: 'Close', downloadFile: 'Download file',
+      },
+    },
   },
   fr: {
     sidebar: {
@@ -614,6 +649,24 @@ export const appDictionaries: Record<Locale, AppDict> = {
         title: 'Leads / Soumissions', subtitle: 'Chaque message reçu sur l’ensemble de vos formulaires.', exportCsv: 'Exporter en CSV', noLeads: 'Aucun lead pour l’instant.', noData: 'Aucune donnée',
         colDate: 'Date', colForm: 'Formulaire', colIp: 'IP', colDataPreview: 'Aperçu des données', colAction: 'Action', details: 'Détails', unknownForm: 'Inconnu',
         leadDetailsTitle: 'Détails du lead', dateLabel: 'Date :', ipLabel: 'IP :', fingerprintLabel: 'Empreinte :', close: 'Fermer',
+      },
+    },
+    portal: {
+      login: {
+        title: 'Portail client', subtitle: 'Connectez-vous pour consulter vos leads.', emailLabel: 'E-mail', passwordLabel: 'Mot de passe',
+        signingIn: 'Connexion…', signIn: 'Se connecter',
+        errTooMany: 'Trop de tentatives. Veuillez patienter une minute et réessayer.', errIncorrect: 'E-mail ou mot de passe incorrect.', errNetwork: 'Impossible de joindre le serveur.',
+      },
+      layout: {
+        defaultBrandName: 'Portail client', poweredBy: 'Propulsé par Inlet', signOut: 'Se déconnecter',
+      },
+      home: {
+        title: 'Vos leads',
+        loadingLeads: 'Chargement de vos leads…', emptyTitle: 'Aucun lead pour l’instant', emptyBody: 'Dès que vos formulaires recevront des soumissions, elles apparaîtront ici en temps réel.',
+        yourLeads: 'Vos leads', totalAcrossOne: '{n} au total sur {m} formulaire', totalAcrossMany: '{n} au total sur {m} formulaires',
+        exportCsv: 'Exporter en CSV', searchPlaceholder: 'Rechercher des leads…', allForms: 'Tous les formulaires', formFallback: 'Formulaire',
+        colDate: 'Date', colForm: 'Formulaire', colPreview: 'Aperçu', noMatch: 'Aucun lead ne correspond à votre recherche.',
+        submissionTitle: 'Soumission', close: 'Fermer', downloadFile: 'Télécharger le fichier',
       },
     },
   },

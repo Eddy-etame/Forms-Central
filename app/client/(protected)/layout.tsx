@@ -50,7 +50,7 @@ export default async function ClientProtectedLayout({ children }: { children: Re
           <LogoBadge className="h-8 w-8 rounded-lg" />
           <span className="font-bold text-slate-900 dark:text-white">Inlet</span>
         </div>
-        <SignOutLink className="text-sm font-medium text-red-600 hover:text-red-700" />
+        <SignOutLink className="text-sm font-medium text-red-600 hover:text-red-700" label={t.signOut} />
       </header>
 
       {/* Sidebar */}

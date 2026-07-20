@@ -35,7 +35,19 @@ function CopyRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default function NewFormButton({ prominent = false, label }: { prominent?: boolean; label?: string }) {
+type NfDict = import('@/lib/appDict').AppDict['dashboard']['nf'];
+const NF_EN: NfDict = {
+  createTitle: 'Create a form', liveTitle: 'Your form is live',
+  nameHint: "Name it after the website or purpose — you'll get its ID and a working snippet right away.",
+  namePlaceholder: 'e.g. Portfolio contact form',
+  seePro: 'See Pro plans', creating: 'Creating…', createBtn: 'Create form',
+  readyBody: 'is ready to receive submissions. Wire it with these two values:',
+  openGuide: 'Open the integration guide', done: 'Done',
+  couldNotCreate: 'Could not create the form.', couldNotReach: 'Could not reach the server.',
+};
+
+export default function NewFormButton({ prominent = false, label, m }: { prominent?: boolean; label?: string; m?: NfDict }) {
+  const M = m || NF_EN;
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
@@ -65,10 +77,10 @@ export default function NewFormButton({ prominent = false, label }: { prominent?
         setPaywall(true);
         setError(data.error);
       } else {
-        setError(data.error || 'Could not create the form.');
+        setError(data.error || M.couldNotCreate);
       }
     } catch {
-      setError('Could not reach the server.');
+      setError(M.couldNotReach);
     } finally {
       setBusy(false);
     }
@@ -116,11 +128,11 @@ export default function NewFormButton({ prominent = false, label }: { prominent?
               initial={{ opacity: 0, scale: 0.95, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 16 }}
-              className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl"
+              className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-white dark:bg-slate-900 dark:border dark:border-slate-800 shadow-2xl"
             >
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 px-6 py-4">
                 <h3 className="font-bold text-slate-900 dark:text-white">
-                  {created ? 'Your form is live' : 'Create a form'}
+                  {created ? M.liveTitle : M.createTitle}
                 </h3>
                 <button onClick={close} aria-label="Close" className="rounded-full p-2 hover:bg-slate-200 transition-colors">
                   <X className="h-5 w-5 text-slate-500" />
@@ -130,24 +142,23 @@ export default function NewFormButton({ prominent = false, label }: { prominent?
               {!created ? (
                 <form onSubmit={create} className="space-y-4 p-6">
                   <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Name it after the website or purpose — you&apos;ll get its ID and a
-                    working snippet right away.
+                    {M.nameHint}
                   </p>
                   <input
                     autoFocus
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Portfolio contact form"
+                    placeholder={M.namePlaceholder}
                     maxLength={60}
                     disabled={busy}
-                    className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                    className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500"
                   />
                   {error && (
                     <div role="alert" className="rounded-lg border border-red-100 bg-red-50 p-3 text-xs font-medium text-red-600">
                       {error}
                       {paywall && (
                         <a href="/pricing" className="mt-2 flex items-center gap-1 font-semibold text-slate-900 dark:text-white hover:underline">
-                          See Pro plans <ArrowRight className="h-3 w-3" />
+                          {M.seePro} <ArrowRight className="h-3 w-3" />
                         </a>
                       )}
                     </div>
@@ -157,18 +168,17 @@ export default function NewFormButton({ prominent = false, label }: { prominent?
                     disabled={busy || !name.trim()}
                     className="w-full rounded-lg bg-slate-900 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors disabled:opacity-50"
                   >
-                    {busy ? 'Creating…' : 'Create form'}
+                    {busy ? M.creating : M.createBtn}
                   </button>
                 </form>
               ) : (
                 <div className="space-y-4 p-6">
-                  <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
+                  <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50 p-4 dark:border-emerald-500/30 dark:bg-emerald-500/10">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600">
                       <Sparkles className="h-4 w-4 text-white" />
                     </div>
-                    <p className="text-sm text-emerald-900">
-                      <strong>{created.name}</strong> is ready to receive submissions.
-                      Wire it with these two values:
+                    <p className="text-sm text-emerald-900 dark:text-emerald-300">
+                      <strong>{created.name}</strong> {M.readyBody}
                     </p>
                   </div>
                   <CopyRow label="FORM_API_URL" value={apiUrl} />
@@ -176,7 +186,7 @@ export default function NewFormButton({ prominent = false, label }: { prominent?
                   <a
                     href="/docs"
                     target="_blank"
-                    className="flex items-center justify-center gap-2 rounded-lg border border-slate-200 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-300 transition-colors"
+                    className="flex items-center justify-center gap-2 rounded-lg border border-slate-200 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-300 transition-colors dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
                   >
                     Open the integration guide <ArrowRight className="h-4 w-4" />
                   </a>
@@ -184,7 +194,7 @@ export default function NewFormButton({ prominent = false, label }: { prominent?
                     onClick={close}
                     className="w-full rounded-lg bg-slate-900 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
                   >
-                    Done
+                    {M.done}
                   </button>
                 </div>
               )}

@@ -26,6 +26,18 @@ interface AppDict {
     noMatch: string; unknown: string;
     detailsTitle: string; receivedVia: string; // {date} {form} placeholders
     downloadFile: string;
+    nf: {
+      createTitle: string; liveTitle: string; nameHint: string; namePlaceholder: string;
+      seePro: string; creating: string; createBtn: string;
+      readyBody: string; openGuide: string; done: string; couldNotCreate: string; couldNotReach: string;
+    };
+    onboarding: {
+      kicker: string; title: string; subtitle: string;
+      s1Title: string; s1Done: string; s1Forms: string; s1Body: string;
+      s2Title: string; s2Body: string; jsAlt: string; readDocs: string;
+      s3Title: string; s3Body: string; waiting: string;
+      footer: string;
+    };
   };
   palette: {
     quickActions: string; searchPlaceholder: string; nothingMatches: string; navigate: string; open: string;
@@ -94,6 +106,23 @@ export const appDictionaries: Record<Locale, AppDict> = {
       detailsTitle: 'Submission details',
       receivedVia: 'Received {date} via {form}',
       downloadFile: 'Download file',
+      nf: {
+        createTitle: 'Create a form', liveTitle: 'Your form is live',
+        nameHint: "Name it after the website or purpose — you'll get its ID and a working snippet right away.",
+        namePlaceholder: 'e.g. Portfolio contact form',
+        seePro: 'See Pro plans', creating: 'Creating…', createBtn: 'Create form',
+        readyBody: 'is ready to receive submissions. Wire it with these two values:',
+        openGuide: 'Open the integration guide', done: 'Done', couldNotCreate: 'Could not create the form.', couldNotReach: 'Could not reach the server.',
+      },
+      onboarding: {
+        kicker: 'Getting started', title: "Let's get your first lead", subtitle: 'Three steps, about two minutes. No SMTP, no backend to run.',
+        s1Title: 'Create a form', s1Done: 'Done · {n} form{s}', s1Forms: '', s1Body: "Name it after the website it lives on. You'll get an ID to wire up.",
+        s2Title: 'Add it to your website', s2Body: 'Paste this HTML anywhere. It works with no JavaScript and no email setup.',
+        jsAlt: 'Prefer a JavaScript integration with proof-of-work spam protection?', readDocs: 'Read the docs',
+        s3Title: 'Receive your first lead', s3Body: 'Submit your form once to test it. Your lead lands here instantly — with the owner notified and a branded auto-reply sent for you.',
+        waiting: 'Waiting for your first submission… refresh after you send one.',
+        footer: 'Once your first lead arrives, this page becomes your live analytics dashboard.',
+      },
     },
     palette: {
       quickActions: 'Quick actions', searchPlaceholder: 'Search forms, pages, actions…',
@@ -163,6 +192,23 @@ export const appDictionaries: Record<Locale, AppDict> = {
       detailsTitle: 'Détails de la soumission',
       receivedVia: 'Reçu le {date} via {form}',
       downloadFile: 'Télécharger le fichier',
+      nf: {
+        createTitle: 'Créer un formulaire', liveTitle: 'Votre formulaire est en ligne',
+        nameHint: 'Nommez-le d’après le site ou son objectif — vous obtiendrez son ID et un extrait fonctionnel immédiatement.',
+        namePlaceholder: 'ex. Formulaire de contact portfolio',
+        seePro: 'Voir les forfaits Pro', creating: 'Création…', createBtn: 'Créer le formulaire',
+        readyBody: 'est prêt à recevoir des soumissions. Câblez-le avec ces deux valeurs :',
+        openGuide: 'Ouvrir le guide d’intégration', done: 'Terminé', couldNotCreate: 'Impossible de créer le formulaire.', couldNotReach: 'Impossible de joindre le serveur.',
+      },
+      onboarding: {
+        kicker: 'Pour commencer', title: 'Obtenez votre premier lead', subtitle: 'Trois étapes, environ deux minutes. Sans SMTP, sans backend à gérer.',
+        s1Title: 'Créez un formulaire', s1Done: 'Terminé · {n} formulaire{s}', s1Forms: '', s1Body: "Nommez-le d'après le site sur lequel il vit. Vous obtiendrez un ID à câbler.",
+        s2Title: 'Ajoutez-le à votre site', s2Body: 'Collez ce HTML n’importe où. Ça fonctionne sans JavaScript et sans configuration e-mail.',
+        jsAlt: 'Vous préférez une intégration JavaScript avec protection anti-spam par preuve de travail ?', readDocs: 'Lire la documentation',
+        s3Title: 'Recevez votre premier lead', s3Body: 'Soumettez votre formulaire une fois pour le tester. Votre lead arrive ici instantanément — le propriétaire est notifié et une réponse automatique à votre image est envoyée pour vous.',
+        waiting: 'En attente de votre première soumission… actualisez après en avoir envoyé une.',
+        footer: 'Dès que votre premier lead arrive, cette page devient votre tableau de bord analytique en direct.',
+      },
     },
     palette: {
       quickActions: 'Actions rapides', searchPlaceholder: 'Rechercher formulaires, pages, actions…',

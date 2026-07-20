@@ -5,6 +5,8 @@ import { Check, Circle, FileText, Code2, Inbox, ArrowRight, Copy, Terminal } fro
 import NewFormButton from './NewFormButton';
 
 type Form = { id: string; name: string };
+type OnbDict = import('@/lib/appDict').AppDict['dashboard']['onboarding'];
+type NfDict = import('@/lib/appDict').AppDict['dashboard']['nf'];
 
 function CopyField({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
@@ -53,7 +55,7 @@ function StepBadge({ state, n }: { state: 'done' | 'active' | 'todo'; n: number 
   return <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-300">{n}</span>;
 }
 
-export default function OnboardingChecklist({ formsCount, forms }: { formsCount: number; forms: Form[] }) {
+export default function OnboardingChecklist({ formsCount, forms, t, nf }: { formsCount: number; forms: Form[]; t: OnbDict; nf: NfDict }) {
   const [selected, setSelected] = useState<string>(forms[0]?.id ?? '');
   const apiUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const formId = selected || 'YOUR_FORM_ID';
@@ -79,10 +81,10 @@ export default function OnboardingChecklist({ formsCount, forms }: { formsCount:
     <div className="mx-auto max-w-3xl space-y-8 py-4">
       <div>
         <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-          <Inbox className="h-3.5 w-3.5" /> Getting started
+          <Inbox className="h-3.5 w-3.5" /> {t.kicker}
         </div>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">Let&apos;s get your first lead</h1>
-        <p className="mt-2 text-slate-600 dark:text-slate-400">Three steps, about two minutes. No SMTP, no backend to run.</p>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{t.title}</h1>
+        <p className="mt-2 text-slate-600 dark:text-slate-400">{t.subtitle}</p>
       </div>
 
       {/* Step 1 */}
@@ -94,12 +96,12 @@ export default function OnboardingChecklist({ formsCount, forms }: { formsCount:
         <div className="flex-1 pb-6">
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-slate-400" />
-            <h2 className="font-bold text-slate-900 dark:text-white">Create a form</h2>
-            {s1 === 'done' && <span className="text-xs font-semibold text-emerald-600">Done · {formsCount} form{formsCount > 1 ? 's' : ''}</span>}
+            <h2 className="font-bold text-slate-900 dark:text-white">{t.s1Title}</h2>
+            {s1 === 'done' && <span className="text-xs font-semibold text-emerald-600">{t.s1Done.replace('{n}', String(formsCount)).replace('{s}', formsCount > 1 ? 's' : '')}</span>}
           </div>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Name it after the website it lives on. You&apos;ll get an ID to wire up.</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t.s1Body}</p>
           <div className="mt-3">
-            <NewFormButton prominent={!hasForm} />
+            <NewFormButton prominent={!hasForm} label={nf.createBtn} m={nf} />
           </div>
         </div>
       </div>
@@ -113,9 +115,9 @@ export default function OnboardingChecklist({ formsCount, forms }: { formsCount:
         <div className={`flex-1 pb-6 ${s2 === 'todo' ? 'opacity-50' : ''}`}>
           <div className="flex items-center gap-2">
             <Code2 className="h-4 w-4 text-slate-400" />
-            <h2 className="font-bold text-slate-900 dark:text-white">Add it to your website</h2>
+            <h2 className="font-bold text-slate-900 dark:text-white">{t.s2Title}</h2>
           </div>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Paste this HTML anywhere. It works with no JavaScript and no email setup.</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t.s2Body}</p>
 
           {hasForm && (
             <div className="mt-4 space-y-3">
@@ -123,7 +125,7 @@ export default function OnboardingChecklist({ formsCount, forms }: { formsCount:
                 <select
                   value={selected}
                   onChange={(e) => setSelected(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300"
                 >
                   {forms.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
                 </select>
@@ -134,8 +136,8 @@ export default function OnboardingChecklist({ formsCount, forms }: { formsCount:
               </div>
               <CopyBlock code={snippet} />
               <p className="text-xs text-slate-500">
-                Prefer a JavaScript integration with proof-of-work spam protection?{' '}
-                <a href="/docs" target="_blank" className="font-semibold text-blue-600 hover:underline">Read the docs</a> — or point your AI at{' '}
+                {t.jsAlt}{' '}
+                <a href="/docs" target="_blank" className="font-semibold text-blue-600 hover:underline">{t.readDocs}</a> — or point your AI at{' '}
                 <a href="/llm-install.md" target="_blank" className="font-semibold text-blue-600 hover:underline">/llm-install.md</a>.
               </p>
             </div>
@@ -151,11 +153,10 @@ export default function OnboardingChecklist({ formsCount, forms }: { formsCount:
         <div className={`flex-1 ${s3 === 'todo' && !hasForm ? 'opacity-50' : ''}`}>
           <div className="flex items-center gap-2">
             <Inbox className="h-4 w-4 text-slate-400" />
-            <h2 className="font-bold text-slate-900 dark:text-white">Receive your first lead</h2>
+            <h2 className="font-bold text-slate-900 dark:text-white">{t.s3Title}</h2>
           </div>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Submit your form once to test it. Your lead lands here instantly — with the owner notified and a branded
-            auto-reply sent for you.
+            {t.s3Body}
           </p>
           {hasForm && (
             <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-500 dark:text-slate-400">
@@ -163,7 +164,7 @@ export default function OnboardingChecklist({ formsCount, forms }: { formsCount:
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-blue-500" />
               </span>
-              Waiting for your first submission… refresh after you send one.
+              {t.waiting}
             </div>
           )}
         </div>
@@ -171,7 +172,7 @@ export default function OnboardingChecklist({ formsCount, forms }: { formsCount:
 
       <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-950/60 px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
         <ArrowRight className="h-4 w-4 shrink-0 text-slate-400" />
-        Once your first lead arrives, this page becomes your live analytics dashboard.
+        {t.footer}
       </div>
     </div>
   );

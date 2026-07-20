@@ -71,7 +71,7 @@ export default function GlobalDashboardClient({ stats, forms = [], t }: { stats:
 
   // First-run: guide new users to their first lead instead of a dead, all-zero dashboard.
   if (!stats || stats.allTime === 0) {
-    return <OnboardingChecklist formsCount={stats?.formsCount ?? 0} forms={forms} />;
+    return <OnboardingChecklist formsCount={stats?.formsCount ?? 0} forms={forms} t={t.onboarding} nf={t.nf} />;
   }
 
   return (
@@ -84,7 +84,7 @@ export default function GlobalDashboardClient({ stats, forms = [], t }: { stats:
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <NewFormButton label={t.newForm} />
+          <NewFormButton label={t.newForm} m={t.nf} />
           <button
             onClick={exportToCSV}
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:border-slate-300 hover:text-slate-900 transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
@@ -141,7 +141,7 @@ export default function GlobalDashboardClient({ stats, forms = [], t }: { stats:
             {t.createFirstBody}
           </p>
           <div className="mt-5 flex justify-center">
-            <NewFormButton prominent label={t.createFirstTitle} />
+            <NewFormButton prominent label={t.createFirstTitle} m={t.nf} />
           </div>
         </motion.div>
       )}

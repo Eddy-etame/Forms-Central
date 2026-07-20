@@ -16,7 +16,7 @@ const ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.S
 // Pages served in both languages — declare the fr/en alternates so Google
 // indexes each language version (Inlet ranks for "form backend" AND
 // "backend de formulaire").
-const BILINGUAL = new Set(["/", "/pricing"]);
+const BILINGUAL = new Set(["/", "/pricing", "/docs"]);
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

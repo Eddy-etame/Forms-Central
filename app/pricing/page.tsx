@@ -2,19 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, Minus, ArrowRight } from "lucide-react";
 import { Kicker } from "@/components/marketing/Kicker";
-import { getLocale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/dictionaries";
+import { resolveLocale, buildMetadata } from "@/lib/seo";
 import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
 import AiChat from "@/components/AiChat";
 import { PLANS } from "@/lib/plans";
 import { SpotlightCard, ScrollProgress } from "@/components/marketing/Interactive";
 
-export const metadata: Metadata = {
-  title: "Pricing",
-  description:
-    "Inlet pricing — Free, Solo ($9), Pro ($19) and Max ($49). Self-hosted form backend with white-label emails, AI assistance, anti-spam and CSV exports. Start free, upgrade when your leads do.",
-  alternates: { canonical: "/pricing" },
-};
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
+  const { lang } = await searchParams;
+  return buildMetadata('pricing', await resolveLocale(lang));
+}
 
 const UPGRADE_MAILTO = (plan: string) =>
   `mailto:eddy.eetame@gmail.com?subject=Inlet%20${plan}%20upgrade&body=Hi%2C%20I%27d%20like%20to%20upgrade%20my%20Inlet%20account%20to%20${plan}.%20My%20account%20email%20is%3A%20`;
@@ -181,8 +179,10 @@ function PlanCard({
   );
 }
 
-export default async function PricingPage() {
-  const t = getDictionary(await getLocale()).pricing;
+export default async function PricingPage({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
+  const { lang } = await searchParams;
+  const locale = await resolveLocale(lang);
+  const t = getDictionary(locale).pricing;
   return (
     <>
       <script
@@ -191,7 +191,7 @@ export default async function PricingPage() {
       />
       <div className="min-h-screen bg-white text-slate-900 font-sans">
         <ScrollProgress />
-        <NavBar />
+        <NavBar locale={locale} />
 
         <header className="relative overflow-hidden">
           <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">

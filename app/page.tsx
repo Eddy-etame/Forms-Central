@@ -5,8 +5,9 @@ import {
 } from "lucide-react";
 import { NavBar } from "@/components/marketing/NavBar";
 import { Kicker } from "@/components/marketing/Kicker";
-import { getLocale } from "@/lib/i18n";
+import type { Metadata } from "next";
 import { getDictionary } from "@/lib/dictionaries";
+import { resolveLocale, buildMetadata } from "@/lib/seo";
 import HeroPreview from "@/components/marketing/HeroPreview";
 import { LogoBadge } from "@/components/Logo";
 import AiChat from "@/components/AiChat";
@@ -108,8 +109,14 @@ async function submitForm(fields) {
 }
 // No SMTP. No email library. No backend to run. That's the whole integration.`;
 
-export default async function Home() {
-  const locale = await getLocale();
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
+  const { lang } = await searchParams;
+  return buildMetadata('home', await resolveLocale(lang));
+}
+
+export default async function Home({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
+  const { lang } = await searchParams;
+  const locale = await resolveLocale(lang);
   const d = getDictionary(locale);
   const t = d.hero;
   const L = d.landing;
@@ -118,7 +125,7 @@ export default async function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="min-h-screen bg-white text-slate-900 font-sans">
         <ScrollProgress />
-        <NavBar variant="dark" />
+        <NavBar variant="dark" locale={locale} />
 
         {/* ---------------- Hero — dark-first, the brand's opening frame ---------------- */}
         <header className="relative overflow-hidden bg-slate-950 pb-28 text-white">

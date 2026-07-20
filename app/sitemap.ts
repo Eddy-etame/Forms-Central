@@ -13,12 +13,29 @@ const ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.S
   { path: "/client/signup", priority: 0.6, changeFrequency: "monthly" },
 ];
 
+// Pages served in both languages — declare the fr/en alternates so Google
+// indexes each language version (Inlet ranks for "form backend" AND
+// "backend de formulaire").
+const BILINGUAL = new Set(["/", "/pricing"]);
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  return ROUTES.map((r) => ({
-    url: `${SITE_URL}${r.path}`,
-    lastModified: now,
-    changeFrequency: r.changeFrequency,
-    priority: r.priority,
-  }));
+  return ROUTES.map((r) => {
+    const base = `${SITE_URL}${r.path === "/" ? "" : r.path}`;
+    const entry: MetadataRoute.Sitemap[number] = {
+      url: `${SITE_URL}${r.path}`,
+      lastModified: now,
+      changeFrequency: r.changeFrequency,
+      priority: r.priority,
+    };
+    if (BILINGUAL.has(r.path)) {
+      entry.alternates = {
+        languages: {
+          en: `${base}?lang=en`,
+          fr: `${base}?lang=fr`,
+        },
+      };
+    }
+    return entry;
+  });
 }

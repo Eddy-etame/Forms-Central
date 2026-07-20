@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, LayoutDashboard } from "lucide-react";
 import { cookies } from "next/headers";
 import { verifyJWT } from "@/lib/jwt";
-import { getLocale } from "@/lib/i18n";
+import { getLocale, type Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/dictionaries";
 import { LogoBadge } from "@/components/Logo";
 import { Magnetic } from "@/components/marketing/Interactive";
@@ -26,9 +26,10 @@ async function hasClientSession(): Promise<boolean> {
 
 /** Shared marketing nav — used by every public page (multi-page site).
  *  `variant="dark"` sits on the dark hero (landing); default stays light. */
-export async function NavBar({ variant = 'light' }: { variant?: 'light' | 'dark' }) {
+export async function NavBar({ variant = 'light', locale: localeProp }: { variant?: 'light' | 'dark'; locale?: Locale }) {
   const dark = variant === 'dark';
-  const [signedIn, locale] = await Promise.all([hasClientSession(), getLocale()]);
+  const [signedIn, resolved] = await Promise.all([hasClientSession(), localeProp ? Promise.resolve(localeProp) : getLocale()]);
+  const locale = resolved;
   const t = getDictionary(locale).nav;
   return (
     <nav className={`sticky top-0 z-50 border-b backdrop-blur-xl ${dark ? 'border-white/5 bg-slate-950' : 'border-slate-200/70 bg-white/80'}`}>

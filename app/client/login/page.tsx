@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/Button';
 import { AuthShell } from '@/components/auth/AuthShell';
 import { GoogleButton } from '@/components/auth/GoogleButton';
 import Link from 'next/link';
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
 
 export default function ClientLoginPage() {
+  const t = getAppDict(useLocale()).auth.clientLogin;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,9 +25,9 @@ export default function ClientLoginPage() {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     if (params.get('error') === 'google') {
-      setError('Google sign-in failed or was cancelled. Try again or use your password.');
+      setError(t.errGoogleFailed);
     } else if (params.get('evicted') === '1') {
-      setError('You were signed out because this account reached its device limit — a newer sign-in on another device took this slot.');
+      setError(t.errEvicted);
     }
   }, []);
 
@@ -49,12 +52,12 @@ export default function ClientLoginPage() {
       } else if (res.ok && data.success) {
         window.location.href = '/client/dashboard';
       } else if (res.status === 429) {
-        setError('Too many attempts. Please wait a minute and try again.');
+        setError(t.errTooMany);
       } else {
-        setError(data.error || 'Incorrect email or password.');
+        setError(data.error || t.errIncorrect);
       }
     } catch {
-      setError('Could not reach the server.');
+      setError(t.errNetwork);
     } finally {
       setLoading(false);
     }
@@ -77,7 +80,7 @@ export default function ClientLoginPage() {
       if (res.ok && data.success) {
         window.location.href = '/client/dashboard';
       } else {
-        setError(data.error || 'Incorrect code.');
+        setError(data.error || t.errIncorrectCode);
         if (/expired|sign in again/i.test(data.error || '')) {
           // Challenge is dead — send them back to the password step.
           setChallengeId(null);
@@ -85,7 +88,7 @@ export default function ClientLoginPage() {
         }
       }
     } catch {
-      setError('Could not reach the server.');
+      setError(t.errNetwork);
     } finally {
       setLoading(false);
     }
@@ -97,9 +100,9 @@ export default function ClientLoginPage() {
         {challengeId ? (
           <>
             <div className="text-center lg:text-left">
-              <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Enter your code</h2>
+              <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{t.enterCode}</h2>
               <p className="mt-1.5 text-sm text-slate-500">
-                We emailed a 6-digit code to <strong className="text-slate-700">{email}</strong>. It expires in 10 minutes.
+                {t.codeEmailedBody.split('{email}')[0]}<strong className="text-slate-700">{email}</strong>{t.codeEmailedBody.split('{email}')[1]}
               </p>
             </div>
 
@@ -110,7 +113,7 @@ export default function ClientLoginPage() {
                 </div>
               )}
               <div className="space-y-1.5">
-                <label htmlFor="code" className="text-xs font-semibold text-slate-700">Verification code</label>
+                <label htmlFor="code" className="text-xs font-semibold text-slate-700">{t.verificationCodeLabel}</label>
                 <Input
                   id="code"
                   type="text"
@@ -127,14 +130,14 @@ export default function ClientLoginPage() {
                 />
               </div>
               <Button type="submit" className="w-full py-2.5 mt-2 justify-center" disabled={loading || code.length < 6}>
-                {loading ? 'Verifying…' : 'Verify & sign in'}
+                {loading ? t.verifying : t.verifyAndSignIn}
               </Button>
               <button
                 type="button"
                 onClick={() => { setChallengeId(null); setCode(''); setError(''); }}
                 className="w-full text-center text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors"
               >
-                &larr; Use a different account
+                {t.useDifferentAccount}
               </button>
             </form>
           </>
@@ -142,15 +145,15 @@ export default function ClientLoginPage() {
         <>
         <div className="text-center lg:text-left">
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
-            Welcome back
+            {t.welcomeBack}
           </h2>
           <p className="mt-1.5 text-sm text-slate-500">
-            Sign in to see your leads and performance.
+            {t.subtitle}
           </p>
         </div>
 
         <div className="mt-8">
-          <GoogleButton label="Sign in with Google" />
+          <GoogleButton label={t.googleSignIn} />
         </div>
 
         <form className="mt-4 space-y-4" onSubmit={handleLogin}>
@@ -162,7 +165,7 @@ export default function ClientLoginPage() {
 
           <div className="space-y-1.5">
             <label htmlFor="email" className="text-xs font-semibold text-slate-700">
-              Email
+              {t.emailLabel}
             </label>
             <Input
               id="email"
@@ -179,10 +182,10 @@ export default function ClientLoginPage() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label htmlFor="password" className="text-xs font-semibold text-slate-700">
-                Password
+                {t.passwordLabel}
               </label>
               <Link href="/client/forgot-password" className="text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors">
-                Forgot password?
+                {t.forgotPassword}
               </Link>
             </div>
             <Input
@@ -202,13 +205,13 @@ export default function ClientLoginPage() {
             className="w-full py-2.5 mt-2 justify-center"
             disabled={loading}
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? t.signingIn : t.signIn}
           </Button>
 
           <p className="text-center text-xs text-slate-500 pt-1">
-            No account yet?{' '}
+            {t.noAccount}{' '}
             <Link href="/client/signup" className="font-semibold text-slate-900 hover:underline">
-              Create one free
+              {t.createOneFree}
             </Link>
           </p>
         </form>

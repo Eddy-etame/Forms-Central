@@ -7,6 +7,44 @@ import type { Locale } from './i18n';
  * the client components as props (no flash, no client cookie read).
  */
 interface AppDict {
+  auth: {
+    shell: {
+      badgeText: string; headlineA: string; headlineHighlight: string;
+      point1Title: string; point1Desc: string; point2Title: string; point2Desc: string; point3Title: string; point3Desc: string;
+      footerTagline: string; backToSite: string; orDivider: string;
+    };
+    adminLogin: {
+      enterCode: string; adminAccess: string; codeEmailedBody: string; enterPasswordBody: string;
+      verificationCodeLabel: string; verifying: string; verifyAndSignIn: string; backToPassword: string;
+      passwordLabel: string; signingIn: string; signIn: string;
+      errTooMany: string; errIncorrectPassword: string; errNetwork: string; errIncorrectCode: string;
+    };
+    clientLogin: {
+      enterCode: string; codeEmailedBody: string; verificationCodeLabel: string; verifying: string;
+      verifyAndSignIn: string; useDifferentAccount: string;
+      welcomeBack: string; subtitle: string; googleSignIn: string;
+      emailLabel: string; passwordLabel: string; forgotPassword: string; signingIn: string; signIn: string;
+      noAccount: string; createOneFree: string;
+      errGoogleFailed: string; errEvicted: string; errTooMany: string; errIncorrect: string; errNetwork: string; errIncorrectCode: string;
+    };
+    clientSignup: {
+      title: string; subtitle: string; googleSignUp: string;
+      nameLabel: string; namePlaceholder: string; emailLabel: string; passwordLabel: string; passwordPlaceholder: string;
+      creating: string; createAccount: string; alreadyHave: string; signIn: string;
+      errCouldNotCreate: string; errNetwork: string;
+    };
+    forgotPassword: {
+      title: string; checkInbox: string; enterEmailBody: string; emailLabel: string;
+      sending: string; sendResetLink: string; confirmBody: string; backToSignIn: string;
+    };
+    resetPassword: {
+      passwordUpdated: string; chooseNewPassword: string; canSignInNow: string; enterNewPasswordBody: string; goToSignIn: string;
+      missingTokenA: string; missingTokenB: string; forgotPasswordLinkText: string;
+      newPasswordLabel: string; newPasswordPlaceholder: string; confirmPasswordLabel: string; confirmPasswordPlaceholder: string;
+      updating: string; updatePassword: string;
+      errTooShort: string; errMismatch: string; errCouldNotReset: string; errNetwork: string; loading: string;
+    };
+  };
   sidebar: {
     general: string; overview: string; developer: string; endClients: string;
     yourForms: string; noForms: string; signOut: string; lightMode: string; darkMode: string;
@@ -219,6 +257,52 @@ interface AppDict {
 
 export const appDictionaries: Record<Locale, AppDict> = {
   en: {
+    auth: {
+      shell: {
+        badgeText: 'One backend for every site you build', headlineA: 'The form backend that', headlineHighlight: 'disappears into your stack.',
+        point1Title: 'No SMTP, no backend', point1Desc: 'Two values wire any site — the service does the rest.',
+        point2Title: 'AI + proof-of-work anti-spam', point2Desc: 'Modern spam blocked before it ever reaches you.',
+        point3Title: 'Self-hosted, you own the data', point3Desc: 'Your leads live on your infrastructure, always.',
+        footerTagline: 'Self-hosted · privacy-first · you own the data', backToSite: '← Back to site', orDivider: 'or',
+      },
+      adminLogin: {
+        enterCode: 'Enter your code', adminAccess: 'Admin access',
+        codeEmailedBody: 'A 6-digit code was emailed to the admin address. It expires in 10 minutes.',
+        enterPasswordBody: 'Enter the admin password to continue.',
+        verificationCodeLabel: 'Verification code', verifying: 'Verifying…', verifyAndSignIn: 'Verify & sign in', backToPassword: '← Back to password',
+        passwordLabel: 'Password', signingIn: 'Signing in…', signIn: 'Sign in',
+        errTooMany: 'Too many attempts. Wait a minute and try again.', errIncorrectPassword: 'Incorrect password.', errNetwork: 'Could not reach the server.', errIncorrectCode: 'Incorrect code.',
+      },
+      clientLogin: {
+        enterCode: 'Enter your code', codeEmailedBody: 'We emailed a 6-digit code to {email}. It expires in 10 minutes.',
+        verificationCodeLabel: 'Verification code', verifying: 'Verifying…', verifyAndSignIn: 'Verify & sign in', useDifferentAccount: '← Use a different account',
+        welcomeBack: 'Welcome back', subtitle: 'Sign in to see your leads and performance.', googleSignIn: 'Sign in with Google',
+        emailLabel: 'Email', passwordLabel: 'Password', forgotPassword: 'Forgot password?', signingIn: 'Signing in…', signIn: 'Sign in',
+        noAccount: 'No account yet?', createOneFree: 'Create one free',
+        errGoogleFailed: 'Google sign-in failed or was cancelled. Try again or use your password.',
+        errEvicted: 'You were signed out because this account reached its device limit — a newer sign-in on another device took this slot.',
+        errTooMany: 'Too many attempts. Please wait a minute and try again.', errIncorrect: 'Incorrect email or password.', errNetwork: 'Could not reach the server.', errIncorrectCode: 'Incorrect code.',
+      },
+      clientSignup: {
+        title: 'Create your account', subtitle: 'Start free — one form backend for all your websites.', googleSignUp: 'Sign up with Google',
+        nameLabel: 'Name or company', namePlaceholder: 'Acme Studio', emailLabel: 'Email', passwordLabel: 'Password', passwordPlaceholder: 'At least 8 characters',
+        creating: 'Creating your account…', createAccount: 'Create account', alreadyHave: 'Already have an account?', signIn: 'Sign in',
+        errCouldNotCreate: 'Could not create the account.', errNetwork: 'Could not reach the server.',
+      },
+      forgotPassword: {
+        title: 'Reset your password', checkInbox: 'Check your inbox.', enterEmailBody: "Enter your email and we'll send a reset link.", emailLabel: 'Email',
+        sending: 'Sending…', sendResetLink: 'Send reset link',
+        confirmBody: 'If an account exists for {email}, a reset link is on its way. The link expires in 1 hour.', backToSignIn: '← Back to sign in',
+      },
+      resetPassword: {
+        passwordUpdated: 'Password updated', chooseNewPassword: 'Choose a new password', canSignInNow: 'You can now sign in with your new password.',
+        enterNewPasswordBody: 'Enter a new password for your account.', goToSignIn: 'Go to sign in',
+        missingTokenA: 'This reset link is missing its token. Request a new one from the', missingTokenB: 'page.', forgotPasswordLinkText: 'forgot password',
+        newPasswordLabel: 'New password', newPasswordPlaceholder: 'At least 8 characters', confirmPasswordLabel: 'Confirm password', confirmPasswordPlaceholder: 'Re-enter password',
+        updating: 'Updating…', updatePassword: 'Update password',
+        errTooShort: 'Password must be at least 8 characters.', errMismatch: 'Passwords do not match.', errCouldNotReset: 'Could not reset your password.', errNetwork: 'Could not reach the server.', loading: 'Loading…',
+      },
+    },
     sidebar: {
       general: 'General', overview: 'Overview', developer: 'Developer', endClients: 'End-clients',
       yourForms: 'Your forms', noForms: 'No forms connected yet.', signOut: 'Sign out', lightMode: 'Light mode', darkMode: 'Dark mode',
@@ -445,6 +529,52 @@ export const appDictionaries: Record<Locale, AppDict> = {
     },
   },
   fr: {
+    auth: {
+      shell: {
+        badgeText: 'Un seul backend pour tous vos sites', headlineA: 'Le backend de formulaires qui', headlineHighlight: 'disparaît dans votre stack.',
+        point1Title: 'Sans SMTP, sans backend', point1Desc: 'Deux valeurs suffisent à câbler n’importe quel site — le service fait le reste.',
+        point2Title: 'IA + anti-spam par preuve de travail', point2Desc: 'Le spam moderne est bloqué avant même de vous atteindre.',
+        point3Title: 'Auto-hébergé, vous possédez vos données', point3Desc: 'Vos leads restent sur votre propre infrastructure, toujours.',
+        footerTagline: 'Auto-hébergé · respect de la vie privée · vous possédez vos données', backToSite: '← Retour au site', orDivider: 'ou',
+      },
+      adminLogin: {
+        enterCode: 'Saisissez votre code', adminAccess: 'Accès administrateur',
+        codeEmailedBody: 'Un code à 6 chiffres a été envoyé à l’adresse admin. Il expire dans 10 minutes.',
+        enterPasswordBody: 'Saisissez le mot de passe admin pour continuer.',
+        verificationCodeLabel: 'Code de vérification', verifying: 'Vérification…', verifyAndSignIn: 'Vérifier & se connecter', backToPassword: '← Retour au mot de passe',
+        passwordLabel: 'Mot de passe', signingIn: 'Connexion…', signIn: 'Se connecter',
+        errTooMany: 'Trop de tentatives. Patientez une minute et réessayez.', errIncorrectPassword: 'Mot de passe incorrect.', errNetwork: 'Impossible de joindre le serveur.', errIncorrectCode: 'Code incorrect.',
+      },
+      clientLogin: {
+        enterCode: 'Saisissez votre code', codeEmailedBody: 'Nous avons envoyé un code à 6 chiffres à {email}. Il expire dans 10 minutes.',
+        verificationCodeLabel: 'Code de vérification', verifying: 'Vérification…', verifyAndSignIn: 'Vérifier & se connecter', useDifferentAccount: '← Utiliser un autre compte',
+        welcomeBack: 'Content de vous revoir', subtitle: 'Connectez-vous pour voir vos leads et vos performances.', googleSignIn: 'Se connecter avec Google',
+        emailLabel: 'E-mail', passwordLabel: 'Mot de passe', forgotPassword: 'Mot de passe oublié ?', signingIn: 'Connexion…', signIn: 'Se connecter',
+        noAccount: 'Pas encore de compte ?', createOneFree: 'Créez-en un gratuitement',
+        errGoogleFailed: 'La connexion Google a échoué ou a été annulée. Réessayez ou utilisez votre mot de passe.',
+        errEvicted: 'Vous avez été déconnecté car ce compte a atteint sa limite d’appareils — une nouvelle connexion sur un autre appareil a pris cette place.',
+        errTooMany: 'Trop de tentatives. Veuillez patienter une minute et réessayer.', errIncorrect: 'E-mail ou mot de passe incorrect.', errNetwork: 'Impossible de joindre le serveur.', errIncorrectCode: 'Code incorrect.',
+      },
+      clientSignup: {
+        title: 'Créez votre compte', subtitle: 'Commencez gratuitement — un seul backend de formulaires pour tous vos sites.', googleSignUp: 'S’inscrire avec Google',
+        nameLabel: 'Nom ou entreprise', namePlaceholder: 'Acme Studio', emailLabel: 'E-mail', passwordLabel: 'Mot de passe', passwordPlaceholder: 'Au moins 8 caractères',
+        creating: 'Création de votre compte…', createAccount: 'Créer le compte', alreadyHave: 'Déjà un compte ?', signIn: 'Se connecter',
+        errCouldNotCreate: 'Impossible de créer le compte.', errNetwork: 'Impossible de joindre le serveur.',
+      },
+      forgotPassword: {
+        title: 'Réinitialisez votre mot de passe', checkInbox: 'Consultez votre boîte de réception.', enterEmailBody: 'Saisissez votre e-mail et nous vous enverrons un lien de réinitialisation.', emailLabel: 'E-mail',
+        sending: 'Envoi…', sendResetLink: 'Envoyer le lien',
+        confirmBody: 'Si un compte existe pour {email}, un lien de réinitialisation est en route. Le lien expire dans 1 heure.', backToSignIn: '← Retour à la connexion',
+      },
+      resetPassword: {
+        passwordUpdated: 'Mot de passe mis à jour', chooseNewPassword: 'Choisissez un nouveau mot de passe', canSignInNow: 'Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.',
+        enterNewPasswordBody: 'Saisissez un nouveau mot de passe pour votre compte.', goToSignIn: 'Aller à la connexion',
+        missingTokenA: 'Ce lien de réinitialisation n’a pas de jeton. Demandez-en un nouveau depuis la page', missingTokenB: '.', forgotPasswordLinkText: 'mot de passe oublié',
+        newPasswordLabel: 'Nouveau mot de passe', newPasswordPlaceholder: 'Au moins 8 caractères', confirmPasswordLabel: 'Confirmez le mot de passe', confirmPasswordPlaceholder: 'Ressaisissez le mot de passe',
+        updating: 'Mise à jour…', updatePassword: 'Mettre à jour le mot de passe',
+        errTooShort: 'Le mot de passe doit contenir au moins 8 caractères.', errMismatch: 'Les mots de passe ne correspondent pas.', errCouldNotReset: 'Impossible de réinitialiser votre mot de passe.', errNetwork: 'Impossible de joindre le serveur.', loading: 'Chargement…',
+      },
+    },
     sidebar: {
       general: 'Général', overview: 'Vue d’ensemble', developer: 'Développeur', endClients: 'Clients finaux',
       yourForms: 'Vos formulaires', noForms: 'Aucun formulaire connecté pour l’instant.', signOut: 'Se déconnecter', lightMode: 'Mode clair', darkMode: 'Mode sombre',

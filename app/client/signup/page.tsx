@@ -6,8 +6,11 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { AuthShell } from '@/components/auth/AuthShell';
 import { GoogleButton } from '@/components/auth/GoogleButton';
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
 
 export default function ClientSignupPage() {
+  const t = getAppDict(useLocale()).auth.clientSignup;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,10 +35,10 @@ export default function ClientSignupPage() {
       if (res.ok && data.success) {
         window.location.href = '/client/dashboard';
       } else {
-        setError(data.error || 'Could not create the account.');
+        setError(data.error || t.errCouldNotCreate);
       }
     } catch {
-      setError('Could not reach the server.');
+      setError(t.errNetwork);
     } finally {
       setLoading(false);
     }
@@ -45,14 +48,14 @@ export default function ClientSignupPage() {
     <AuthShell>
       <div className="w-full max-w-sm">
         <div className="text-center lg:text-left">
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Create your account</h2>
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{t.title}</h2>
           <p className="mt-1.5 text-sm text-slate-500">
-            Start free — one form backend for all your websites.
+            {t.subtitle}
           </p>
         </div>
 
         <div className="mt-8">
-          <GoogleButton label="Sign up with Google" />
+          <GoogleButton label={t.googleSignUp} />
         </div>
 
         <form className="mt-4 space-y-4" onSubmit={handleSignup}>
@@ -63,10 +66,10 @@ export default function ClientSignupPage() {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Name or company</label>
+            <label className="text-xs font-semibold text-slate-700">{t.nameLabel}</label>
             <Input
               type="text"
-              placeholder="Acme Studio"
+              placeholder={t.namePlaceholder}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -76,7 +79,7 @@ export default function ClientSignupPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Email</label>
+            <label className="text-xs font-semibold text-slate-700">{t.emailLabel}</label>
             <Input
               type="email"
               placeholder="you@company.com"
@@ -89,10 +92,10 @@ export default function ClientSignupPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700">Password</label>
+            <label className="text-xs font-semibold text-slate-700">{t.passwordLabel}</label>
             <Input
               type="password"
-              placeholder="At least 8 characters"
+              placeholder={t.passwordPlaceholder}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -102,13 +105,13 @@ export default function ClientSignupPage() {
           </div>
 
           <Button type="submit" className="w-full py-2.5 mt-2 justify-center" disabled={loading}>
-            {loading ? 'Creating your account…' : 'Create account'}
+            {loading ? t.creating : t.createAccount}
           </Button>
 
           <p className="text-center text-xs text-slate-500 pt-1">
-            Already have an account?{' '}
+            {t.alreadyHave}{' '}
             <Link href="/client/login" className="font-semibold text-slate-900 hover:underline">
-              Sign in
+              {t.signIn}
             </Link>
           </p>
         </form>

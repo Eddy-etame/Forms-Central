@@ -1,11 +1,15 @@
 'use client';
 
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
+
 /**
  * "Continue with Google" — a full-page redirect to /api/auth/google/start.
  * Renders only when NEXT_PUBLIC_GOOGLE_ENABLED === 'true' (set alongside the
  * server-side GOOGLE_CLIENT_ID/SECRET), so it never shows a dead button.
  */
 export function GoogleButton({ label = 'Continue with Google' }: { label?: string }) {
+  const t = getAppDict(useLocale()).auth.shell;
   if (process.env.NEXT_PUBLIC_GOOGLE_ENABLED !== 'true') return null;
 
   return (
@@ -24,7 +28,7 @@ export function GoogleButton({ label = 'Continue with Google' }: { label?: strin
       </a>
       <div className="flex items-center gap-3">
         <span className="h-px flex-1 bg-slate-200" />
-        <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">or</span>
+        <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">{t.orDivider}</span>
         <span className="h-px flex-1 bg-slate-200" />
       </div>
     </div>

@@ -4,8 +4,11 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { LogoBadge } from '@/components/Logo';
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
 
 export default function LoginPage() {
+  const t = getAppDict(useLocale()).auth.adminLogin;
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,12 +38,12 @@ export default function LoginPage() {
       } else if (res.ok && data.success) {
         window.location.href = '/admin';
       } else if (res.status === 429) {
-        setError('Too many attempts. Wait a minute and try again.');
+        setError(t.errTooMany);
       } else {
-        setError(data.error || 'Incorrect password.');
+        setError(data.error || t.errIncorrectPassword);
       }
     } catch {
-      setError('Could not reach the server.');
+      setError(t.errNetwork);
     } finally {
       setLoading(false);
     }
@@ -63,14 +66,14 @@ export default function LoginPage() {
       if (res.ok && data.success) {
         window.location.href = '/admin';
       } else {
-        setError(data.error || 'Incorrect code.');
+        setError(data.error || t.errIncorrectCode);
         if (/expired|sign in again/i.test(data.error || '')) {
           setChallengeId(null);
           setCode('');
         }
       }
     } catch {
-      setError('Could not reach the server.');
+      setError(t.errNetwork);
     } finally {
       setLoading(false);
     }
@@ -82,12 +85,10 @@ export default function LoginPage() {
         <div className="flex flex-col items-center justify-center text-center">
           <LogoBadge className="h-12 w-12 rounded-xl shadow-sm" />
           <h2 className="mt-6 text-2xl font-bold text-slate-900 tracking-tight">
-            {challengeId ? 'Enter your code' : 'Admin access'}
+            {challengeId ? t.enterCode : t.adminAccess}
           </h2>
           <p className="mt-1.5 text-sm text-slate-500">
-            {challengeId
-              ? 'A 6-digit code was emailed to the admin address. It expires in 10 minutes.'
-              : 'Enter the admin password to continue.'}
+            {challengeId ? t.codeEmailedBody : t.enterPasswordBody}
           </p>
         </div>
 
@@ -99,7 +100,7 @@ export default function LoginPage() {
               </div>
             )}
             <div className="space-y-1.5">
-              <label htmlFor="code" className="text-xs font-semibold text-slate-700">Verification code</label>
+              <label htmlFor="code" className="text-xs font-semibold text-slate-700">{t.verificationCodeLabel}</label>
               <Input
                 id="code"
                 type="text"
@@ -116,14 +117,14 @@ export default function LoginPage() {
               />
             </div>
             <Button type="submit" className="w-full py-2.5 mt-2 justify-center" disabled={loading || code.length < 6}>
-              {loading ? 'Verifying…' : 'Verify & sign in'}
+              {loading ? t.verifying : t.verifyAndSignIn}
             </Button>
             <button
               type="button"
               onClick={() => { setChallengeId(null); setCode(''); setError(''); }}
               className="w-full text-center text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors"
             >
-              &larr; Back to password
+              {t.backToPassword}
             </button>
           </form>
         ) : (
@@ -136,7 +137,7 @@ export default function LoginPage() {
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700">
-                Password
+                {t.passwordLabel}
               </label>
               <Input
                 type="password"
@@ -154,7 +155,7 @@ export default function LoginPage() {
               className="w-full py-2.5 mt-2 justify-center"
               disabled={loading}
             >
-              {loading ? 'Signing in…' : 'Sign in'}
+              {loading ? t.signingIn : t.signIn}
             </Button>
           </form>
         )}

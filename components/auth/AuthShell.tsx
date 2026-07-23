@@ -1,18 +1,22 @@
+'use client';
+
 import Link from 'next/link';
 import { LogoBadge } from '@/components/Logo';
 import { ShieldCheck, Zap, Lock, Sparkles } from 'lucide-react';
-
-const POINTS = [
-  { icon: Zap, title: 'No SMTP, no backend', desc: 'Two values wire any site — the service does the rest.' },
-  { icon: ShieldCheck, title: 'AI + proof-of-work anti-spam', desc: 'Modern spam blocked before it ever reaches you.' },
-  { icon: Lock, title: 'Self-hosted, you own the data', desc: 'Your leads live on your infrastructure, always.' },
-];
+import { useLocale } from '@/lib/useLocale';
+import { getAppDict } from '@/lib/appDict';
 
 /**
  * Premium split-screen auth layout: a dark, branded aurora panel beside the
  * form. On mobile the panel collapses to a compact brand header.
  */
 export function AuthShell({ children }: { children: React.ReactNode }) {
+  const t = getAppDict(useLocale()).auth.shell;
+  const POINTS = [
+    { icon: Zap, title: t.point1Title, desc: t.point1Desc },
+    { icon: ShieldCheck, title: t.point2Title, desc: t.point2Desc },
+    { icon: Lock, title: t.point3Title, desc: t.point3Desc },
+  ];
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* Left — branded panel (desktop) */}
@@ -30,10 +34,10 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
 
         <div className="relative max-w-md">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300">
-            <Sparkles className="h-3.5 w-3.5 text-blue-400" /> One backend for every site you build
+            <Sparkles className="h-3.5 w-3.5 text-blue-400" /> {t.badgeText}
           </div>
           <h2 className="text-3xl font-bold leading-tight tracking-tight text-balance">
-            The form backend that <span className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">disappears into your stack.</span>
+            {t.headlineA} <span className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">{t.headlineHighlight}</span>
           </h2>
           <ul className="mt-8 space-y-5">
             {POINTS.map((p) => (
@@ -50,7 +54,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           </ul>
         </div>
 
-        <p className="relative text-xs text-slate-500">Self-hosted · privacy-first · you own the data</p>
+        <p className="relative text-xs text-slate-500">{t.footerTagline}</p>
       </aside>
 
       {/* Right — form */}
@@ -62,7 +66,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
         <Link href="/" className="absolute top-5 right-6 hidden text-sm font-medium text-slate-400 hover:text-slate-900 transition-colors lg:block">
-          &larr; Back to site
+          {t.backToSite}
         </Link>
         {children}
       </div>

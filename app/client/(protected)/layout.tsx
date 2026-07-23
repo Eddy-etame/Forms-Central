@@ -8,6 +8,7 @@ import ClientSidebar from '@/components/client/ClientSidebar';
 import CommandPalette from '@/components/client/CommandPalette';
 import { LogoBadge } from '@/components/Logo';
 import SignOutLink from '@/components/client/SignOutLink';
+import { Toaster } from '@/components/ui/Toaster';
 
 export default async function ClientProtectedLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -65,6 +66,8 @@ export default async function ClientProtectedLayout({ children }: { children: Re
 
       {/* ⌘K — keyboard-first navigation across the whole workspace */}
       <CommandPalette forms={forms} t={dict.palette} />
+
+      <Toaster />
     </div>
   );
 }

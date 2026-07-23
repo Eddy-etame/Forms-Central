@@ -101,12 +101,14 @@ interface AppDict {
   endClients: {
     title: string; subtitle: string; newBtn: string;
     lockTitle: string; lockBody: string; seePlans: string;
-    createdMsg: string; portalUrl: string; email: string; tempPassword: string;
+    emailedMsg: string;
     namePlaceholder: string; emailPlaceholder: string; creating: string; createBtn: string;
     portalLogin: string; count: string; loading: string;
     emptyTitle: string; emptyBody: string;
     formsTheySee: string; noneAssigned: string; assignForm: string;
     couldNotCreate: string; couldNotReach: string;
+    resetBtn: string; resetConfirmTitle: string; resetConfirmBody: string; resetConfirmBtn: string; cancel: string;
+    resetting: string; resetOk: string; resetErr: string;
   };
   formPage: {
     formView: string; subtitle: string; exportCsv: string;
@@ -165,6 +167,9 @@ interface AppDict {
       replyToLabel: string; replyToPlaceholder: string; replyToHint: string;
       securityTitle: string; twoFactorLabel: string; twoFactorHint: string; theirAddress: string;
       cancel: string; saving: string; save: string;
+      endClientsToggle: string; endClientsEmpty: string; endClientsLoading: string; endClientsLoadErr: string;
+      endClientResetTitle: string; endClientResetConfirmTitle: string; endClientResetConfirmBody: string; endClientResetConfirmBtn: string;
+      endClientResetOk: string; endClientResetErr: string;
     };
     formDetail: {
       notFoundTitle: string; backToList: string; backToForms: string; recipientClient: string;
@@ -372,12 +377,14 @@ export const appDictionaries: Record<Locale, AppDict> = {
     endClients: {
       title: 'End-clients', subtitle: 'Give each client a private, branded portal to view only their own leads.', newBtn: 'New end-client',
       lockTitle: 'Client portals start on the Solo plan', lockBody: 'Create white-label portals so each client logs in and sees only their leads.', seePlans: 'See plans',
-      createdMsg: 'End-client created — share these credentials now (the password is shown only once):', portalUrl: 'Portal URL', email: 'Email', tempPassword: 'Temporary password',
+      emailedMsg: 'Credentials have been emailed directly to {email} — you never see their password.',
       namePlaceholder: 'Client name (e.g. Acme Corp)', emailPlaceholder: 'client@company.com', creating: 'Creating…', createBtn: 'Create end-client',
       portalLogin: 'Portal login:', count: '{n} / {limit} end-clients', loading: 'Loading…',
       emptyTitle: 'No end-clients yet', emptyBody: 'Create one, then assign the forms whose leads they should see.',
       formsTheySee: 'Forms they can see', noneAssigned: 'None assigned yet.', assignForm: '+ Assign a form…',
       couldNotCreate: 'Could not create the end-client.', couldNotReach: 'Could not reach the server.',
+      resetBtn: 'Reset password', resetConfirmTitle: 'Reset this end-client’s password?', resetConfirmBody: 'A new password is generated and emailed directly to them. Their current password stops working immediately.', resetConfirmBtn: 'Reset & email', cancel: 'Cancel',
+      resetting: 'Resetting…', resetOk: 'Password reset — new credentials emailed to them.', resetErr: 'Could not reset the password.',
     },
     formPage: {
       formView: 'Form view', subtitle: 'Data and files submitted through this form.', exportCsv: 'Export CSV',
@@ -438,6 +445,9 @@ export const appDictionaries: Record<Locale, AppDict> = {
         replyToLabel: 'Reply-to address', replyToPlaceholder: 'e.g. contact@shu.com', replyToHint: 'Replies from their customers go here. Works today — no domain needed.',
         securityTitle: 'Security', twoFactorLabel: 'Require two-factor sign-in', twoFactorHint: 'After their password, this client must enter a 6-digit code emailed to {email}.', theirAddress: 'their address',
         cancel: 'Cancel', saving: 'Saving…', save: 'Save',
+        endClientsToggle: 'End-clients', endClientsEmpty: 'No end-clients yet.', endClientsLoading: 'Loading…', endClientsLoadErr: 'Could not load end-clients.',
+        endClientResetTitle: 'Reset password', endClientResetConfirmTitle: 'Reset this end-client’s password?', endClientResetConfirmBody: 'A new password is generated and emailed directly to them. Their current password stops working immediately.', endClientResetConfirmBtn: 'Reset & email',
+        endClientResetOk: 'Password reset — new credentials emailed.', endClientResetErr: 'Could not reset the password.',
       },
       formDetail: {
         notFoundTitle: 'Form not found', backToList: 'Back to list', backToForms: 'Back to forms', recipientClient: 'Recipient client:',
@@ -644,12 +654,14 @@ export const appDictionaries: Record<Locale, AppDict> = {
     endClients: {
       title: 'Clients finaux', subtitle: 'Offrez à chaque client un portail privé à sa marque pour consulter uniquement ses propres leads.', newBtn: 'Nouveau client final',
       lockTitle: 'Les portails clients démarrent au forfait Solo', lockBody: 'Créez des portails en marque blanche pour que chaque client se connecte et ne voie que ses leads.', seePlans: 'Voir les forfaits',
-      createdMsg: 'Client final créé — partagez ces identifiants maintenant (le mot de passe n’est affiché qu’une seule fois) :', portalUrl: 'URL du portail', email: 'E-mail', tempPassword: 'Mot de passe temporaire',
+      emailedMsg: 'Les identifiants ont été envoyés directement à {email} — vous ne voyez jamais son mot de passe.',
       namePlaceholder: 'Nom du client (ex. Acme Corp)', emailPlaceholder: 'client@entreprise.com', creating: 'Création…', createBtn: 'Créer le client final',
       portalLogin: 'Connexion au portail :', count: '{n} / {limit} clients finaux', loading: 'Chargement…',
       emptyTitle: 'Aucun client final pour l’instant', emptyBody: 'Créez-en un, puis affectez les formulaires dont il doit voir les leads.',
       formsTheySee: 'Formulaires qu’il peut voir', noneAssigned: 'Aucun affecté pour l’instant.', assignForm: '+ Affecter un formulaire…',
       couldNotCreate: 'Impossible de créer le client final.', couldNotReach: 'Impossible de joindre le serveur.',
+      resetBtn: 'Réinitialiser le mot de passe', resetConfirmTitle: 'Réinitialiser le mot de passe de ce client final ?', resetConfirmBody: 'Un nouveau mot de passe est généré et envoyé directement par e-mail. Son mot de passe actuel cesse de fonctionner immédiatement.', resetConfirmBtn: 'Réinitialiser & envoyer', cancel: 'Annuler',
+      resetting: 'Réinitialisation…', resetOk: 'Mot de passe réinitialisé — nouveaux identifiants envoyés.', resetErr: 'Impossible de réinitialiser le mot de passe.',
     },
     formPage: {
       formView: 'Vue du formulaire', subtitle: 'Données et fichiers soumis via ce formulaire.', exportCsv: 'Exporter CSV',
@@ -710,6 +722,9 @@ export const appDictionaries: Record<Locale, AppDict> = {
         replyToLabel: 'Adresse de réponse', replyToPlaceholder: 'ex. contact@shu.com', replyToHint: 'Les réponses de leurs clients arrivent ici. Fonctionne dès aujourd’hui — aucun domaine requis.',
         securityTitle: 'Sécurité', twoFactorLabel: 'Exiger une connexion à deux facteurs', twoFactorHint: 'Après son mot de passe, ce client doit saisir un code à 6 chiffres envoyé à {email}.', theirAddress: 'son adresse',
         cancel: 'Annuler', saving: 'Enregistrement…', save: 'Enregistrer',
+        endClientsToggle: 'Clients finaux', endClientsEmpty: 'Aucun client final pour l’instant.', endClientsLoading: 'Chargement…', endClientsLoadErr: 'Impossible de charger les clients finaux.',
+        endClientResetTitle: 'Réinitialiser le mot de passe', endClientResetConfirmTitle: 'Réinitialiser le mot de passe de ce client final ?', endClientResetConfirmBody: 'Un nouveau mot de passe est généré et envoyé directement par e-mail. Son mot de passe actuel cesse de fonctionner immédiatement.', endClientResetConfirmBtn: 'Réinitialiser & envoyer',
+        endClientResetOk: 'Mot de passe réinitialisé — nouveaux identifiants envoyés.', endClientResetErr: 'Impossible de réinitialiser le mot de passe.',
       },
       formDetail: {
         notFoundTitle: 'Formulaire introuvable', backToList: 'Retour à la liste', backToForms: 'Retour aux formulaires', recipientClient: 'Client destinataire :',

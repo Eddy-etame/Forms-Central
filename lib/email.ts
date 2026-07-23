@@ -4,6 +4,7 @@ import * as React from 'react';
 import LeadNotificationEmail from '@/emails/LeadNotification';
 import AutoReplyEmail from '@/emails/AutoReply';
 import ClientWelcomeEmail from '@/emails/ClientWelcome';
+import PortalUserWelcomeEmail from '@/emails/PortalUserWelcome';
 import { getMailAccounts, applyDisplayName, extractDisplayName } from './mailAccounts';
 import { supabase } from './supabase';
 
@@ -261,6 +262,59 @@ export async function sendClientWelcomeEmail(
 
   const result = await sendWithFallback({
     from: getSenderAddress('Espace Client'),
+    to: toEmail,
+    subject: subject,
+    text: textContent,
+    html: htmlContent,
+  });
+
+  return result.success;
+}
+
+/**
+ * Sends a welcome email (or password reset) to a developer's own end-client
+ * (portal_users), containing their portal login credentials. The developer
+ * never sees this password — it goes straight from generation to this email.
+ * White-labeled to the developer's own brand (name/logo/color).
+ */
+export async function sendPortalUserWelcomeEmail(
+  toEmail: string,
+  portalUserName: string,
+  developerBrand: string,
+  rawPassword?: string,
+  resetUrl?: string,
+  branding?: any,
+  lang: string = 'fr'
+): Promise<boolean> {
+  const isEn = lang.toLowerCase() === 'en';
+  console.log(`[EMAIL] Preparing portal user welcome/reset email for: ${toEmail}`);
+
+  const htmlContent = await render(
+    React.createElement(PortalUserWelcomeEmail, {
+      portalUserName,
+      portalUserEmail: toEmail,
+      rawPassword,
+      resetUrl,
+      developerBrand,
+      branding: branding || {},
+      lang: isEn ? 'en' : 'fr',
+    })
+  );
+
+  const subject = resetUrl
+    ? (isEn ? `Password reset - ${developerBrand}` : `Réinitialisation de votre mot de passe - ${developerBrand}`)
+    : (isEn ? `Your portal access - ${developerBrand}` : `Vos accès au portail - ${developerBrand}`);
+
+  const textContent = resetUrl
+    ? (isEn
+        ? `Hello ${portalUserName},\n\nYour password has been reset. Here is your new temporary password: ${rawPassword}\n\nSign in to your portal.`
+        : `Bonjour ${portalUserName},\n\nVotre mot de passe a été réinitialisé. Voici votre nouveau mot de passe temporaire : ${rawPassword}\n\nConnectez-vous sur votre espace.`)
+    : (isEn
+        ? `Hello ${portalUserName},\n\nYour portal access has been created.\n\nEmail: ${toEmail}\nPassword: ${rawPassword}\n\nKeep this email safe.`
+        : `Bonjour ${portalUserName},\n\nVos accès au portail ont été créés.\n\nEmail: ${toEmail}\nMot de passe: ${rawPassword}\n\nConservez cet email précieusement.`);
+
+  const result = await sendWithFallback({
+    from: getSenderAddress(developerBrand),
     to: toEmail,
     subject: subject,
     text: textContent,

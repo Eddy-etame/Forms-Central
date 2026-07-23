@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Key, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Key, RefreshCw, ChevronDown, Users } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
-import { getClients, saveClient, deleteClient, getClientPassword, triggerPasswordReset } from '@/lib/actions';
+import { getClients, saveClient, deleteClient, getClientPassword, triggerPasswordReset, getPortalUsersForClient, adminResetPortalUserPassword } from '@/lib/actions';
 import { toast, confirmDialog } from '@/components/ui/Toaster';
 import { useLocale } from '@/lib/useLocale';
 import { getAppDict } from '@/lib/appDict';
@@ -22,6 +22,13 @@ interface Client {
   reply_to_email?: string;
   two_factor_enabled?: boolean;
   plan?: string;
+  created_at: string;
+}
+
+interface PortalUser {
+  id: string;
+  name: string;
+  email: string;
   created_at: string;
 }
 
@@ -51,6 +58,12 @@ export default function ClientsPage() {
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, string>>({});
   const [loadingPassword, setLoadingPassword] = useState<Record<string, boolean>>({});
   const [resettingPassword, setResettingPassword] = useState<Record<string, boolean>>({});
+
+  // End-clients (portal_users) state: expandable per-client section
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [portalUsersByClient, setPortalUsersByClient] = useState<Record<string, PortalUser[]>>({});
+  const [loadingPortalUsers, setLoadingPortalUsers] = useState<Record<string, boolean>>({});
+  const [resettingPortalUser, setResettingPortalUser] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     loadClients();
@@ -217,6 +230,56 @@ export default function ClientsPage() {
     }
   };
 
+  const toggleEndClients = async (clientId: string) => {
+    if (expandedId === clientId) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(clientId);
+    if (portalUsersByClient[clientId]) return; // already loaded
+
+    setLoadingPortalUsers(prev => ({ ...prev, [clientId]: true }));
+    try {
+      const res = await getPortalUsersForClient(clientId);
+      if (res.success) {
+        setPortalUsersByClient(prev => ({ ...prev, [clientId]: res.portalUsers || [] }));
+      } else {
+        toast.error(res.error || t.endClientsLoadErr);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(t.endClientsLoadErr);
+    } finally {
+      setLoadingPortalUsers(prev => ({ ...prev, [clientId]: false }));
+    }
+  };
+
+  const handleResetPortalUserPassword = async (portalUserId: string) => {
+    const ok = await confirmDialog({
+      title: t.endClientResetConfirmTitle,
+      body: t.endClientResetConfirmBody,
+      confirmLabel: t.endClientResetConfirmBtn,
+      cancelLabel: t.cancel,
+      danger: true,
+    });
+    if (!ok) return;
+
+    setResettingPortalUser(prev => ({ ...prev, [portalUserId]: true }));
+    try {
+      const res = await adminResetPortalUserPassword(portalUserId);
+      if (res.success) {
+        toast.success(t.endClientResetOk);
+      } else {
+        toast.error(res.error || t.endClientResetErr);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(t.endClientResetErr);
+    } finally {
+      setResettingPortalUser(prev => ({ ...prev, [portalUserId]: false }));
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
@@ -296,6 +359,42 @@ export default function ClientsPage() {
                     </Button>
                   </div>
                 </div>
+
+                {/* End-clients (portal_users) — expandable, reset-only */}
+                <button
+                  onClick={() => toggleEndClients(client.id)}
+                  className="mt-2 flex w-full items-center justify-between rounded-lg border border-slate-100 dark:border-slate-800 px-2 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+                >
+                  <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> {t.endClientsToggle}</span>
+                  <ChevronDown className={`h-3.5 w-3.5 transition-transform ${expandedId === client.id ? 'rotate-180' : ''}`} />
+                </button>
+                {expandedId === client.id && (
+                  <div className="mt-2 space-y-1.5 rounded-lg border border-slate-100 dark:border-slate-800 p-2 bg-slate-50 dark:bg-slate-950/40">
+                    {loadingPortalUsers[client.id] ? (
+                      <p className="px-1 py-1 text-xs text-slate-400">{t.endClientsLoading}</p>
+                    ) : (portalUsersByClient[client.id]?.length ?? 0) === 0 ? (
+                      <p className="px-1 py-1 text-xs text-slate-400">{t.endClientsEmpty}</p>
+                    ) : (
+                      portalUsersByClient[client.id]!.map((pu) => (
+                        <div key={pu.id} className="flex items-center justify-between gap-2 rounded-md bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 px-2 py-1.5">
+                          <div className="min-w-0">
+                            <p className="truncate text-xs font-semibold text-slate-800 dark:text-slate-200">{pu.name}</p>
+                            <p className="truncate text-[11px] text-slate-400">{pu.email}</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleResetPortalUserPassword(pu.id)}
+                            disabled={resettingPortalUser[pu.id]}
+                            title={t.endClientResetTitle}
+                            className="h-6 w-6 shrink-0 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                          >
+                            <RefreshCw className={`h-3 w-3 ${resettingPortalUser[pu.id] ? 'animate-spin' : ''}`} />
+                          </Button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex items-center justify-end gap-2 border-t border-slate-50 pt-4">
                 <Button 

@@ -2,7 +2,8 @@
 
 import { supabase } from './supabase';
 import { encryptPassword, decryptPassword, generateRandomPassword } from './crypto';
-import { sendClientWelcomeEmail } from './email';
+import { hashPassword } from './passwords';
+import { sendClientWelcomeEmail, sendPortalUserWelcomeEmail } from './email';
 import { PLANS, getPlan } from './plans';
 import { getConfiguredAccountSlots } from './mailAccounts';
 import { getLocale } from './i18n';
@@ -190,6 +191,69 @@ export async function deleteClient(id: string) {
     return { success: true };
   } catch (err: any) {
     console.error('Error in deleteClient:', err);
+    return { success: false, error: err.message || String(err) };
+  }
+}
+
+// ==================== END-CLIENTS (portal_users) — read-only + reset for super-admin ====================
+// Passwords here are one-way hashed (lib/passwords.ts) — never viewable by
+// anyone, including the super-admin. Only a reset (new password, emailed
+// directly to the end-client) is possible, mirroring the developer's own
+// PATCH /api/client/portal-users flow.
+
+export async function getPortalUsersForClient(clientId: string) {
+  try {
+    await verifyAdminAuth();
+    const { data, error } = await supabase
+      .from('portal_users')
+      .select('id, name, email, created_at')
+      .eq('parent_client_id', clientId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return { success: true, portalUsers: data || [] };
+  } catch (err: any) {
+    console.error('Error in getPortalUsersForClient:', err);
+    return { success: false, error: err.message || String(err) };
+  }
+}
+
+export async function adminResetPortalUserPassword(portalUserId: string) {
+  try {
+    await verifyAdminAuth();
+    const { data: user, error: fetchError } = await supabase
+      .from('portal_users')
+      .select('id, name, email, parent_client_id')
+      .eq('id', portalUserId)
+      .single();
+    if (fetchError || !user) throw fetchError || new Error('End-client not found');
+
+    const { data: dev } = await supabase
+      .from('clients')
+      .select('name, logo_url, primary_color, font_family')
+      .eq('id', user.parent_client_id)
+      .maybeSingle();
+
+    const rawPassword = generateRandomPassword(12);
+    const { error: updateError } = await supabase
+      .from('portal_users')
+      .update({ encrypted_password: hashPassword(rawPassword) })
+      .eq('id', portalUserId);
+    if (updateError) throw updateError;
+
+    const resetLocale = await getLocale();
+    sendPortalUserWelcomeEmail(
+      user.email,
+      user.name,
+      dev?.name || 'Client portal',
+      rawPassword,
+      'true',
+      { logo_url: dev?.logo_url, primary_color: dev?.primary_color, font_family: dev?.font_family },
+      resetLocale
+    ).catch((err) => console.error('Error sending end-client password reset email:', err));
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('Error in adminResetPortalUserPassword:', err);
     return { success: false, error: err.message || String(err) };
   }
 }

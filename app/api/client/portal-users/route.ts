@@ -6,6 +6,8 @@ import { getPlan, type Plan } from '@/lib/plans';
 import { hashPassword } from '@/lib/passwords';
 import { generateRandomPassword } from '@/lib/crypto';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
+import { sendPortalUserWelcomeEmail } from '@/lib/email';
+import { getLocale } from '@/lib/i18n';
 
 /** End-client (portal user) management for signed-in developers. Paid plans only. */
 
@@ -100,8 +102,61 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: 'Could not create the end-client.' }, { status: 500 });
   }
 
-  // Password returned once so the developer can hand it over.
-  return NextResponse.json({ success: true, portalUser: created, password: rawPassword });
+  // The password is never returned to the developer — it goes straight to
+  // the end-client's own inbox, white-labeled to the developer's brand.
+  const [{ data: dev }, locale] = await Promise.all([
+    supabase.from('clients').select('name, logo_url, primary_color, font_family').eq('id', auth.clientId).maybeSingle(),
+    getLocale(),
+  ]);
+  sendPortalUserWelcomeEmail(
+    email,
+    name,
+    dev?.name || 'Client portal',
+    rawPassword,
+    undefined,
+    { logo_url: dev?.logo_url, primary_color: dev?.primary_color, font_family: dev?.font_family },
+    locale
+  ).catch((err) => console.error('portal user welcome email error:', err));
+
+  return NextResponse.json({ success: true, portalUser: created });
+}
+
+export async function PATCH(req: Request) {
+  const auth = await authed();
+  if (!auth) return NextResponse.json({ success: false, error: 'Not signed in.' }, { status: 401 });
+
+  const body = await req.json().catch(() => ({}));
+  const id = String(body.id ?? '');
+  if (!id) return NextResponse.json({ success: false, error: 'id required.' }, { status: 400 });
+
+  // Scope: only reset an end-client that belongs to this developer.
+  const { data: user } = await supabase
+    .from('portal_users')
+    .select('id, name, email')
+    .eq('id', id)
+    .eq('parent_client_id', auth.clientId)
+    .maybeSingle();
+  if (!user) return NextResponse.json({ success: false, error: 'End-client not found.' }, { status: 404 });
+
+  const rawPassword = generateRandomPassword(12);
+  const { error } = await supabase.from('portal_users').update({ encrypted_password: hashPassword(rawPassword) }).eq('id', id);
+  if (error) return NextResponse.json({ success: false, error: 'Could not reset the password.' }, { status: 500 });
+
+  const [{ data: dev }, locale] = await Promise.all([
+    supabase.from('clients').select('name, logo_url, primary_color, font_family').eq('id', auth.clientId).maybeSingle(),
+    getLocale(),
+  ]);
+  sendPortalUserWelcomeEmail(
+    user.email,
+    user.name,
+    dev?.name || 'Client portal',
+    rawPassword,
+    'true',
+    { logo_url: dev?.logo_url, primary_color: dev?.primary_color, font_family: dev?.font_family },
+    locale
+  ).catch((err) => console.error('portal user reset email error:', err));
+
+  return NextResponse.json({ success: true });
 }
 
 export async function DELETE(req: Request) {

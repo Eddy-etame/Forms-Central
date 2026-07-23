@@ -257,20 +257,23 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
               <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">{L.features.title}</h2>
               <p className="mt-4 text-lg text-slate-400">{L.features.subtitle}</p>
             </Reveal>
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-3 auto-rows-[240px]">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-3 auto-rows-[270px]">
               {[
                 // Two "hero" cards carry the page's one brand gradient (the same
                 // blue→cyan used in the hero headline and demo section) — every
                 // other card stays neutral. Was six unrelated hues at once; the
                 // S+ tier reference set (Linear, Vercel, Clerk, Supabase) never
                 // does that — one disciplined accent, everything else monochrome.
-                { icon: Inbox, cls: "md:col-span-2", color: "text-blue-400", bg: "bg-blue-500/15", glow: "rgba(59,130,246,0.16)" },
-                { icon: Shield, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)" },
-                { icon: Palette, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)" },
-                { icon: BarChart3, cls: "md:col-span-2", color: "text-cyan-400", bg: "bg-cyan-500/15", glow: "rgba(34,211,238,0.16)" },
-                { icon: FileDown, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)" },
-                { icon: RefreshCw, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)" },
-                { icon: Globe, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)" },
+                // The two hero cards also carry a small illustrative UI peek —
+                // every reference leans on real product specifics, not just an
+                // icon + copy, to prove the thing actually exists.
+                { icon: Inbox, cls: "md:col-span-2", color: "text-blue-400", bg: "bg-blue-500/15", glow: "rgba(59,130,246,0.16)", preview: "inbox" as const },
+                { icon: Shield, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)", preview: null },
+                { icon: Palette, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)", preview: null },
+                { icon: BarChart3, cls: "md:col-span-2", color: "text-cyan-400", bg: "bg-cyan-500/15", glow: "rgba(34,211,238,0.16)", preview: "analytics" as const },
+                { icon: FileDown, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)", preview: null },
+                { icon: RefreshCw, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)", preview: null },
+                { icon: Globe, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)", preview: null },
               ].map((f, i) => (
                 <div
                   key={i}
@@ -286,6 +289,28 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
                     </div>
                     <h3 className="relative mb-1.5 text-lg font-bold">{L.features.cards[i].title}</h3>
                     <p className="relative max-w-sm text-sm leading-relaxed text-slate-400">{L.features.cards[i].desc}</p>
+
+                    {f.preview === "inbox" && (
+                      <div className="relative mt-4 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 backdrop-blur-sm">
+                        {[["Ada Lovelace", "2m"], ["Grace Hopper", "14m"]].map(([n, t]) => (
+                          <div key={n} className="flex items-center justify-between gap-2 border-b border-white/5 py-1.5 text-[11px] last:border-0">
+                            <span className="flex items-center gap-2 text-slate-300"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400" />{n}</span>
+                            <span className="shrink-0 text-slate-500">{t}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {f.preview === "analytics" && (
+                      <div className="relative mt-4 space-y-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 backdrop-blur-sm">
+                        {[["Client A", 82], ["Client B", 58], ["Client C", 34]].map(([n, w]) => (
+                          <div key={n as string}>
+                            <div className="mb-1 flex justify-between text-[10px] font-medium text-slate-400"><span>{n}</span><span className="text-slate-300">{w}%</span></div>
+                            <div className="h-1 w-full overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-cyan-400" style={{ width: `${w}%` }} /></div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     <f.icon className="pointer-events-none absolute -bottom-10 -right-10 h-40 w-40 text-white opacity-[0.04] transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110" />
                   </SpotlightCard>
                 </div>

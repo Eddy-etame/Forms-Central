@@ -124,6 +124,9 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   const auth = await authed();
   if (!auth) return NextResponse.json({ success: false, error: 'Not signed in.' }, { status: 401 });
+  if (!(await checkRateLimit(`portaluser-reset:${clientIp(req.headers)}`, 10, 60_000))) {
+    return NextResponse.json({ success: false, error: 'Slow down a moment.' }, { status: 429 });
+  }
 
   const body = await req.json().catch(() => ({}));
   const id = String(body.id ?? '');

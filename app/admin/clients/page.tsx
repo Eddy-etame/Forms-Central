@@ -139,6 +139,7 @@ export default function ClientsPage() {
       title: t.deleteConfirmTitle,
       body: t.deleteConfirmBody,
       confirmLabel: t.deleteConfirmBtn,
+      cancelLabel: t.cancel,
       danger: true,
     });
     if (!ok) return;
@@ -190,6 +191,7 @@ export default function ClientsPage() {
       title: t.resetConfirmTitle,
       body: t.resetConfirmBody,
       confirmLabel: t.resetConfirmBtn,
+      cancelLabel: t.cancel,
     });
     if (!ok) return;
 

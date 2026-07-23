@@ -120,6 +120,7 @@ export default function FormsPage() {
       title: t.deleteConfirmTitle,
       body: t.deleteConfirmBody,
       confirmLabel: t.deleteConfirmBtn,
+      cancelLabel: t.cancel,
       danger: true,
     });
     if (!ok) return;

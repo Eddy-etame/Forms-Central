@@ -77,6 +77,7 @@ export default function BlacklistPage() {
       title: t.removeConfirmTitle,
       body: t.removeConfirmBody,
       confirmLabel: t.removeConfirmBtn,
+      cancelLabel: t.cancel,
       danger: true,
     });
     if (!ok) return;

@@ -324,42 +324,46 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
             <p className="mt-4 text-lg text-slate-600">{L.compare.subtitle}</p>
           </Reveal>
           <Reveal>
-            <div className="overflow-x-auto rounded-3xl border border-slate-200 shadow-sm">
-              <table className="w-full min-w-[640px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100">
-                    <th className="px-6 py-5 font-medium text-slate-400">{L.compare.capability}</th>
-                    <th className="bg-blue-50/50 px-6 py-5 text-center">
-                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-3 py-1 text-xs font-bold text-white shadow-sm">{SITE_NAME}</span>
-                    </th>
-                    <th className="px-6 py-5 text-center font-medium text-slate-500">Formspree / Basin</th>
-                    <th className="px-6 py-5 text-center font-medium text-slate-500">Jotform</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {([
-                    [L.compare.rows[0], true, false, false],
-                    [L.compare.rows[1], true, true, false],
-                    [L.compare.rows[2], true, false, false],
-                    [L.compare.rows[3], true, false, false],
-                    [L.compare.rows[4], true, true, false],
-                    [L.compare.rows[5], true, false, false],
-                  ] as [string, boolean, boolean, boolean][]).map(([label, a, b, c]) => (
-                    <tr key={label as string} className="transition-colors hover:bg-slate-50/60">
-                      <td className="px-6 py-4 font-medium text-slate-800">{label}</td>
-                      <td className="bg-blue-50/40 px-6 py-4 text-center">
-                        {a ? <Check className="mx-auto h-5 w-5 text-blue-600" strokeWidth={2.5} /> : <X className="mx-auto h-5 w-5 text-slate-300" />}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {b ? <Check className="mx-auto h-5 w-5 text-emerald-600" /> : <X className="mx-auto h-5 w-5 text-slate-300" />}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {c ? <Check className="mx-auto h-5 w-5 text-emerald-600" /> : <X className="mx-auto h-5 w-5 text-slate-300" />}
-                      </td>
+            <p className="mb-2 text-center text-xs font-medium text-slate-400 sm:hidden">{L.compare.swipeHint}</p>
+            <div className="relative overflow-hidden rounded-3xl border border-slate-200 shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[560px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="max-w-[110px] px-4 py-5 font-medium text-slate-400 sm:max-w-none sm:px-6">{L.compare.capability}</th>
+                      <th className="bg-blue-50/50 px-4 py-5 text-center sm:px-6">
+                        <span className="inline-flex items-center rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-3 py-1 text-xs font-bold text-white shadow-sm">{SITE_NAME}</span>
+                      </th>
+                      <th className="px-4 py-5 text-center font-medium text-slate-500 sm:px-6">Formspree / Basin</th>
+                      <th className="px-4 py-5 text-center font-medium text-slate-500 sm:px-6">Jotform</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {([
+                      [L.compare.rows[0], true, false, false],
+                      [L.compare.rows[1], true, true, false],
+                      [L.compare.rows[2], true, false, false],
+                      [L.compare.rows[3], true, false, false],
+                      [L.compare.rows[4], true, true, false],
+                      [L.compare.rows[5], true, false, false],
+                    ] as [string, boolean, boolean, boolean][]).map(([label, a, b, c]) => (
+                      <tr key={label as string} className="transition-colors hover:bg-slate-50/60">
+                        <td className="max-w-[110px] px-4 py-4 font-medium text-slate-800 sm:max-w-none sm:px-6">{label}</td>
+                        <td className="bg-blue-50/40 px-4 py-4 text-center sm:px-6">
+                          {a ? <Check className="mx-auto h-5 w-5 text-blue-600" strokeWidth={2.5} /> : <X className="mx-auto h-5 w-5 text-slate-300" />}
+                        </td>
+                        <td className="px-4 py-4 text-center sm:px-6">
+                          {b ? <Check className="mx-auto h-5 w-5 text-emerald-600" /> : <X className="mx-auto h-5 w-5 text-slate-300" />}
+                        </td>
+                        <td className="px-4 py-4 text-center sm:px-6">
+                          {c ? <Check className="mx-auto h-5 w-5 text-emerald-600" /> : <X className="mx-auto h-5 w-5 text-slate-300" />}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent sm:hidden" />
             </div>
           </Reveal>
         </section>

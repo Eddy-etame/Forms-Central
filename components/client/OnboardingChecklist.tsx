@@ -27,7 +27,7 @@ function CopyField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CopyBlock({ code }: { code: string }) {
+function CopyBlock({ code, copyLabel, copiedLabel }: { code: string; copyLabel: string; copiedLabel: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950">
@@ -39,7 +39,7 @@ function CopyBlock({ code }: { code: string }) {
           className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-300 hover:border-slate-500 hover:text-white transition-colors"
         >
           {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-          {copied ? 'Copied' : 'Copy'}
+          {copied ? copiedLabel : copyLabel}
         </button>
       </div>
       <pre className="overflow-x-auto p-4 text-[12px] leading-relaxed text-slate-200"><code>{code}</code></pre>
@@ -134,10 +134,10 @@ export default function OnboardingChecklist({ formsCount, forms, t, nf }: { form
                 <CopyField label="FORM_API_URL" value={apiUrl} />
                 <CopyField label="FORM_ID" value={formId} />
               </div>
-              <CopyBlock code={snippet} />
+              <CopyBlock code={snippet} copyLabel={t.copy} copiedLabel={t.copied} />
               <p className="text-xs text-slate-500">
                 {t.jsAlt}{' '}
-                <a href="/docs" target="_blank" className="font-semibold text-blue-600 hover:underline">{t.readDocs}</a> — or point your AI at{' '}
+                <a href="/docs" target="_blank" className="font-semibold text-blue-600 hover:underline">{t.readDocs}</a> — {t.orPointAiAt}{' '}
                 <a href="/llm-install.md" target="_blank" className="font-semibold text-blue-600 hover:underline">/llm-install.md</a>.
               </p>
             </div>

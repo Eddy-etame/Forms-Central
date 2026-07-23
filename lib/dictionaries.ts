@@ -8,7 +8,7 @@ interface MarketingDict {
     wedge: { kicker: string; title: string; bodyA: string; bodyAnd: string; bodyB: string; bullets: string[] };
     features: { kicker: string; title: string; subtitle: string; cards: { title: string; desc: string }[] };
     how: { kicker: string; title: string; subtitle: string; steps: { t: string; d: string }[] };
-    compare: { title: string; subtitle: string; capability: string; rows: string[] };
+    compare: { title: string; subtitle: string; capability: string; rows: string[]; swipeHint: string };
     faq: { kicker: string; title: string; items: { q: string; a: string }[] };
     cta: { title: string; subtitle: string; primary: string; secondary: string };
     footer: { features: string; how: string; pricing: string; compare: string; faq: string; signIn: string };
@@ -85,6 +85,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         subtitle: 'Self-hosted, multi-tenant, and developer-first.',
         capability: 'Capability',
         rows: ['Self-hosted, own your data', 'No SMTP in your sites', 'Multi-tenant white-label emails', 'Proof-of-work + NLP anti-spam', 'Developer-first integration', 'One backend for many sites'],
+        swipeHint: 'Swipe to compare →',
       },
       faq: {
         kicker: 'Answers',
@@ -182,6 +183,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         subtitle: 'Auto-hébergé, multi-locataire et pensé pour les développeurs.',
         capability: 'Fonctionnalité',
         rows: ['Auto-hébergé, vos données vous appartiennent', 'Aucun SMTP dans vos sites', 'E-mails multi-locataires en marque blanche', 'Anti-spam preuve de travail + NLP', 'Intégration pensée pour les développeurs', 'Un seul backend pour plusieurs sites'],
+        swipeHint: 'Glissez pour comparer →',
       },
       faq: {
         kicker: 'Réponses',

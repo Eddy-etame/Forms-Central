@@ -72,9 +72,9 @@ interface AppDict {
     onboarding: {
       kicker: string; title: string; subtitle: string;
       s1Title: string; s1Done: string; s1Forms: string; s1Body: string;
-      s2Title: string; s2Body: string; jsAlt: string; readDocs: string;
+      s2Title: string; s2Body: string; jsAlt: string; readDocs: string; orPointAiAt: string;
       s3Title: string; s3Body: string; waiting: string;
-      footer: string;
+      footer: string; copy: string; copied: string;
     };
   };
   palette: {
@@ -344,10 +344,11 @@ export const appDictionaries: Record<Locale, AppDict> = {
         kicker: 'Getting started', title: "Let's get your first lead", subtitle: 'Three steps, about two minutes. No SMTP, no backend to run.',
         s1Title: 'Create a form', s1Done: 'Done · {n} form{s}', s1Forms: '', s1Body: "Name it after the website it lives on. You'll get an ID to wire up.",
         s2Title: 'Add it to your website', s2Body: 'Paste this HTML anywhere. It works with no JavaScript and no email setup.',
-        jsAlt: 'Prefer a JavaScript integration with proof-of-work spam protection?', readDocs: 'Read the docs',
+        jsAlt: 'Prefer a JavaScript integration with proof-of-work spam protection?', readDocs: 'Read the docs', orPointAiAt: 'or point your AI at',
         s3Title: 'Receive your first lead', s3Body: 'Submit your form once to test it. Your lead lands here instantly — with the owner notified and a branded auto-reply sent for you.',
         waiting: 'Waiting for your first submission… refresh after you send one.',
         footer: 'Once your first lead arrives, this page becomes your live analytics dashboard.',
+        copy: 'Copy', copied: 'Copied',
       },
     },
     palette: {
@@ -621,10 +622,11 @@ export const appDictionaries: Record<Locale, AppDict> = {
         kicker: 'Pour commencer', title: 'Obtenez votre premier lead', subtitle: 'Trois étapes, environ deux minutes. Sans SMTP, sans backend à gérer.',
         s1Title: 'Créez un formulaire', s1Done: 'Terminé · {n} formulaire{s}', s1Forms: '', s1Body: "Nommez-le d'après le site sur lequel il vit. Vous obtiendrez un ID à câbler.",
         s2Title: 'Ajoutez-le à votre site', s2Body: 'Collez ce HTML n’importe où. Ça fonctionne sans JavaScript et sans configuration e-mail.',
-        jsAlt: 'Vous préférez une intégration JavaScript avec protection anti-spam par preuve de travail ?', readDocs: 'Lire la documentation',
+        jsAlt: 'Vous préférez une intégration JavaScript avec protection anti-spam par preuve de travail ?', readDocs: 'Lire la documentation', orPointAiAt: 'ou pointez votre IA vers',
         s3Title: 'Recevez votre premier lead', s3Body: 'Soumettez votre formulaire une fois pour le tester. Votre lead arrive ici instantanément — le propriétaire est notifié et une réponse automatique à votre image est envoyée pour vous.',
         waiting: 'En attente de votre première soumission… actualisez après en avoir envoyé une.',
         footer: 'Dès que votre premier lead arrive, cette page devient votre tableau de bord analytique en direct.',
+        copy: 'Copier', copied: 'Copié',
       },
     },
     palette: {

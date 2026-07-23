@@ -259,13 +259,18 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
             </Reveal>
             <div className="grid grid-cols-1 gap-5 md:grid-cols-3 auto-rows-[240px]">
               {[
+                // Two "hero" cards carry the page's one brand gradient (the same
+                // blue→cyan used in the hero headline and demo section) — every
+                // other card stays neutral. Was six unrelated hues at once; the
+                // S+ tier reference set (Linear, Vercel, Clerk, Supabase) never
+                // does that — one disciplined accent, everything else monochrome.
                 { icon: Inbox, cls: "md:col-span-2", color: "text-blue-400", bg: "bg-blue-500/15", glow: "rgba(59,130,246,0.16)" },
-                { icon: Shield, cls: "", color: "text-emerald-400", bg: "bg-emerald-500/15", glow: "rgba(16,185,129,0.16)" },
-                { icon: Palette, cls: "", color: "text-violet-400", bg: "bg-violet-500/15", glow: "rgba(139,92,246,0.16)" },
-                { icon: BarChart3, cls: "md:col-span-2", color: "text-indigo-400", bg: "bg-indigo-500/15", glow: "rgba(99,102,241,0.16)" },
+                { icon: Shield, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)" },
+                { icon: Palette, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)" },
+                { icon: BarChart3, cls: "md:col-span-2", color: "text-cyan-400", bg: "bg-cyan-500/15", glow: "rgba(34,211,238,0.16)" },
                 { icon: FileDown, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)" },
-                { icon: RefreshCw, cls: "", color: "text-amber-400", bg: "bg-amber-500/15", glow: "rgba(245,158,11,0.16)" },
-                { icon: Globe, cls: "", color: "text-cyan-400", bg: "bg-cyan-500/15", glow: "rgba(34,211,238,0.16)" },
+                { icon: RefreshCw, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)" },
+                { icon: Globe, cls: "", color: "text-slate-200", bg: "bg-white/10", glow: "rgba(255,255,255,0.10)" },
               ].map((f, i) => (
                 <div
                   key={i}

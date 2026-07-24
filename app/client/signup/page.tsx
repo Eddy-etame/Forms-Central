@@ -33,7 +33,7 @@ export default function ClientSignupPage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        window.location.href = '/client/dashboard';
+        window.location.href = '/client/choose-plan';
       } else {
         setError(data.error || t.errCouldNotCreate);
       }

@@ -42,11 +42,13 @@ export async function GET(req: Request) {
 
   // Find or create the client by email.
   let clientId: string;
+  let justCreated = false;
   const { data: existing } = await supabase.from('clients').select('id').eq('email', user.email).maybeSingle();
 
   if (existing) {
     clientId = existing.id;
   } else {
+    justCreated = true;
     // New Google user — create a client with a random password so the account
     // is recoverable later via forgot-password, and never has a blank secret.
     const encrypted = hashPassword(generateRandomPassword(24));
@@ -70,7 +72,7 @@ export async function GET(req: Request) {
 
   logSecurityEvent({ type: SEC.CLIENT_LOGIN_OK, severity: 'info', actor: user.email, ip: clientIp(req.headers), meta: { clientId, via: 'google' } });
 
-  const res = NextResponse.redirect(new URL('/client/dashboard', origin));
+  const res = NextResponse.redirect(new URL(justCreated ? '/client/choose-plan' : '/client/dashboard', origin));
   res.cookies.set('client_access_token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

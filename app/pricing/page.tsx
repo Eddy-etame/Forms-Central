@@ -9,14 +9,14 @@ import AiChat from "@/components/AiChat";
 import { PLANS } from "@/lib/plans";
 import { SpotlightCard, ScrollProgress } from "@/components/marketing/Interactive";
 import Reveal from "@/components/Reveal";
+import { upgradeMailto } from "@/lib/upgrade";
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
   const { lang } = await searchParams;
   return buildMetadata('pricing', await resolveLocale(lang));
 }
 
-const UPGRADE_MAILTO = (plan: string) =>
-  `mailto:eddy.eetame@gmail.com?subject=Inlet%20${plan}%20upgrade&body=Hi%2C%20I%27d%20like%20to%20upgrade%20my%20Inlet%20account%20to%20${plan}.%20My%20account%20email%20is%3A%20`;
+const UPGRADE_MAILTO = (plan: string) => upgradeMailto(plan);
 
 // Structured data (schema.org) stays in English regardless of page locale — convention for JSON-LD.
 const FAQ_JSONLD = [

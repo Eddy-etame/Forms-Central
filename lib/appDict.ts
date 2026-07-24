@@ -45,6 +45,10 @@ interface AppDict {
       errTooShort: string; errMismatch: string; errCouldNotReset: string; errNetwork: string; loading: string;
     };
   };
+  choosePlan: {
+    kicker: string; title: string; subtitle: string;
+    recommended: string; ctaChoose: string; continueFree: string; freeNote: string;
+  };
   sidebar: {
     general: string; overview: string; developer: string; endClients: string;
     yourForms: string; noForms: string; signOut: string; lightMode: string; darkMode: string;
@@ -307,6 +311,15 @@ export const appDictionaries: Record<Locale, AppDict> = {
         updating: 'Updating…', updatePassword: 'Update password',
         errTooShort: 'Password must be at least 8 characters.', errMismatch: 'Passwords do not match.', errCouldNotReset: 'Could not reset your password.', errNetwork: 'Could not reach the server.', loading: 'Loading…',
       },
+    },
+    choosePlan: {
+      kicker: 'Account created',
+      title: 'Pick the plan that grows with you',
+      subtitle: 'Change or cancel anytime — upgrades are activated same-day by email.',
+      recommended: 'Recommended',
+      ctaChoose: 'Get {plan}',
+      continueFree: 'Continue with the limited Free plan',
+      freeNote: '3 forms · 50 submissions/mo — enough to try it on a real site.',
     },
     sidebar: {
       general: 'General', overview: 'Overview', developer: 'Developer', endClients: 'End-clients',
@@ -585,6 +598,15 @@ export const appDictionaries: Record<Locale, AppDict> = {
         updating: 'Mise à jour…', updatePassword: 'Mettre à jour le mot de passe',
         errTooShort: 'Le mot de passe doit contenir au moins 8 caractères.', errMismatch: 'Les mots de passe ne correspondent pas.', errCouldNotReset: 'Impossible de réinitialiser votre mot de passe.', errNetwork: 'Impossible de joindre le serveur.', loading: 'Chargement…',
       },
+    },
+    choosePlan: {
+      kicker: 'Compte créé',
+      title: 'Choisissez le forfait qui vous accompagne',
+      subtitle: 'Changez ou annulez à tout moment — les mises à niveau sont activées le jour même par e-mail.',
+      recommended: 'Recommandé',
+      ctaChoose: 'Choisir {plan}',
+      continueFree: 'Continuer avec le forfait Gratuit (limité)',
+      freeNote: '3 formulaires · 50 soumissions/mois — de quoi l’essayer sur un vrai site.',
     },
     sidebar: {
       general: 'Général', overview: 'Vue d’ensemble', developer: 'Développeur', endClients: 'Clients finaux',

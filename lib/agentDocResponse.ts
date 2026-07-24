@@ -40,9 +40,10 @@ export function serveAgentDoc(markdown: string, filename: string, req: Request):
   .wrap { max-width: 900px; margin: 0 auto; padding: 32px 20px 64px; }
   header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
     padding-bottom: 18px; margin-bottom: 22px; border-bottom: 1px solid #1e293b; }
-  .badge { display: inline-flex; align-items: center; justify-content: center;
-    width: 34px; height: 34px; border-radius: 9px;
-    background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; font-weight: 800; }
+  .badge { display: inline-grid; place-items: center; width: 34px; height: 34px;
+    border-radius: 9px; color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.4);
+    background: linear-gradient(150deg, #1E293B 0%, #0F172A 62%, #0B1220 100%); }
+  .badge svg { width: 62%; height: 62%; }
   .brand { font-weight: 700; letter-spacing: -0.01em; }
   .file { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; color: #94a3b8; }
   .spacer { flex: 1; }
@@ -62,7 +63,7 @@ export function serveAgentDoc(markdown: string, filename: string, req: Request):
 <body>
   <div class="wrap">
     <header>
-      <span class="badge">I</span>
+      <span class="badge"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 13 L32 34" stroke="currentColor" stroke-width="6.5" stroke-linecap="round"/><path d="M21 25 L32 36 L43 25" stroke="currentColor" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="18" y="45" width="28" height="6.5" rx="3.25" fill="#2563EB"/></svg></span>
       <span class="brand">Inlet</span>
       <span class="file">${filename}</span>
       <span class="spacer"></span>

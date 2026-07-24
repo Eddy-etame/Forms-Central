@@ -85,7 +85,11 @@ export async function NavBar({ variant = 'light', locale: localeProp }: { varian
 }
 
 /** Shared marketing footer. */
-export function SiteFooter() {
+export async function SiteFooter({ locale: localeProp }: { locale?: Locale } = {}) {
+  const locale = localeProp ?? (await getLocale());
+  const dict = getDictionary(locale);
+  const t = dict.siteFooter;
+  const nav = dict.nav;
   return (
     <footer className="border-t border-slate-200 bg-white py-12">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 text-sm text-slate-500 sm:flex-row lg:px-8">
@@ -94,12 +98,12 @@ export function SiteFooter() {
           <span className="font-semibold text-slate-800">Inlet</span>
         </div>
         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-          <Link href="/#features" className="link-underline hover:text-slate-900 transition-colors">Features</Link>
-          <Link href="/docs" className="link-underline hover:text-slate-900 transition-colors">Docs</Link>
-          <Link href="/pricing" className="link-underline hover:text-slate-900 transition-colors">Pricing</Link>
-          <Link href="/compare/formspree" className="link-underline hover:text-slate-900 transition-colors">vs Formspree</Link>
-          <Link href="/compare/jotform" className="link-underline hover:text-slate-900 transition-colors">vs Jotform</Link>
-          <Link href="/client/login" className="link-underline hover:text-slate-900 transition-colors">Sign in</Link>
+          <Link href="/#features" className="link-underline hover:text-slate-900 transition-colors">{t.features}</Link>
+          <Link href="/docs" className="link-underline hover:text-slate-900 transition-colors">{t.docs}</Link>
+          <Link href="/pricing" className="link-underline hover:text-slate-900 transition-colors">{t.pricing}</Link>
+          <Link href="/compare/formspree" className="link-underline hover:text-slate-900 transition-colors">{nav.compareFormspree}</Link>
+          <Link href="/compare/jotform" className="link-underline hover:text-slate-900 transition-colors">{nav.compareJotform}</Link>
+          <Link href="/client/login" className="link-underline hover:text-slate-900 transition-colors">{t.signIn}</Link>
         </nav>
         <p>
           &copy; {new Date().getFullYear()} Inlet

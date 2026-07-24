@@ -17,7 +17,8 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 const UPGRADE_MAILTO = (plan: string) =>
   `mailto:eddy.eetame@gmail.com?subject=Inlet%20${plan}%20upgrade&body=Hi%2C%20I%27d%20like%20to%20upgrade%20my%20Inlet%20account%20to%20${plan}.%20My%20account%20email%20is%3A%20`;
 
-const FAQ = [
+// Structured data (schema.org) stays in English regardless of page locale — convention for JSON-LD.
+const FAQ_JSONLD = [
   {
     q: "What happens if I go over my submission or email quota?",
     a: "Your leads are never lost. Submissions keep being stored in your dashboard even over quota — only outgoing emails pause until the next day or an upgrade. Losing a lead over a billing limit is not acceptable to us.",
@@ -39,7 +40,7 @@ const FAQ = [
 const faqJsonLd = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  mainEntity: FAQ.map((f) => ({
+  mainEntity: FAQ_JSONLD.map((f) => ({
     "@type": "Question",
     name: f.q,
     acceptedAnswer: { "@type": "Answer", text: f.a },
@@ -63,46 +64,54 @@ const productJsonLd = {
 type Row = { label: string; values: (string | boolean)[] };
 const fmt = (n: number) => n.toLocaleString("en-US");
 const P = PLANS;
-const ROWS: Row[] = [
-  { label: "Forms", values: [String(P.free.formLimit), String(P.solo.formLimit), "Unlimited", "Unlimited"] },
-  {
-    label: "Submissions / month",
-    values: [fmt(P.free.submissionsPerMonth), fmt(P.solo.submissionsPerMonth), fmt(P.pro.submissionsPerMonth), fmt(P.max.submissionsPerMonth)],
-  },
-  { label: "Emails / day", values: [fmt(P.free.emailsPerDay), fmt(P.solo.emailsPerDay), fmt(P.pro.emailsPerDay), fmt(P.max.emailsPerDay)] },
-  { label: "Spam protection (honeypot + PoW + NLP)", values: [true, true, true, true] },
-  { label: "Branded auto-reply emails", values: [true, true, true, true] },
-  { label: "Custom email sender (name + reply-to)", values: [P.free.customSender, P.solo.customSender, P.pro.customSender, P.max.customSender] },
-  { label: "Two-factor sign-in (email OTP)", values: [true, true, true, true] },
-  { label: "AI assistant", values: ["1 trial message", "100 / month", "Unlimited", "Unlimited"] },
-  { label: "API + MCP server (your AI runs your forms)", values: [false, true, true, true] },
-  {
-    label: "Client portals (white-label end-client logins)",
-    values: [
-      false,
-      `${P.solo.endClientLimit} end-clients`,
-      `${P.pro.endClientLimit} end-clients`,
-      "Unlimited",
-    ],
-  },
-  { label: "CSV export", values: [false, true, true, true] },
-  { label: "Analytics dashboard", values: [false, true, true, true] },
-  { label: "White-label sender (no Inlet footer)", values: [false, false, true, true] },
-  { label: "Priority deliverability (SMTP rotation)", values: [false, false, true, true] },
-  { label: "Data retention", values: ["30 days", "1 year", "Unlimited", "Unlimited"] },
-  { label: "Priority support", values: [false, false, false, true] },
-  { label: "Dedicated sending-domain setup (DKIM/SPF)", values: [false, false, false, true] },
-];
 
-function Cell({ v }: { v: string | boolean }) {
-  if (v === true) return <Check className="h-5 w-5 text-emerald-600" aria-label="Included" />;
-  if (v === false) return <Minus className="h-5 w-5 text-slate-300" aria-label="Not included" />;
+function buildRows(t: ReturnType<typeof getDictionary>["pricing"]): Row[] {
+  const valPerMonth = (n: number) => t.valPerMonth.replace("{n}", fmt(n));
+  const valDays = (n: number) => t.valDays.replace("{n}", String(n));
+  const valEndClients = (n: number | null) => (n === null ? t.valUnlimited : t.valEndClients.replace("{n}", String(n)));
+  return [
+    { label: t.rowForms, values: [String(P.free.formLimit), String(P.solo.formLimit), t.valUnlimited, t.valUnlimited] },
+    {
+      label: t.rowSubmissions,
+      values: [fmt(P.free.submissionsPerMonth), fmt(P.solo.submissionsPerMonth), fmt(P.pro.submissionsPerMonth), fmt(P.max.submissionsPerMonth)],
+    },
+    { label: t.rowEmails, values: [fmt(P.free.emailsPerDay), fmt(P.solo.emailsPerDay), fmt(P.pro.emailsPerDay), fmt(P.max.emailsPerDay)] },
+    { label: t.rowSpam, values: [true, true, true, true] },
+    { label: t.rowAutoReply, values: [true, true, true, true] },
+    { label: t.rowSender, values: [P.free.customSender, P.solo.customSender, P.pro.customSender, P.max.customSender] },
+    { label: t.row2fa, values: [true, true, true, true] },
+    { label: t.rowAi, values: [t.valTrial, valPerMonth(100), t.valUnlimited, t.valUnlimited] },
+    { label: t.rowApi, values: [false, true, true, true] },
+    {
+      label: t.rowPortals,
+      values: [
+        false,
+        valEndClients(P.solo.endClientLimit),
+        valEndClients(P.pro.endClientLimit),
+        t.valUnlimited,
+      ],
+    },
+    { label: t.rowCsv, values: [false, true, true, true] },
+    { label: t.rowAnalytics, values: [false, true, true, true] },
+    { label: t.rowWhiteLabel, values: [false, false, true, true] },
+    { label: t.rowPriority, values: [false, false, true, true] },
+    { label: t.rowRetention, values: [valDays(30), t.valYearRetention, t.valUnlimited, t.valUnlimited] },
+    { label: t.rowSupport, values: [false, false, false, true] },
+    { label: t.rowDkim, values: [false, false, false, true] },
+  ];
+}
+
+function Cell({ v, includedAria, notIncludedAria }: { v: string | boolean; includedAria: string; notIncludedAria: string }) {
+  if (v === true) return <Check className="h-5 w-5 text-emerald-600" aria-label={includedAria} />;
+  if (v === false) return <Minus className="h-5 w-5 text-slate-300" aria-label={notIncludedAria} />;
   return <span className="text-sm text-slate-700">{v}</span>;
 }
 
 function PlanCard({
   name,
   price,
+  perMonthLabel,
+  mostPopularLabel,
   blurb,
   features,
   cta,
@@ -112,6 +121,8 @@ function PlanCard({
 }: {
   name: string;
   price: number;
+  perMonthLabel: string;
+  mostPopularLabel: string;
   blurb: string;
   features: string[];
   cta: string;
@@ -132,7 +143,7 @@ function PlanCard({
       <h2 className="relative text-base font-bold">{name}</h2>
       <div className="relative mt-4 flex items-baseline gap-1.5">
         <span className="text-4xl font-extrabold tracking-tight">${price}</span>
-        <span className={highlight ? "text-sm text-slate-400" : "text-sm text-slate-500"}>/ month</span>
+        <span className={highlight ? "text-sm text-slate-400" : "text-sm text-slate-500"}>{perMonthLabel}</span>
       </div>
       <p className={`relative mt-2 text-sm ${highlight ? "text-slate-400" : "text-slate-500"}`}>{blurb}</p>
       <ul className={`relative mt-5 flex-1 space-y-2.5 text-sm ${highlight ? "text-slate-200" : "text-slate-700"}`}>
@@ -157,7 +168,7 @@ function PlanCard({
         {/* Badge lives on the OUTER wrapper (no overflow-hidden) so it isn't
             clipped by the card's rounded, clipped inner container. */}
         <div className="absolute -top-2.5 left-7 z-10 inline-flex items-center rounded-md bg-cyan-400 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-cyan-500/30">
-          Most popular
+          {mostPopularLabel}
         </div>
         <SpotlightCard
           glow="rgba(59,130,246,0.18)"
@@ -182,7 +193,16 @@ function PlanCard({
 export default async function PricingPage({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
   const { lang } = await searchParams;
   const locale = await resolveLocale(lang);
-  const t = getDictionary(locale).pricing;
+  const dict = getDictionary(locale);
+  const t = dict.pricing;
+  const swipeHint = dict.landing.compare.swipeHint;
+  const rows = buildRows(t);
+  const faqItems = [
+    { q: t.faqQ1, a: t.faqA1 },
+    { q: t.faqQ2, a: t.faqA2 },
+    { q: t.faqQ3, a: t.faqA3 },
+    { q: t.faqQ4, a: t.faqA4 },
+  ];
   return (
     <>
       <script
@@ -213,113 +233,124 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
         {/* Plans — Good / Better / Best (+ anchor) */}
         <section className="mx-auto grid max-w-6xl gap-5 px-6 pb-14 md:grid-cols-2 xl:grid-cols-4">
           <PlanCard
-            name="Free"
+            name={t.planFree.name}
             price={0}
-            blurb="Prove it works. Run a real site on it."
+            perMonthLabel={t.perMonth}
+            mostPopularLabel={t.mostPopular}
+            blurb={t.planFree.blurb}
             features={[
-              `${P.free.formLimit} forms · ${P.free.submissionsPerMonth} submissions/mo`,
-              `${P.free.emailsPerDay} emails/day`,
-              "Full anti-spam stack",
-              "Branded auto-replies",
-              "1 AI trial message",
+              t.planFree.f1.replace("{forms}", String(P.free.formLimit)).replace("{submissions}", String(P.free.submissionsPerMonth)),
+              t.planFree.f2.replace("{emails}", String(P.free.emailsPerDay)),
+              t.planFree.f3,
+              t.planFree.f4,
+              t.planFree.f5,
             ]}
-            cta="Start free"
+            cta={t.planFree.cta}
             href="/client/signup"
           />
           <PlanCard
-            name="Solo"
+            name={t.planSolo.name}
             price={P.solo.priceMonthly}
-            blurb="For a freelancer with a handful of sites."
+            perMonthLabel={t.perMonth}
+            mostPopularLabel={t.mostPopular}
+            blurb={t.planSolo.blurb}
             features={[
-              `${P.solo.formLimit} forms · ${fmt(P.solo.submissionsPerMonth)} submissions/mo`,
-              `${P.solo.emailsPerDay} emails/day`,
-              "CSV export + analytics",
-              "Custom email sender + reply-to",
-              "AI assistant — 100/month",
-              "1-year data retention",
+              t.planSolo.f1.replace("{forms}", String(P.solo.formLimit)).replace("{submissions}", fmt(P.solo.submissionsPerMonth)),
+              t.planSolo.f2.replace("{emails}", String(P.solo.emailsPerDay)),
+              t.planSolo.f3,
+              t.planSolo.f4,
+              t.planSolo.f5.replace("{n}", "100"),
+              t.planSolo.f6,
             ]}
-            cta="Choose Solo"
+            cta={t.planSolo.cta}
             href={UPGRADE_MAILTO("Solo")}
             external
           />
           <PlanCard
-            name="Pro"
+            name={t.planPro.name}
             price={P.pro.priceMonthly}
-            blurb="For agencies. Unlimited forms, your brand only."
+            perMonthLabel={t.perMonth}
+            mostPopularLabel={t.mostPopular}
+            blurb={t.planPro.blurb}
             highlight
             features={[
-              `Unlimited forms · ${fmt(P.pro.submissionsPerMonth)} submissions/mo`,
-              `${P.pro.emailsPerDay} emails/day`,
-              "White-label sender — no Inlet footer",
-              "Unlimited AI assistant",
-              "Priority deliverability (SMTP rotation)",
-              "Unlimited data retention",
+              t.planPro.f1.replace("{submissions}", fmt(P.pro.submissionsPerMonth)),
+              t.planPro.f2.replace("{emails}", String(P.pro.emailsPerDay)),
+              t.planPro.f3,
+              t.planPro.f4,
+              t.planPro.f5,
+              t.planPro.f6,
             ]}
-            cta="Upgrade to Pro"
+            cta={t.planPro.cta}
             href={UPGRADE_MAILTO("Pro")}
             external
           />
           <PlanCard
-            name="Max"
+            name={t.planMax.name}
             price={P.max.priceMonthly}
-            blurb="High-volume studios that live on leads."
+            perMonthLabel={t.perMonth}
+            mostPopularLabel={t.mostPopular}
+            blurb={t.planMax.blurb}
             features={[
-              `Unlimited forms · ${fmt(P.max.submissionsPerMonth)} submissions/mo`,
-              `${fmt(P.max.emailsPerDay)} emails/day`,
-              "Everything in Pro",
-              "Priority support",
-              "Dedicated sending-domain setup (DKIM/SPF)",
+              t.planMax.f1.replace("{submissions}", fmt(P.max.submissionsPerMonth)),
+              t.planMax.f2.replace("{emails}", fmt(P.max.emailsPerDay)),
+              t.planMax.f3,
+              t.planMax.f4,
+              t.planMax.f5,
             ]}
-            cta="Go Max"
+            cta={t.planMax.cta}
             href={UPGRADE_MAILTO("Max")}
             external
           />
         </section>
 
         <p className="mx-auto -mt-6 max-w-2xl px-6 pb-12 text-center text-xs text-slate-400">
-          Self-serve checkout is coming — paid upgrades are activated same-day by email.
-          Over quota? Your leads keep being stored; only outgoing email pauses.
+          {t.selfServeNote}
         </p>
 
         {/* Full comparison */}
         <section className="mx-auto max-w-5xl px-6 pb-16">
-          <h2 className="mb-6 text-center text-2xl font-bold tracking-tight">Compare everything</h2>
-          <div className="overflow-x-auto rounded-2xl border border-slate-200">
-            <table className="w-full min-w-[720px] text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500">
-                <tr>
-                  <th className="px-5 py-4 font-medium">Capability</th>
-                  <th className="px-5 py-4 font-medium">Free</th>
-                  <th className="px-5 py-4 font-medium">Solo $9</th>
-                  <th className="px-5 py-4 font-semibold text-slate-900">Pro $19</th>
-                  <th className="px-5 py-4 font-medium">Max $49</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {ROWS.map((r) => (
-                  <tr key={r.label}>
-                    <td className="px-5 py-3.5 font-medium text-slate-800">{r.label}</td>
-                    {r.values.map((v, i) => (
-                      <td key={i} className={`px-5 py-3.5 ${i === 2 ? "bg-blue-50/40" : ""}`}>
-                        <Cell v={v} />
-                      </td>
-                    ))}
+          <h2 className="mb-6 text-center text-2xl font-bold tracking-tight">{t.compareTitle}</h2>
+          <p className="mb-2 text-center text-xs font-medium text-slate-400 sm:hidden">{swipeHint}</p>
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[600px] text-left text-sm">
+                <thead className="bg-slate-50 text-slate-500">
+                  <tr>
+                    <th className="max-w-[110px] px-4 py-4 font-medium sm:max-w-none sm:px-5">{t.colCapability}</th>
+                    <th className="px-5 py-4 font-medium">{t.planFree.name}</th>
+                    <th className="px-5 py-4 font-medium">{t.planSolo.name} $9</th>
+                    <th className="px-5 py-4 font-semibold text-slate-900">{t.planPro.name} $19</th>
+                    <th className="px-5 py-4 font-medium">{t.planMax.name} $49</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {rows.map((r) => (
+                    <tr key={r.label}>
+                      <td className="max-w-[110px] px-4 py-3.5 font-medium text-slate-800 sm:max-w-none sm:px-5">{r.label}</td>
+                      {r.values.map((v, i) => (
+                        <td key={i} className={`px-5 py-3.5 ${i === 2 ? "bg-blue-50/40" : ""}`}>
+                          <Cell v={v} includedAria={t.includedAria} notIncludedAria={t.notIncludedAria} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent sm:hidden" />
           </div>
           <p className="mt-6 text-center text-sm text-slate-500">
-            Every plan is self-hosted on your own infrastructure — your data never belongs to us.
+            {t.compareFooter}
           </p>
         </section>
 
         {/* Pricing FAQ */}
         <section className="border-t border-slate-100 bg-slate-50/60 py-16">
           <div className="mx-auto max-w-3xl px-6">
-            <h2 className="mb-8 text-center text-2xl font-bold tracking-tight">Pricing questions</h2>
+            <h2 className="mb-8 text-center text-2xl font-bold tracking-tight">{t.faqTitle}</h2>
             <div className="space-y-3">
-              {FAQ.map((f) => (
+              {faqItems.map((f) => (
                 <details key={f.q} className="group rounded-2xl border border-slate-200 bg-white p-5 open:shadow-sm">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-slate-900">
                     {f.q}
@@ -333,7 +364,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
         </section>
 
         <AiChat />
-        <SiteFooter />
+        <SiteFooter locale={locale} />
       </div>
     </>
   );

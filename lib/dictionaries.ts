@@ -1,9 +1,24 @@
 import type { Locale } from './i18n';
 
 interface MarketingDict {
-  nav: { features: string; how: string; docs: string; pricing: string; faq: string; signIn: string; getStarted: string; dashboard: string };
+  nav: { features: string; how: string; docs: string; pricing: string; faq: string; signIn: string; getStarted: string; dashboard: string; compareFormspree: string; compareJotform: string };
   hero: { kicker: string; titleLead: string; titleAccent: string; subtitle: string; ctaPrimary: string; ctaSecondary: string; reassure: string; stack: string };
-  pricing: { kicker: string; titleLead: string; titleAccent: string; subtitle: string };
+  pricing: {
+    kicker: string; titleLead: string; titleAccent: string; subtitle: string;
+    mostPopular: string; perMonth: string;
+    planFree: { name: string; blurb: string; f1: string; f2: string; f3: string; f4: string; f5: string; cta: string };
+    planSolo: { name: string; blurb: string; f1: string; f2: string; f3: string; f4: string; f5: string; f6: string; cta: string };
+    planPro: { name: string; blurb: string; f1: string; f2: string; f3: string; f4: string; f5: string; f6: string; cta: string };
+    planMax: { name: string; blurb: string; f1: string; f2: string; f3: string; f4: string; f5: string; cta: string };
+    selfServeNote: string;
+    compareTitle: string; compareFooter: string; colCapability: string;
+    rowForms: string; rowSubmissions: string; rowEmails: string; rowSpam: string; rowAutoReply: string; rowSender: string; row2fa: string; rowAi: string; rowApi: string; rowPortals: string; rowCsv: string; rowAnalytics: string; rowWhiteLabel: string; rowPriority: string; rowRetention: string; rowSupport: string; rowDkim: string;
+    valTrial: string; valPerMonth: string; valDays: string; valYearRetention: string; valEndClients: string; valUnlimited: string;
+    faqTitle: string;
+    faqQ1: string; faqA1: string; faqQ2: string; faqA2: string; faqQ3: string; faqA3: string; faqQ4: string; faqA4: string;
+    includedAria: string; notIncludedAria: string;
+  };
+  siteFooter: { features: string; docs: string; pricing: string; signIn: string };
   landing: {
     wedge: { kicker: string; title: string; bodyA: string; bodyAnd: string; bodyB: string; bullets: string[] };
     features: { kicker: string; title: string; subtitle: string; cards: { title: string; desc: string }[] };
@@ -30,7 +45,7 @@ interface MarketingDict {
  */
 export const dictionaries: Record<Locale, MarketingDict> = {
   en: {
-    nav: { features: 'Features', how: 'How it works', docs: 'Docs', pricing: 'Pricing', faq: 'FAQ', signIn: 'Sign in', getStarted: 'Get started', dashboard: 'Dashboard' },
+    nav: { features: 'Features', how: 'How it works', docs: 'Docs', pricing: 'Pricing', faq: 'FAQ', signIn: 'Sign in', getStarted: 'Get started', dashboard: 'Dashboard', compareFormspree: 'vs Formspree', compareJotform: 'vs Jotform' },
     hero: {
       kicker: 'Self-hosted form backend · you own the data',
       titleLead: 'One form backend for',
@@ -46,6 +61,37 @@ export const dictionaries: Record<Locale, MarketingDict> = {
       titleLead: 'Pay for leads,',
       titleAccent: 'not per form.',
       subtitle: 'One backend for every site you build. Start free in two minutes — upgrade only when your lead volume does.',
+      mostPopular: 'Most popular', perMonth: '/ month',
+      planFree: {
+        name: 'Free', blurb: 'Prove it works. Run a real site on it.',
+        f1: '{forms} forms · {submissions} submissions/mo', f2: '{emails} emails/day', f3: 'Full anti-spam stack', f4: 'Branded auto-replies', f5: '1 AI trial message',
+        cta: 'Start free',
+      },
+      planSolo: {
+        name: 'Solo', blurb: 'For a freelancer with a handful of sites.',
+        f1: '{forms} forms · {submissions} submissions/mo', f2: '{emails} emails/day', f3: 'CSV export + analytics', f4: 'Custom email sender + reply-to', f5: 'AI assistant — {n}/month', f6: '1-year data retention',
+        cta: 'Choose Solo',
+      },
+      planPro: {
+        name: 'Pro', blurb: 'For agencies. Unlimited forms, your brand only.',
+        f1: 'Unlimited forms · {submissions} submissions/mo', f2: '{emails} emails/day', f3: 'White-label sender — no Inlet footer', f4: 'Unlimited AI assistant', f5: 'Priority deliverability (SMTP rotation)', f6: 'Unlimited data retention',
+        cta: 'Upgrade to Pro',
+      },
+      planMax: {
+        name: 'Max', blurb: 'High-volume studios that live on leads.',
+        f1: 'Unlimited forms · {submissions} submissions/mo', f2: '{emails} emails/day', f3: 'Everything in Pro', f4: 'Priority support', f5: 'Dedicated sending-domain setup (DKIM/SPF)',
+        cta: 'Go Max',
+      },
+      selfServeNote: 'Self-serve checkout is coming — paid upgrades are activated same-day by email. Over quota? Your leads keep being stored; only outgoing email pauses.',
+      compareTitle: 'Compare everything', compareFooter: 'Every plan is self-hosted on your own infrastructure — your data never belongs to us.', colCapability: 'Capability',
+      rowForms: 'Forms', rowSubmissions: 'Submissions / month', rowEmails: 'Emails / day', rowSpam: 'Spam protection (honeypot + PoW + NLP)', rowAutoReply: 'Branded auto-reply emails', rowSender: 'Custom email sender (name + reply-to)', row2fa: 'Two-factor sign-in (email OTP)', rowAi: 'AI assistant', rowApi: 'API + MCP server (your AI runs your forms)', rowPortals: 'Client portals (white-label end-client logins)', rowCsv: 'CSV export', rowAnalytics: 'Analytics dashboard', rowWhiteLabel: 'White-label sender (no Inlet footer)', rowPriority: 'Priority deliverability (SMTP rotation)', rowRetention: 'Data retention', rowSupport: 'Priority support', rowDkim: 'Dedicated sending-domain setup (DKIM/SPF)',
+      valTrial: '1 trial message', valPerMonth: '{n} / month', valDays: '{n} days', valYearRetention: '1 year', valEndClients: '{n} end-clients', valUnlimited: 'Unlimited',
+      faqTitle: 'Pricing questions',
+      faqQ1: 'What happens if I go over my submission or email quota?', faqA1: 'Your leads are never lost. Submissions keep being stored in your dashboard even over quota — only outgoing emails pause until the next day or an upgrade. Losing a lead over a billing limit is not acceptable to us.',
+      faqQ2: 'Why is there an emails-per-day limit?', faqA2: 'Every submission can trigger up to two emails (your notification + the branded auto-reply). Daily caps keep delivery fast and reputable for everyone. Higher tiers get dramatically more throughput.',
+      faqQ3: 'Can I switch plans anytime?', faqA3: 'Yes — upgrades apply immediately, downgrades at the end of the cycle. Your forms, submissions and settings are never touched by a plan change.',
+      faqQ4: 'Is the free plan really free forever?', faqA4: 'Yes. Three forms, 50 submissions a month, full anti-spam. It is enough to run a real site — most developers upgrade when they add their second or third client, not because we squeezed them.',
+      includedAria: 'Included', notIncludedAria: 'Not included',
     },
     landing: {
       wedge: {
@@ -126,9 +172,10 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         footnote: 'Interactive simulation of the live pipeline — nothing you type here is sent or stored.',
       },
     },
+    siteFooter: { features: 'Features', docs: 'Docs', pricing: 'Pricing', signIn: 'Sign in' },
   },
   fr: {
-    nav: { features: 'Fonctionnalités', how: 'Comment ça marche', docs: 'Docs', pricing: 'Tarifs', faq: 'FAQ', signIn: 'Connexion', getStarted: 'Commencer', dashboard: 'Tableau de bord' },
+    nav: { features: 'Fonctionnalités', how: 'Comment ça marche', docs: 'Docs', pricing: 'Tarifs', faq: 'FAQ', signIn: 'Connexion', getStarted: 'Commencer', dashboard: 'Tableau de bord', compareFormspree: 'vs Formspree', compareJotform: 'vs Jotform' },
     hero: {
       kicker: 'Backend de formulaires auto-hébergé · vos données vous appartiennent',
       titleLead: 'Un seul backend de formulaires pour',
@@ -144,6 +191,37 @@ export const dictionaries: Record<Locale, MarketingDict> = {
       titleLead: 'Payez pour les leads,',
       titleAccent: 'pas par formulaire.',
       subtitle: 'Un seul backend pour tous vos sites. Commencez gratuitement en deux minutes — passez à un forfait supérieur seulement quand votre volume de leads augmente.',
+      mostPopular: 'Le plus populaire', perMonth: '/ mois',
+      planFree: {
+        name: 'Gratuit', blurb: 'Prouvez que ça marche. Faites tourner un vrai site avec.',
+        f1: '{forms} formulaires · {submissions} soumissions/mois', f2: '{emails} e-mails/jour', f3: 'Stack anti-spam complète', f4: 'Réponses automatiques à votre image', f5: '1 message IA d’essai',
+        cta: 'Commencer gratuitement',
+      },
+      planSolo: {
+        name: 'Solo', blurb: 'Pour un freelance avec quelques sites.',
+        f1: '{forms} formulaires · {submissions} soumissions/mois', f2: '{emails} e-mails/jour', f3: 'Export CSV + analytique', f4: 'Expéditeur e-mail personnalisé + reply-to', f5: 'Assistant IA — {n}/mois', f6: 'Rétention des données 1 an',
+        cta: 'Choisir Solo',
+      },
+      planPro: {
+        name: 'Pro', blurb: 'Pour les agences. Formulaires illimités, votre marque uniquement.',
+        f1: 'Formulaires illimités · {submissions} soumissions/mois', f2: '{emails} e-mails/jour', f3: 'Expéditeur en marque blanche — sans mention Inlet', f4: 'Assistant IA illimité', f5: 'Délivrabilité prioritaire (rotation SMTP)', f6: 'Rétention des données illimitée',
+        cta: 'Passer à Pro',
+      },
+      planMax: {
+        name: 'Max', blurb: 'Studios à fort volume qui vivent de leurs leads.',
+        f1: 'Formulaires illimités · {submissions} soumissions/mois', f2: '{emails} e-mails/jour', f3: 'Tout ce qui est dans Pro', f4: 'Support prioritaire', f5: 'Configuration dédiée du domaine d’envoi (DKIM/SPF)',
+        cta: 'Passer à Max',
+      },
+      selfServeNote: 'Le paiement en libre-service arrive bientôt — les mises à niveau payantes sont activées le jour même par e-mail. Au-dessus du quota ? Vos leads continuent d’être enregistrés ; seuls les e-mails sortants sont mis en pause.',
+      compareTitle: 'Tout comparer', compareFooter: 'Chaque forfait est auto-hébergé sur votre propre infrastructure — vos données ne nous appartiennent jamais.', colCapability: 'Fonctionnalité',
+      rowForms: 'Formulaires', rowSubmissions: 'Soumissions / mois', rowEmails: 'E-mails / jour', rowSpam: 'Protection anti-spam (honeypot + PoW + NLP)', rowAutoReply: 'E-mails de réponse automatique à votre image', rowSender: 'Expéditeur e-mail personnalisé (nom + reply-to)', row2fa: 'Connexion à deux facteurs (OTP e-mail)', rowAi: 'Assistant IA', rowApi: 'API + serveur MCP (votre IA pilote vos formulaires)', rowPortals: 'Portails clients (connexions en marque blanche pour vos clients)', rowCsv: 'Export CSV', rowAnalytics: 'Tableau de bord analytique', rowWhiteLabel: 'Expéditeur en marque blanche (sans mention Inlet)', rowPriority: 'Délivrabilité prioritaire (rotation SMTP)', rowRetention: 'Rétention des données', rowSupport: 'Support prioritaire', rowDkim: 'Configuration dédiée du domaine d’envoi (DKIM/SPF)',
+      valTrial: '1 message d’essai', valPerMonth: '{n} / mois', valDays: '{n} jours', valYearRetention: '1 an', valEndClients: '{n} clients finaux', valUnlimited: 'Illimité',
+      faqTitle: 'Questions sur les tarifs',
+      faqQ1: 'Que se passe-t-il si je dépasse mon quota de soumissions ou d’e-mails ?', faqA1: 'Vos leads ne sont jamais perdus. Les soumissions continuent d’être enregistrées dans votre tableau de bord même au-dessus du quota — seuls les e-mails sortants sont mis en pause jusqu’au lendemain ou à une mise à niveau. Perdre un lead à cause d’une limite de facturation n’est pas acceptable pour nous.',
+      faqQ2: 'Pourquoi y a-t-il une limite d’e-mails par jour ?', faqA2: 'Chaque soumission peut déclencher jusqu’à deux e-mails (votre notification + la réponse automatique à votre image). Les plafonds journaliers gardent la délivrabilité rapide et réputée pour tout le monde. Les forfaits supérieurs offrent un débit nettement plus élevé.',
+      faqQ3: 'Puis-je changer de forfait à tout moment ?', faqA3: 'Oui — les mises à niveau s’appliquent immédiatement, les rétrogradations à la fin du cycle. Vos formulaires, soumissions et paramètres ne sont jamais touchés par un changement de forfait.',
+      faqQ4: 'Le forfait gratuit est-il vraiment gratuit pour toujours ?', faqA4: 'Oui. Trois formulaires, 50 soumissions par mois, anti-spam complet. C’est suffisant pour faire tourner un vrai site — la plupart des développeurs passent à un forfait supérieur en ajoutant leur deuxième ou troisième client, pas parce qu’on les y a forcés.',
+      includedAria: 'Inclus', notIncludedAria: 'Non inclus',
     },
     landing: {
       wedge: {
@@ -224,6 +302,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         footnote: 'Simulation interactive du pipeline en direct — rien de ce que vous tapez ici n’est envoyé ou stocké.',
       },
     },
+    siteFooter: { features: 'Fonctionnalités', docs: 'Docs', pricing: 'Tarifs', signIn: 'Connexion' },
   },
 };
 

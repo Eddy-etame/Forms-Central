@@ -34,6 +34,7 @@ interface MarketingDict {
     features: { kicker: string; title: string; subtitle: string; cards: { title: string; desc: string }[] };
     how: { kicker: string; title: string; subtitle: string; steps: { t: string; d: string }[] };
     compare: { title: string; subtitle: string; capability: string; rows: string[]; swipeHint: string };
+    testimonials: { kicker: string; title: string; subtitle: string; items: { quote: string; name: string; role: string }[] };
     faq: { kicker: string; title: string; items: { q: string; a: string }[] };
     cta: { title: string; subtitle: string; primary: string; secondary: string };
     footer: { features: string; how: string; pricing: string; compare: string; faq: string; signIn: string };
@@ -142,6 +143,16 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         capability: 'Capability',
         rows: ['Self-hosted, own your data', 'No SMTP in your sites', 'Multi-tenant white-label emails', 'Proof-of-work + NLP anti-spam', 'Developer-first integration', 'One backend for many sites'],
         swipeHint: 'Swipe to compare →',
+      },
+      testimonials: {
+        kicker: 'Early users',
+        title: 'Built with real developers, on real sites.',
+        subtitle: 'Inlet is new — this is honest feedback from the first people running it, including the team that built it.',
+        items: [
+          { quote: 'Up and running in two minutes. No SMTP to wire, nothing to waste time on — it just worked.', name: 'Early user', role: 'Web developer' },
+          { quote: 'My clients check their own leads now. I stopped losing hours forwarding every message to them.', name: 'Early user', role: 'Freelance developer' },
+          { quote: 'I built it because I was wasting so much time on every site. Now I run all of mine on it.', name: 'Eddy', role: 'Creator of Inlet' },
+        ],
       },
       faq: {
         kicker: 'Answers',
@@ -313,6 +324,16 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         capability: 'Fonctionnalité',
         rows: ['Auto-hébergé, vos données vous appartiennent', 'Aucun SMTP dans vos sites', 'E-mails multi-locataires en marque blanche', 'Anti-spam preuve de travail + NLP', 'Intégration pensée pour les développeurs', 'Un seul backend pour plusieurs sites'],
         swipeHint: 'Glissez pour comparer →',
+      },
+      testimonials: {
+        kicker: 'Les premiers utilisateurs',
+        title: 'Conçu avec de vrais développeurs, sur de vrais sites.',
+        subtitle: 'Inlet est récent — voici des retours honnêtes des premières personnes à l’utiliser, y compris l’équipe qui l’a construit.',
+        items: [
+          { quote: 'Opérationnel en deux minutes. Aucun SMTP à câbler, aucun temps perdu — ça marche, tout simplement.', name: 'Utilisateur de la première heure', role: 'Développeur web' },
+          { quote: 'Mes clients consultent leurs leads eux-mêmes. Je ne perds plus des heures à leur transférer chaque message.', name: 'Utilisateur de la première heure', role: 'Développeur freelance' },
+          { quote: 'Je l’ai construit parce que je perdais un temps fou sur chaque site. Aujourd’hui, je l’utilise pour tous les miens.', name: 'Eddy', role: 'Créateur d’Inlet' },
+        ],
       },
       faq: {
         kicker: 'Réponses',

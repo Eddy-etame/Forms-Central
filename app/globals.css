@@ -81,13 +81,25 @@ body {
   .page-enter { animation: none; }
 }
 
-/* Scroll reveal (components/Reveal.tsx) — IO adds .reveal-in */
-.reveal-init { opacity: 0; transform: translateY(22px); }
-.reveal-init.reveal-in {
+/* Scroll reveal (components/Reveal.tsx) — IO adds .reveal-in.
+   Gated on html.reveal-ready (set pre-paint by an inline script) so crawlers
+   and no-JS users always see fully-visible content, while JS clients get the
+   hidden→shown transition. Keeping BOTH classes in the React-controlled
+   className is what lets the transition actually run (a prior version stripped
+   .reveal-init on reveal, so elements popped instead of gliding). */
+.reveal-ready .reveal-init {
+  opacity: 0;
+  transform: translateY(24px);
+  will-change: opacity, transform;
+}
+.reveal-ready .reveal-init.reveal-in {
   opacity: 1;
   transform: none;
-  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-ready .reveal-init { opacity: 1; transform: none; }
 }
 
 /* Anchor navigation glides instead of jumping */

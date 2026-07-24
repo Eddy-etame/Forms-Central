@@ -130,6 +130,14 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {/* Arm scroll-reveal before paint so hidden→shown transitions run for JS
+            clients, while crawlers/no-JS (which never add this class) see all
+            content fully visible. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "document.documentElement.classList.add('reveal-ready')",
+          }}
+        />
         {children}
         <Tracker />
       </body>

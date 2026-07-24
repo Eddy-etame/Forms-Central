@@ -6,6 +6,7 @@ import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
 import AiChat from "@/components/AiChat";
 import { getDictionary } from "@/lib/dictionaries";
 import { resolveLocale, SITE_URL, SITE_NAME } from "@/lib/seo";
+import Reveal from "@/components/Reveal";
 
 /**
  * Data-driven competitor comparison pages ("X alternative" search intent).
@@ -97,16 +98,18 @@ export default async function ComparePage({ params, searchParams }: { params: Pr
             <span aria-hidden>/</span>
             <span className="font-medium text-slate-700">Inlet vs {c.name}</span>
           </nav>
-          <p className="text-sm font-semibold text-blue-600">{t.kicker}</p>
-          <h1 className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
-            Inlet vs {c.name}
-          </h1>
-          <p className="mt-5 text-lg leading-8 text-slate-600">{ct.intro}</p>
-          <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm leading-6 text-slate-600">
-            <strong className="text-slate-900">{t.fairNoteLabel}</strong> {ct.bestFor}
-          </p>
+          <Reveal>
+            <p className="text-sm font-semibold text-blue-600">{t.kicker}</p>
+            <h1 className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
+              Inlet vs {c.name}
+            </h1>
+            <p className="mt-5 text-lg leading-8 text-slate-600">{ct.intro}</p>
+            <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm leading-6 text-slate-600">
+              <strong className="text-slate-900">{t.fairNoteLabel}</strong> {ct.bestFor}
+            </p>
+          </Reveal>
 
-          <div className="mt-10 overflow-x-auto rounded-2xl border border-slate-200">
+          <Reveal delay={0.08} className="mt-10 overflow-x-auto rounded-2xl border border-slate-200">
             <table className="w-full min-w-[540px] text-left text-sm">
               <thead className="bg-slate-50 text-slate-500">
                 <tr>
@@ -125,12 +128,14 @@ export default async function ComparePage({ params, searchParams }: { params: Pr
                 ))}
               </tbody>
             </table>
-          </div>
+          </Reveal>
 
-          <h2 className="mt-12 text-2xl font-bold tracking-tight">{t.verdictTitle}</h2>
-          <p className="mt-3 leading-8 text-slate-600">{ct.verdict}</p>
+          <Reveal>
+            <h2 className="mt-12 text-2xl font-bold tracking-tight">{t.verdictTitle}</h2>
+            <p className="mt-3 leading-8 text-slate-600">{ct.verdict}</p>
+          </Reveal>
 
-          <div className="mt-12 flex flex-col items-center gap-3 rounded-3xl bg-slate-950 p-8 text-center text-white sm:flex-row sm:justify-between sm:text-left">
+          <Reveal className="mt-12 flex flex-col items-center gap-3 rounded-3xl bg-slate-950 p-8 text-center text-white sm:flex-row sm:justify-between sm:text-left">
             <div>
               <h2 className="text-xl font-bold">{t.ctaTitle}</h2>
               <p className="mt-1 text-sm text-slate-400">{t.ctaSubtitle}</p>
@@ -141,7 +146,7 @@ export default async function ComparePage({ params, searchParams }: { params: Pr
             >
               {t.ctaButton} <ArrowRight className="h-4 w-4" />
             </Link>
-          </div>
+          </Reveal>
         </main>
 
         <AiChat />

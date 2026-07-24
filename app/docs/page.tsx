@@ -5,6 +5,7 @@ import AiChat from "@/components/AiChat";
 import { Check, Terminal, ShieldCheck, Mail, ArrowRight, Webhook, Sparkles } from "lucide-react";
 import CopyButton from "@/components/CopyButton";
 import { Magnetic, ScrollProgress } from "@/components/marketing/Interactive";
+import Reveal from "@/components/Reveal";
 import { resolveLocale, buildMetadata, SITE_URL } from "@/lib/seo";
 import type { Locale } from "@/lib/i18n";
 
@@ -163,27 +164,29 @@ const DOC: Record<Locale, DocDict> = {
 
 function SectionTitle({ n, children }: { n?: string; children: React.ReactNode }) {
   return (
-    <h2 className="mt-14 flex items-center gap-3 text-2xl font-bold tracking-tight">
-      {n && (
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 font-mono text-xs font-bold text-white shadow-md shadow-blue-500/25">
-          {n}
-        </span>
-      )}
-      {children}
-    </h2>
+    <Reveal className="mt-14">
+      <h2 className="flex items-center gap-3 text-2xl font-bold tracking-tight">
+        {n && (
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 font-mono text-xs font-bold text-white shadow-md shadow-blue-500/25">
+            {n}
+          </span>
+        )}
+        {children}
+      </h2>
+    </Reveal>
   );
 }
 
 function Code({ title, code }: { title: string; code: string }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-lg">
+    <Reveal className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-lg">
       <div className="flex items-center gap-2 border-b border-slate-800 px-4 py-2.5">
         <Terminal className="h-3.5 w-3.5 text-slate-500" />
         <span className="text-xs text-slate-400">{title}</span>
         <CopyButton text={code} />
       </div>
       <pre className="overflow-x-auto p-5 text-[13px] leading-relaxed text-slate-200"><code>{code}</code></pre>
-    </div>
+    </Reveal>
   );
 }
 
@@ -214,11 +217,13 @@ export default async function DocsPage({ searchParams }: { searchParams: Promise
         </div>
 
         <main className="relative mx-auto max-w-3xl px-6 py-16 lg:py-20">
-          <p className="text-sm font-semibold text-blue-600">{t.eyebrow}</p>
-          <h1 className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
-            {t.titleLead} <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text font-serif italic text-transparent">{t.titleAccent}</span>
-          </h1>
-          <p className="mt-4 text-lg leading-8 text-slate-600">{t.intro}</p>
+          <Reveal>
+            <p className="text-sm font-semibold text-blue-600">{t.eyebrow}</p>
+            <h1 className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
+              {t.titleLead} <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text font-serif italic text-transparent">{t.titleAccent}</span>
+            </h1>
+            <p className="mt-4 text-lg leading-8 text-slate-600">{t.intro}</p>
+          </Reveal>
 
           {/* The contract */}
           <SectionTitle n="1">{t.s1}</SectionTitle>

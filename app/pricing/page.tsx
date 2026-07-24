@@ -8,6 +8,7 @@ import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
 import AiChat from "@/components/AiChat";
 import { PLANS } from "@/lib/plans";
 import { SpotlightCard, ScrollProgress } from "@/components/marketing/Interactive";
+import Reveal from "@/components/Reveal";
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
   const { lang } = await searchParams;
@@ -219,7 +220,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
             <div className="aurora-a absolute -top-20 left-1/3 h-72 w-72 rounded-full bg-blue-500/15 blur-[110px]" />
             <div className="aurora-b absolute -top-8 right-1/3 h-64 w-64 rounded-full bg-cyan-400/12 blur-[110px]" />
           </div>
-          <div className="mx-auto max-w-3xl px-6 pt-16 pb-10 text-center lg:pt-24">
+          <Reveal className="mx-auto max-w-3xl px-6 pt-16 pb-10 text-center lg:pt-24">
             <Kicker center tone="light" className="mb-5">{t.kicker}</Kicker>
             <h1 className="text-balance text-4xl font-extrabold tracking-tight sm:text-6xl">
               {t.titleLead} <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text font-serif italic text-transparent">{t.titleAccent}</span>
@@ -227,11 +228,11 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
             <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-600">
               {t.subtitle}
             </p>
-          </div>
+          </Reveal>
         </header>
 
         {/* Plans — Good / Better / Best (+ anchor) */}
-        <section className="mx-auto grid max-w-6xl gap-5 px-6 pb-14 md:grid-cols-2 xl:grid-cols-4">
+        <Reveal className="mx-auto grid max-w-6xl gap-5 px-6 pb-14 md:grid-cols-2 xl:grid-cols-4">
           <PlanCard
             name={t.planFree.name}
             price={0}
@@ -302,7 +303,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
             href={UPGRADE_MAILTO("Max")}
             external
           />
-        </section>
+        </Reveal>
 
         <p className="mx-auto -mt-6 max-w-2xl px-6 pb-12 text-center text-xs text-slate-400">
           {t.selfServeNote}
@@ -310,9 +311,11 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
 
         {/* Full comparison */}
         <section className="mx-auto max-w-5xl px-6 pb-16">
-          <h2 className="mb-6 text-center text-2xl font-bold tracking-tight">{t.compareTitle}</h2>
-          <p className="mb-2 text-center text-xs font-medium text-slate-400 sm:hidden">{swipeHint}</p>
-          <div className="relative overflow-hidden rounded-2xl border border-slate-200">
+          <Reveal>
+            <h2 className="mb-6 text-center text-2xl font-bold tracking-tight">{t.compareTitle}</h2>
+            <p className="mb-2 text-center text-xs font-medium text-slate-400 sm:hidden">{swipeHint}</p>
+          </Reveal>
+          <Reveal delay={0.08} className="relative overflow-hidden rounded-2xl border border-slate-200">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[600px] text-left text-sm">
                 <thead className="bg-slate-50 text-slate-500">
@@ -339,7 +342,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
               </table>
             </div>
             <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent sm:hidden" />
-          </div>
+          </Reveal>
           <p className="mt-6 text-center text-sm text-slate-500">
             {t.compareFooter}
           </p>
@@ -348,16 +351,18 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
         {/* Pricing FAQ */}
         <section className="border-t border-slate-100 bg-slate-50/60 py-16">
           <div className="mx-auto max-w-3xl px-6">
-            <h2 className="mb-8 text-center text-2xl font-bold tracking-tight">{t.faqTitle}</h2>
+            <Reveal><h2 className="mb-8 text-center text-2xl font-bold tracking-tight">{t.faqTitle}</h2></Reveal>
             <div className="space-y-3">
-              {faqItems.map((f) => (
-                <details key={f.q} className="group rounded-2xl border border-slate-200 bg-white p-5 open:shadow-sm">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-slate-900">
-                    {f.q}
-                    <ArrowRight className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" />
-                  </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-600">{f.a}</p>
-                </details>
+              {faqItems.map((f, i) => (
+                <Reveal key={f.q} delay={i * 0.06}>
+                  <details className="group rounded-2xl border border-slate-200 bg-white p-5 open:shadow-sm">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-slate-900">
+                      {f.q}
+                      <ArrowRight className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" />
+                    </summary>
+                    <p className="mt-3 text-sm leading-relaxed text-slate-600">{f.a}</p>
+                  </details>
+                </Reveal>
               ))}
             </div>
           </div>

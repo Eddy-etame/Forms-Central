@@ -19,6 +19,16 @@ interface MarketingDict {
     includedAria: string; notIncludedAria: string;
   };
   siteFooter: { features: string; docs: string; pricing: string; signIn: string };
+  comparePage: {
+    breadcrumbHome: string; breadcrumbCompare: string; kicker: string;
+    fairNoteLabel: string; colCapability: string; verdictTitle: string;
+    ctaTitle: string; ctaSubtitle: string; ctaButton: string; yesAria: string; noAria: string;
+    competitors: {
+      formspree: { intro: string; bestFor: string; verdict: string; rows: { label: string; us: boolean; them: string | boolean }[] };
+      jotform: { intro: string; bestFor: string; verdict: string; rows: { label: string; us: boolean; them: string | boolean }[] };
+    };
+  };
+  notFoundPage: { kicker: string; title: string; subtitle: string; backHome: string; readDocs: string };
   landing: {
     wedge: { kicker: string; title: string; bodyA: string; bodyAnd: string; bodyB: string; bullets: string[] };
     features: { kicker: string; title: string; subtitle: string; cards: { title: string; desc: string }[] };
@@ -173,6 +183,47 @@ export const dictionaries: Record<Locale, MarketingDict> = {
       },
     },
     siteFooter: { features: 'Features', docs: 'Docs', pricing: 'Pricing', signIn: 'Sign in' },
+    comparePage: {
+      breadcrumbHome: 'Home', breadcrumbCompare: 'Compare', kicker: 'Comparison',
+      fairNoteLabel: 'Fair note:', colCapability: 'Capability', verdictTitle: 'The verdict',
+      ctaTitle: 'Try the self-hosted way', ctaSubtitle: 'Free to start. Your data stays yours.', ctaButton: 'Start free',
+      yesAria: 'Yes', noAria: 'No',
+      competitors: {
+        formspree: {
+          intro: "Formspree is a popular hosted form endpoint for static sites. Inlet solves the same problem — forms without a backend — but self-hosted, multi-tenant, and white-label.",
+          bestFor: "Formspree is great for a single site with a single form and zero infrastructure.",
+          verdict: "If you run one site, Formspree is a fine default. If you build and manage many sites — agencies, freelancers, studios — Inlet centralizes every lead in one dashboard you own, with each client seeing their own brand.",
+          rows: [
+            { label: "No SMTP or email library in your site", us: true, them: true },
+            { label: "Self-hosted — you own the submission data", us: true, them: false },
+            { label: "One backend serving many client sites", us: true, them: "Per-form accounts" },
+            { label: "White-label auto-reply (client's brand, not ours)", us: true, them: false },
+            { label: "Proof-of-work + NLP + reverse-DNS anti-spam", us: true, them: "reCAPTCHA-based" },
+            { label: "File uploads become clean download links", us: true, them: "Paid plans" },
+            { label: "Runs on your own Supabase + Vercel (free tiers)", us: true, them: false },
+          ],
+        },
+        jotform: {
+          intro: "Jotform is a drag-and-drop form builder with hosted forms. Inlet is developer-first: your forms live in your own site's code and design, and the service handles delivery, spam and branded replies.",
+          bestFor: "Jotform is great for non-developers who need a hosted form page quickly.",
+          verdict: "If you need a form page without writing code, use Jotform. If your forms live inside websites you build — and you want them native, branded, and centralized — Inlet is built exactly for that.",
+          rows: [
+            { label: "Forms match your site's exact design (your code)", us: true, them: "Themed builder" },
+            { label: "Self-hosted — you own the submission data", us: true, them: false },
+            { label: "No iframe / redirect — native forms", us: true, them: "Embeds" },
+            { label: "One backend for dozens of client sites", us: true, them: "Per-form workspace" },
+            { label: "White-label branded auto-replies", us: true, them: "Enterprise tier" },
+            { label: "Developer integration (2 env values + helper)", us: true, them: false },
+            { label: "Proof-of-work anti-spam (no CAPTCHA friction)", us: true, them: "CAPTCHA" },
+          ],
+        },
+      },
+    },
+    notFoundPage: {
+      kicker: '404', title: "This page didn't submit.",
+      subtitle: "The address doesn't exist (or was caught by our spam filter — kidding). Let's get you back to solid ground.",
+      backHome: 'Back home', readDocs: 'Read the docs',
+    },
   },
   fr: {
     nav: { features: 'Fonctionnalités', how: 'Comment ça marche', docs: 'Docs', pricing: 'Tarifs', faq: 'FAQ', signIn: 'Connexion', getStarted: 'Commencer', dashboard: 'Tableau de bord', compareFormspree: 'vs Formspree', compareJotform: 'vs Jotform' },
@@ -303,6 +354,47 @@ export const dictionaries: Record<Locale, MarketingDict> = {
       },
     },
     siteFooter: { features: 'Fonctionnalités', docs: 'Docs', pricing: 'Tarifs', signIn: 'Connexion' },
+    comparePage: {
+      breadcrumbHome: 'Accueil', breadcrumbCompare: 'Comparer', kicker: 'Comparatif',
+      fairNoteLabel: 'Remarque honnête :', colCapability: 'Fonctionnalité', verdictTitle: 'Le verdict',
+      ctaTitle: 'Essayez la voie auto-hébergée', ctaSubtitle: 'Gratuit pour commencer. Vos données restent les vôtres.', ctaButton: 'Commencer gratuitement',
+      yesAria: 'Oui', noAria: 'Non',
+      competitors: {
+        formspree: {
+          intro: "Formspree est un point de terminaison de formulaires hébergé, populaire pour les sites statiques. Inlet résout le même problème — des formulaires sans backend — mais en auto-hébergé, multi-tenant et en marque blanche.",
+          bestFor: "Formspree est excellent pour un site unique avec un seul formulaire et zéro infrastructure.",
+          verdict: "Si vous gérez un seul site, Formspree est un bon choix par défaut. Si vous construisez et gérez plusieurs sites — agences, freelances, studios — Inlet centralise chaque lead dans un seul tableau de bord que vous possédez, avec la marque de chaque client respectée.",
+          rows: [
+            { label: "Pas de SMTP ni de bibliothèque e-mail dans votre site", us: true, them: true },
+            { label: "Auto-hébergé — vous possédez les données de soumission", us: true, them: false },
+            { label: "Un seul backend pour plusieurs sites clients", us: true, them: "Comptes par formulaire" },
+            { label: "Réponse automatique en marque blanche (marque du client, pas la nôtre)", us: true, them: false },
+            { label: "Preuve de travail + NLP + anti-spam par DNS inversé", us: true, them: "Basé sur reCAPTCHA" },
+            { label: "Les fichiers envoyés deviennent des liens de téléchargement propres", us: true, them: "Forfaits payants" },
+            { label: "Fonctionne sur votre propre Supabase + Vercel (offres gratuites)", us: true, them: false },
+          ],
+        },
+        jotform: {
+          intro: "Jotform est un constructeur de formulaires par glisser-déposer avec hébergement inclus. Inlet est pensé pour les développeurs : vos formulaires vivent dans le code et le design de votre propre site, et le service se charge de la livraison, de l’anti-spam et des réponses automatiques à votre image.",
+          bestFor: "Jotform est excellent pour les non-développeurs qui ont besoin d’une page de formulaire hébergée rapidement.",
+          verdict: "Si vous avez besoin d’une page de formulaire sans écrire de code, utilisez Jotform. Si vos formulaires vivent au sein de sites que vous construisez — et que vous les voulez natifs, à votre image et centralisés — Inlet est fait exactement pour ça.",
+          rows: [
+            { label: "Les formulaires respectent exactement le design de votre site (votre code)", us: true, them: "Constructeur à thèmes" },
+            { label: "Auto-hébergé — vous possédez les données de soumission", us: true, them: false },
+            { label: "Pas d’iframe ni de redirection — formulaires natifs", us: true, them: "Intégrations iframe" },
+            { label: "Un seul backend pour des dizaines de sites clients", us: true, them: "Espace par formulaire" },
+            { label: "Réponses automatiques en marque blanche", us: true, them: "Offre Entreprise" },
+            { label: "Intégration développeur (2 valeurs d’environnement + un helper)", us: true, them: false },
+            { label: "Anti-spam par preuve de travail (sans friction CAPTCHA)", us: true, them: "CAPTCHA" },
+          ],
+        },
+      },
+    },
+    notFoundPage: {
+      kicker: '404', title: "Cette page n’a pas été soumise.",
+      subtitle: "Cette adresse n’existe pas (ou a été bloquée par notre filtre anti-spam — on plaisante). Revenons sur la bonne voie.",
+      backHome: 'Retour à l’accueil', readDocs: 'Lire la doc',
+    },
   },
 };
 

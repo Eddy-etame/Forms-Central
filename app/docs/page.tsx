@@ -321,7 +321,7 @@ export default async function DocsPage({ searchParams }: { searchParams: Promise
         </main>
 
         <AiChat />
-        <SiteFooter />
+        <SiteFooter locale={locale} />
       </div>
     </>
   );

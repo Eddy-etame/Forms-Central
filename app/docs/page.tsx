@@ -5,7 +5,7 @@ import AiChat from "@/components/AiChat";
 import { Check, Terminal, ShieldCheck, Mail, ArrowRight, Webhook, Sparkles } from "lucide-react";
 import CopyButton from "@/components/CopyButton";
 import { Magnetic, ScrollProgress } from "@/components/marketing/Interactive";
-import { resolveLocale, buildMetadata } from "@/lib/seo";
+import { resolveLocale, buildMetadata, SITE_URL } from "@/lib/seo";
 import type { Locale } from "@/lib/i18n";
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
@@ -56,9 +56,9 @@ await submitForm({
   message: "I'd like a quote.",
 });`;
 
-const LLM_PROMPT = `Read https://forms-central-h1ee.vercel.app/llm-install.md
+const LLM_PROMPT = `Read ${SITE_URL}/llm-install.md
 and integrate Inlet into this project exactly as it instructs.
-My values: FORM_API_URL=https://forms-central-h1ee.vercel.app FORM_ID=<paste yours>`;
+My values: FORM_API_URL=${SITE_URL} FORM_ID=<paste yours>`;
 
 const WEBHOOK_VERIFY = `// Verify Inlet's webhook signature (Node) — read the RAW body first.
 import crypto from "node:crypto";

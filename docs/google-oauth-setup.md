@@ -10,7 +10,7 @@ exist. No code changes needed.
    `.../auth/userinfo.email` + `openid` scopes. Add yourself as a test user while unpublished.
 3. **Create credentials → OAuth client ID → Web application.**
 4. Under **Authorized redirect URIs**, add EXACTLY (must match, no trailing slash):
-   - Production: `https://forms-central-h1ee.vercel.app/api/auth/google/callback`
+   - Production: `https://inlett.vercel.app/api/auth/google/callback`
    - Local dev: `http://localhost:3000/api/auth/google/callback`
 5. Copy the **Client ID** and **Client secret**.
 

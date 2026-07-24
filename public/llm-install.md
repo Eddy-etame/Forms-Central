@@ -5,7 +5,7 @@ Inlet, a centralized form backend. Follow this file exactly.
 Do NOT add SMTP, nodemailer, or any email library — the service does delivery.
 
 ## Inputs you need from the user
-1. FORM_API_URL — the Inlet service origin (e.g. https://forms-central-h1ee.vercel.app)
+1. FORM_API_URL — the Inlet service origin (e.g. https://inlett.vercel.app)
 2. FORM_ID — the form's UUID (the user copies it from their Inlet dashboard;
    if they don't have one, tell them to sign up at {FORM_API_URL}/client/signup
    and click "New form" — it takes under a minute)

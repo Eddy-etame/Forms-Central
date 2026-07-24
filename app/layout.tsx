@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Tracker from "@/components/Tracker";
 import { getLocale } from "@/lib/i18n";
+import { SITE_URL } from "@/lib/seo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,9 +17,8 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-// Swap this to your custom domain when you buy it — every canonical, OG, and
-// sitemap URL derives from it.
-const SITE_URL = "https://forms-central-h1ee.vercel.app";
+// SITE_URL is centralized in lib/seo.ts (env-driven). Swap to a custom domain
+// by setting NEXT_PUBLIC_SITE_URL — every canonical, OG and sitemap URL follows.
 const SITE_NAME = "Inlet";
 const TAGLINE = "One form backend for all your websites";
 const DESCRIPTION =
@@ -34,12 +34,22 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   keywords: [
     "form backend",
+    "form backend service",
     "form API",
+    "form system",
+    "form management system",
+    "form MCP server",
+    "MCP form backend",
+    "AI form backend",
+    "form API for AI agents",
     "form microservice",
     "Formspree alternative",
     "Jotform alternative",
     "Basin alternative",
+    "Getform alternative",
+    "Web3Forms alternative",
     "self-hosted forms",
+    "self-hosted form backend",
     "contact form backend",
     "form without backend",
     "form without SMTP",

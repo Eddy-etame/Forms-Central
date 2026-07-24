@@ -7,7 +7,7 @@ import { NavBar } from "@/components/marketing/NavBar";
 import { Kicker } from "@/components/marketing/Kicker";
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/dictionaries";
-import { resolveLocale, buildMetadata } from "@/lib/seo";
+import { resolveLocale, buildMetadata, SITE_URL } from "@/lib/seo";
 import HeroPreview from "@/components/marketing/HeroPreview";
 import { LogoBadge } from "@/components/Logo";
 import AiChat from "@/components/AiChat";
@@ -16,7 +16,6 @@ import CopyButton from "@/components/CopyButton";
 import Reveal from "@/components/Reveal";
 import { Magnetic, Tilt, SpotlightCard, ScrollProgress } from "@/components/marketing/Interactive";
 
-const SITE_URL = "https://forms-central-h1ee.vercel.app";
 const SITE_NAME = "Inlet";
 
 /* ---------------------------------------------------------------- FAQ data

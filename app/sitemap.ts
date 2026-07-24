@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
-
-const SITE_URL = "https://forms-central-h1ee.vercel.app";
+import { SITE_URL } from "@/lib/seo";
 
 // Only list routes that actually exist (404s in a sitemap hurt SEO).
 // Grow this list as marketing pages ship (/pricing, /docs, /compare/*, …).

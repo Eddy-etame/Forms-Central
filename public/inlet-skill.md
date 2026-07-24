@@ -10,7 +10,7 @@ stores the lead, emails the owner, sends a branded auto-reply, blocks spam
 (honeypot + proof-of-work + AI classification), and can POST a signed webhook.
 
 The user provides two values (from their Inlet dashboard):
-- `FORM_API_URL` — the Inlet origin (e.g. https://forms-central-h1ee.vercel.app)
+- `FORM_API_URL` — the Inlet origin (e.g. https://inlett.vercel.app)
 - `FORM_ID` — the form's UUID
 
 ## 1. Plain HTML form (no JavaScript)

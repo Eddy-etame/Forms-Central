@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { supabase } from '@/lib/supabase';
 import { verifyApiKey, type ApiKeyAuth } from '@/lib/apiKeys';
 import { getPlan } from '@/lib/plans';
+import { SITE_URL } from '@/lib/seo';
 
 /**
  * Inlet MCP server (Streamable HTTP, stateless).
@@ -14,7 +15,7 @@ import { getPlan } from '@/lib/plans';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-const SERVICE_ORIGIN = 'https://forms-central-h1ee.vercel.app';
+const SERVICE_ORIGIN = SITE_URL;
 
 function text(s: string) {
   return { content: [{ type: 'text' as const, text: s }] };

@@ -100,8 +100,8 @@ export default function FormDashboardClient({ stats, t }: { stats: SingleFormSta
           transition={{ delay: 0.1 }}
           className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-sm"
         >
-          <div className="absolute -right-4 -top-4 rounded-full bg-blue-50 p-8">
-            <BarChart3 className="h-8 w-8 text-blue-500" />
+          <div className="absolute -right-4 -top-4 rounded-full bg-blue-50 dark:bg-blue-500/10 p-8">
+            <BarChart3 className="h-8 w-8 text-blue-500 dark:text-blue-400" />
           </div>
           <p className="text-sm font-medium text-slate-500">{t.totalSubmissions}</p>
           <h3 className="mt-2 text-4xl font-bold text-slate-900 dark:text-white">{stats?.allTime || 0}</h3>
@@ -136,7 +136,7 @@ export default function FormDashboardClient({ stats, t }: { stats: SingleFormSta
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="rounded-2xl border border-blue-100 bg-blue-50/50 p-6 shadow-sm flex items-center justify-center flex-col text-center"
+            className="rounded-2xl border border-blue-100 bg-blue-50/50 p-6 shadow-sm flex items-center justify-center flex-col text-center dark:border-blue-500/20 dark:bg-blue-500/5"
           >
             <TrendingUp className="h-6 w-6 text-blue-400 mb-2" />
             <p className="text-sm font-semibold text-slate-900 dark:text-white">{t.moreDataTitle}</p>
@@ -166,7 +166,7 @@ export default function FormDashboardClient({ stats, t }: { stats: SingleFormSta
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
-            <thead className="bg-white border-b border-slate-100 dark:border-slate-800 text-xs font-semibold uppercase text-slate-400">
+            <thead className="bg-white dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800 text-xs font-semibold uppercase text-slate-400">
               <tr>
                 <th className="px-6 py-4">{t.date}</th>
                 {tableColumns.map(col => (

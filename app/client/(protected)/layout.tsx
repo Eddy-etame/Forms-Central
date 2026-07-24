@@ -5,6 +5,7 @@ import { getClientForms } from '@/lib/actions';
 import { getLocale } from '@/lib/i18n';
 import { getAppDict } from '@/lib/appDict';
 import ClientSidebar from '@/components/client/ClientSidebar';
+import MobileSidebar from '@/components/client/MobileSidebar';
 import CommandPalette from '@/components/client/CommandPalette';
 import { LogoBadge } from '@/components/Logo';
 import SignOutLink from '@/components/client/SignOutLink';
@@ -48,6 +49,7 @@ export default async function ClientProtectedLayout({ children }: { children: Re
       {/* Mobile Header (Hidden on large screens where Sidebar handles logo) */}
       <header className="lg:hidden sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <div className="flex items-center gap-2">
+          <MobileSidebar forms={forms} t={t} />
           <LogoBadge className="h-8 w-8 rounded-lg" />
           <span className="font-bold text-slate-900 dark:text-white">Inlet</span>
         </div>

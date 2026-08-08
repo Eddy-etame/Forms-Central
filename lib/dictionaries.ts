@@ -26,6 +26,9 @@ interface MarketingDict {
     competitors: {
       formspree: { intro: string; bestFor: string; verdict: string; rows: { label: string; us: boolean; them: string | boolean }[] };
       jotform: { intro: string; bestFor: string; verdict: string; rows: { label: string; us: boolean; them: string | boolean }[] };
+      basin: { intro: string; bestFor: string; verdict: string; rows: { label: string; us: boolean; them: string | boolean }[] };
+      getform: { intro: string; bestFor: string; verdict: string; rows: { label: string; us: boolean; them: string | boolean }[] };
+      web3forms: { intro: string; bestFor: string; verdict: string; rows: { label: string; us: boolean; them: string | boolean }[] };
     };
   };
   notFoundPage: { kicker: string; title: string; subtitle: string; backHome: string; readDocs: string };
@@ -228,6 +231,48 @@ export const dictionaries: Record<Locale, MarketingDict> = {
             { label: "Proof-of-work anti-spam (no CAPTCHA friction)", us: true, them: "CAPTCHA" },
           ],
         },
+        basin: {
+          intro: "Basin is a polished hosted form endpoint for static sites, with solid spam filtering and integrations. Inlet solves the same job — forms without a backend — but self-hosted, multi-tenant, and white-label, with an MCP server for AI agents.",
+          bestFor: "Basin is great for one team that wants a refined hosted endpoint with good spam filtering and Zapier-style integrations.",
+          verdict: "For a single team, Basin is a clean choice. If you run many client sites and want one dashboard you own, per-client branding, and AI agents that can wire and read your forms, Inlet is built for that.",
+          rows: [
+            { label: "No SMTP or email library in your site", us: true, them: true },
+            { label: "Self-hosted — you own the submission data", us: true, them: false },
+            { label: "One backend serving many client sites", us: true, them: "Per-account" },
+            { label: "White-label auto-reply (client's brand, not ours)", us: true, them: false },
+            { label: "Proof-of-work + NLP + reverse-DNS anti-spam", us: true, them: "Spam filtering" },
+            { label: "MCP server — AI agents create & read your forms", us: true, them: false },
+            { label: "Runs on your own Supabase + Vercel (free tiers)", us: true, them: false },
+          ],
+        },
+        getform: {
+          intro: "Getform is a hosted form backend for designers and developers, with file uploads and integrations. Inlet is developer-and-agency-first: self-hosted, one backend for every client site, white-label emails, and an MCP server.",
+          bestFor: "Getform is great for designers and small teams who want hosted form endpoints with quick integrations.",
+          verdict: "If you want a hosted endpoint per form, Getform works well. If you manage many sites and want to own the data, brand every client's emails, and let AI agents run your forms, Inlet goes further.",
+          rows: [
+            { label: "No SMTP or email library in your site", us: true, them: true },
+            { label: "Self-hosted — you own the submission data", us: true, them: false },
+            { label: "One backend serving many client sites", us: true, them: "Per-form endpoints" },
+            { label: "White-label branded auto-replies", us: true, them: "Paid tiers" },
+            { label: "Proof-of-work + NLP + reverse-DNS anti-spam", us: true, them: "reCAPTCHA / honeypot" },
+            { label: "MCP server — AI agents create & read your forms", us: true, them: false },
+            { label: "Runs on your own Supabase + Vercel (free tiers)", us: true, them: false },
+          ],
+        },
+        web3forms: {
+          intro: "Web3Forms wires a static site's form to email with an access key and no account — privacy-first, no dashboard. Inlet stores every lead in a dashboard you own, with white-label portals for your clients and an MCP server for AI agents.",
+          bestFor: "Web3Forms is great for quickly sending a static site's form to your inbox with no account and no backend.",
+          verdict: "If all you need is email forwarding, Web3Forms is the lightest option. If you want a dashboard, multi-client white-label portals, deeper anti-spam, and AI-agent access, Inlet is the step up.",
+          rows: [
+            { label: "No SMTP or email library in your site", us: true, them: true },
+            { label: "Central dashboard storing every lead", us: true, them: "Email only" },
+            { label: "Self-hosted — you own the submission data", us: true, them: "Not stored" },
+            { label: "One backend serving many client sites", us: true, them: "Per access key" },
+            { label: "White-label client portals & branded replies", us: true, them: false },
+            { label: "Proof-of-work + NLP + reverse-DNS anti-spam", us: true, them: "hCaptcha / honeypot" },
+            { label: "MCP server — AI agents create & read your forms", us: true, them: false },
+          ],
+        },
       },
     },
     notFoundPage: {
@@ -407,6 +452,48 @@ export const dictionaries: Record<Locale, MarketingDict> = {
             { label: "Réponses automatiques en marque blanche", us: true, them: "Offre Entreprise" },
             { label: "Intégration développeur (2 valeurs d’environnement + un helper)", us: true, them: false },
             { label: "Anti-spam par preuve de travail (sans friction CAPTCHA)", us: true, them: "CAPTCHA" },
+          ],
+        },
+        basin: {
+          intro: "Basin est un point de terminaison de formulaires hébergé et soigné pour les sites statiques, avec un bon filtrage anti-spam et des intégrations. Inlet répond au même besoin — des formulaires sans backend — mais en auto-hébergé, multi-tenant et en marque blanche, avec un serveur MCP pour les agents IA.",
+          bestFor: "Basin est excellent pour une équipe qui veut un point de terminaison hébergé raffiné, avec un bon anti-spam et des intégrations façon Zapier.",
+          verdict: "Pour une seule équipe, Basin est un choix propre. Si vous gérez plusieurs sites clients et voulez un tableau de bord que vous possédez, la marque de chaque client, et des agents IA qui câblent et lisent vos formulaires, Inlet est fait pour ça.",
+          rows: [
+            { label: "Pas de SMTP ni de bibliothèque e-mail dans votre site", us: true, them: true },
+            { label: "Auto-hébergé — vous possédez les données de soumission", us: true, them: false },
+            { label: "Un seul backend pour plusieurs sites clients", us: true, them: "Par compte" },
+            { label: "Réponse automatique en marque blanche (marque du client)", us: true, them: false },
+            { label: "Anti-spam preuve de travail + NLP + DNS inversé", us: true, them: "Filtrage anti-spam" },
+            { label: "Serveur MCP — les agents IA créent et lisent vos formulaires", us: true, them: false },
+            { label: "Fonctionne sur votre propre Supabase + Vercel (offres gratuites)", us: true, them: false },
+          ],
+        },
+        getform: {
+          intro: "Getform est un backend de formulaires hébergé pour designers et développeurs, avec envoi de fichiers et intégrations. Inlet est pensé pour les développeurs et agences : auto-hébergé, un seul backend pour chaque site client, e-mails en marque blanche et un serveur MCP.",
+          bestFor: "Getform est excellent pour les designers et petites équipes qui veulent des points de terminaison hébergés avec des intégrations rapides.",
+          verdict: "Si vous voulez un point de terminaison hébergé par formulaire, Getform fonctionne bien. Si vous gérez plusieurs sites et voulez posséder les données, personnaliser les e-mails de chaque client et laisser l’IA piloter vos formulaires, Inlet va plus loin.",
+          rows: [
+            { label: "Pas de SMTP ni de bibliothèque e-mail dans votre site", us: true, them: true },
+            { label: "Auto-hébergé — vous possédez les données de soumission", us: true, them: false },
+            { label: "Un seul backend pour plusieurs sites clients", us: true, them: "Points de terminaison par formulaire" },
+            { label: "Réponses automatiques en marque blanche", us: true, them: "Offres payantes" },
+            { label: "Anti-spam preuve de travail + NLP + DNS inversé", us: true, them: "reCAPTCHA / honeypot" },
+            { label: "Serveur MCP — les agents IA créent et lisent vos formulaires", us: true, them: false },
+            { label: "Fonctionne sur votre propre Supabase + Vercel (offres gratuites)", us: true, them: false },
+          ],
+        },
+        web3forms: {
+          intro: "Web3Forms relie le formulaire d’un site statique à un e-mail via une clé d’accès, sans compte — axé confidentialité, sans tableau de bord. Inlet enregistre chaque lead dans un tableau de bord que vous possédez, avec des portails en marque blanche pour vos clients et un serveur MCP pour les agents IA.",
+          bestFor: "Web3Forms est excellent pour envoyer rapidement le formulaire d’un site statique vers votre boîte de réception, sans compte ni backend.",
+          verdict: "S’il vous faut seulement une redirection par e-mail, Web3Forms est l’option la plus légère. Si vous voulez un tableau de bord, des portails clients en marque blanche, un anti-spam plus poussé et un accès pour les agents IA, Inlet est le cran au-dessus.",
+          rows: [
+            { label: "Pas de SMTP ni de bibliothèque e-mail dans votre site", us: true, them: true },
+            { label: "Tableau de bord central enregistrant chaque lead", us: true, them: "E-mail uniquement" },
+            { label: "Auto-hébergé — vous possédez les données de soumission", us: true, them: "Non stocké" },
+            { label: "Un seul backend pour plusieurs sites clients", us: true, them: "Par clé d’accès" },
+            { label: "Portails clients en marque blanche & réponses personnalisées", us: true, them: false },
+            { label: "Anti-spam preuve de travail + NLP + DNS inversé", us: true, them: "hCaptcha / honeypot" },
+            { label: "Serveur MCP — les agents IA créent et lisent vos formulaires", us: true, them: false },
           ],
         },
       },

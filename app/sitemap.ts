@@ -9,6 +9,9 @@ const ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.S
   { path: "/docs", priority: 0.9, changeFrequency: "weekly" },
   { path: "/compare/formspree", priority: 0.8, changeFrequency: "monthly" },
   { path: "/compare/jotform", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/compare/basin", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/compare/getform", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/compare/web3forms", priority: 0.8, changeFrequency: "monthly" },
   { path: "/client/signup", priority: 0.6, changeFrequency: "monthly" },
 ];
 

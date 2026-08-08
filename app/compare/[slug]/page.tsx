@@ -18,6 +18,9 @@ import Reveal from "@/components/Reveal";
 const COMPETITORS = [
   { slug: "formspree", name: "Formspree" },
   { slug: "jotform", name: "Jotform" },
+  { slug: "basin", name: "Basin" },
+  { slug: "getform", name: "Getform" },
+  { slug: "web3forms", name: "Web3Forms" },
 ] as const;
 
 export function generateStaticParams() {

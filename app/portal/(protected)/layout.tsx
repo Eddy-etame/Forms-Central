@@ -5,6 +5,7 @@ import { getPlan } from '@/lib/plans';
 import SignOutLink from '@/components/client/SignOutLink';
 import { getLocale } from '@/lib/i18n';
 import { getAppDict } from '@/lib/appDict';
+import { SITE_URL } from '@/lib/seo';
 
 /**
  * End-client portal shell. White-labeled to the developer's brand
@@ -52,7 +53,9 @@ export default async function PortalProtectedLayout({ children }: { children: Re
 
       {!whiteLabel && (
         <footer className="mx-auto max-w-6xl px-6 pb-8 text-center text-xs text-slate-400">
-          {t.poweredBy}
+          <a href={`${SITE_URL}/?ref=portal`} target="_blank" rel="noopener" className="transition-colors hover:text-slate-600">
+            {t.poweredBy}
+          </a>
         </footer>
       )}
     </div>

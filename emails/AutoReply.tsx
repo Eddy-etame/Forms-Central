@@ -7,10 +7,12 @@ import {
   Hr,
   Html,
   Img,
+  Link,
   Preview,
   Section,
   Text,
 } from 'react-email';
+import { SITE_URL } from '@/lib/seo';
 
 interface AutoReplyProps {
   clientName: string;
@@ -20,6 +22,7 @@ interface AutoReplyProps {
     logo_url?: string;
     primary_color?: string;
     font_family?: string;
+    whiteLabel?: boolean;
   };
   lang?: 'fr' | 'en';
 }
@@ -34,6 +37,9 @@ export const AutoReplyEmail = ({
   const isEn = lang === 'en';
   const primaryColor = branding.primary_color || '#0F766E';
   const fontFamily = branding.font_family || '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+  // Growth loop: free/solo carry a subtle Inlet credit (this email reaches the
+  // developer's own end-users — people who don't know Inlet yet). Paid = clean.
+  const showInletBadge = !branding.whiteLabel;
 
   const defaultMessage = isEn
     ? `Thank you for your message via ${formName}. We have received your request and our team will get back to you as soon as possible.`
@@ -76,6 +82,14 @@ export const AutoReplyEmail = ({
                 ? 'This email was generated automatically. Please do not reply directly unless stated otherwise.'
                 : 'Cet email est généré automatiquement. Merci de ne pas y répondre directement sauf indication contraire.'}
             </Text>
+
+            {showInletBadge && (
+              <Text style={{ color: '#9aa5b1', fontSize: '11px', textAlign: 'center', marginTop: '6px' }}>
+                {isEn ? 'Powered by ' : 'Propulsé par '}
+                <Link href={`${SITE_URL}/?ref=autoreply`} style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 600 }}>Inlet</Link>
+                {isEn ? ' — forms, delivered.' : ' — vos formulaires, livrés.'}
+              </Text>
+            )}
           </Section>
         </Container>
       </Body>

@@ -12,6 +12,7 @@ import {
   Section,
   Text,
 } from 'react-email';
+import { SITE_URL } from '@/lib/seo';
 
 const FRENCH_LABELS: Record<string, string> = {
   nom: 'Nom',
@@ -85,6 +86,7 @@ interface LeadNotificationProps {
     logo_url?: string;
     primary_color?: string;
     font_family?: string;
+    whiteLabel?: boolean;
   };
   lang?: 'fr' | 'en';
 }
@@ -97,6 +99,7 @@ export const LeadNotificationEmail = ({
   lang = 'fr',
 }: LeadNotificationProps) => {
   const isEn = lang === 'en';
+  const showInletBadge = !branding.whiteLabel;
   const primaryColor = branding.primary_color || '#0F766E'; // Default teal
   const fontFamily = branding.font_family || '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
@@ -166,11 +169,13 @@ export const LeadNotificationEmail = ({
 
             <Hr style={{ borderColor: '#e6ebf1', margin: '20px 0' }} />
 
-            <Text style={{ color: '#8898aa', fontSize: '12px', textAlign: 'center' }}>
-              {isEn
-                ? 'This email was sent automatically by the Inlet forms service.'
-                : 'Cet email a été envoyé automatiquement par le service Inlet Forms.'}
-            </Text>
+            {showInletBadge && (
+              <Text style={{ color: '#8898aa', fontSize: '12px', textAlign: 'center' }}>
+                {isEn ? 'Powered by ' : 'Propulsé par '}
+                <Link href={`${SITE_URL}/?ref=notify`} style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 600 }}>Inlet</Link>
+                {isEn ? ' — one form backend for all your sites.' : ' — un seul backend de formulaires pour tous vos sites.'}
+              </Text>
+            )}
           </Section>
         </Container>
       </Body>

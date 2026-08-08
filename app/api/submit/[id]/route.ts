@@ -750,13 +750,16 @@ export async function POST(
   }
 
   if (form.notify_email && form.clients && !emailsPaused && emailBudget > 0) {
-    const clientObj = form.clients as unknown as { name: string; email: string; logo_url?: string; primary_color?: string; font_family?: string };
+    const clientObj = form.clients as unknown as { name: string; email: string; logo_url?: string; primary_color?: string; font_family?: string; plan?: string };
     const clientEmail = clientObj?.email;
     const clientName = clientObj?.name;
     const branding = {
       logo_url: clientObj?.logo_url,
       primary_color: clientObj?.primary_color,
       font_family: clientObj?.font_family,
+      // Free/Solo carry a subtle "Powered by Inlet" (growth loop); paid plans
+      // (whiteLabel) are clean.
+      whiteLabel: getPlan(clientObj?.plan).whiteLabel,
     };
 
     if (clientEmail) {
@@ -784,6 +787,7 @@ export async function POST(
         logo_url: clientObj.logo_url,
         primary_color: clientObj.primary_color,
         font_family: clientObj.font_family,
+        whiteLabel: getPlan(clientObj.plan).whiteLabel,
       } : {};
 
       // Paid "custom sender" identity — only honoured if the client's plan

@@ -160,7 +160,7 @@ Sanity check against mature players:
 
 | Channel | Mechanism and evidence | Estimated yield | CAC estimate |
 |---|---|---|---|
-| **Direct outreach to agencies** in France and Cameroon, via the author's network | Sells the one differentiated feature: portals and per-client branding (E14) | **Assumption:** 50 contacts → 10 calls → 2 paying at $49 | 15 h × $15/h opportunity cost (**assumption**) ÷ 2 = **~$112**. Agency LTV = $49 × 75% ÷ 3% churn (**assumption**) = $1,225, so **LTV/CAC ≈ 11** |
+| **Direct outreach to agencies** in the target markets, via the author's network | Sells the one differentiated feature: portals and per-client branding (E14) | **Assumption:** 50 contacts → 10 calls → 2 paying at $49 | 15 h × $15/h opportunity cost (**assumption**) ÷ 2 = **~$112**. Agency LTV = $49 × 75% ÷ 3% churn (**assumption**) = $1,225, so **LTV/CAC ≈ 11** |
 | Author's own client sites | Captive users | These are the agency's own clients, not buyers of Inlet | $0; the value is internal (§5) |
 | Communities (Show HN, Reddit, Indie Hackers, dev.to, French/Cameroonian developer groups) | Web3Forms' founder on Twitter and Reddit: "not many conversions … the audience did not match" (S43) | One-off spikes; spike size **[UNVERIFIED]** | Time only; low yield |
 | **SEO** (5 compare pages, E11; docs) | Web3Forms: "Google is currently the #1 acquisition channel" (S43). But at least 7 rivals publish "alternatives"/"vs" pages (formbackend, formgrid, splitforms, staticforms, forminit, pagetools, web3forms; seen in S4/S5 search results). Inlet sits on a shared `vercel.app` subdomain and its GitHub card links to a homepage that returns 404 (case file §1) | Slow: 6–12+ months to rank **[UNVERIFIED]** | Time-heavy; payback over 12 months |
@@ -243,7 +243,7 @@ Probability-weighted results:
 | 6 | **(b) Agency-internal tool only** | Cost avoided | Immediate | Low | Capped value | Midpoint of −$540 … +$1,080 = **≈ +$270/yr** |
 | — | **(g) Portfolio / credibility asset** | One freelance engagement won on the strength of this codebase (18.8k lines, i18n, MCP, 2FA) | — | — | Not a product business | 10 days at an assumed €300–450/day (**[UNVERIFIED]**) = €3–4.5k, **more than any Inlet model's 12-month EV** |
 
-**Payment rails** determine what is feasible. The author may be in Cameroon: `+237` appears at `README-english.md:224` and `immopro.cm` at `:115`. That is suggested, not proven.
+**Payment rails** determine what is feasible, and which ones open depends on where the seller's legal entity is registered. The table covers two cases: a seller based in a target market that Stripe does not serve (Cameroon, named in `lib/i18n.ts`), and a seller with an EU entity.
 
 | Rail | Seller in Cameroon? | Seller with an EU entity? | Fee |
 |---|---|---|---|

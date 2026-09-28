@@ -231,7 +231,7 @@ The Prosecution's sub-point on plain HTML forms is also correct. Browsers send `
 **Count 4: "Seo" is dropped. Verdict: CONCEDE fully. No overreach.**
 
 I re-ran the exact filter from `route.ts:554-566`:
-- Dropped: "Seo-yeon Kim", "studio based in Seoul", `ana@museodelprado.es`, `joseortiz@gmail.com`, English "investment property".
+- Dropped: "Seo-yeon Kim", "studio based in Seoul", `ana@museodelprado.es`, `joseortiz@example.com`, English "investment property".
 - Also dropped, and worse for my own positioning: a **French lead asking for "SEO" for a bakery website**.
 - Passed: a plain French quote request, and French "investissement locatif".
 

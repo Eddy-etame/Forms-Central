@@ -287,7 +287,7 @@ Tally's badge is also shown to form *respondents* rather than buyers, and its fo
 I CONCEDE the locale bug. French is served to Germany, Brazil and elsewhere (`lib/i18n.ts:14-21`). Fix: switch to a list of French-speaking countries and honour `Accept-Language` (15 minutes).
 
 **CONCEDE outright:**
-- Count 1 (no checkout; the Prosecution's own mitigation notes Paddle accepts sellers in Cameroon).
+- Count 1 (no checkout; the Prosecution's own mitigation notes Paddle accepts sellers almost everywhere).
 - Count 5 (false claims, plus wrong competitor rows).
 - Count 6 (legal vacuum; the Gemini "Unpaid Services" personal-data clause is the stronger AI charge, and I adopt it).
 - Count 11 (`[object File]` uploads; French auto-replies by default; fire-and-forget emails without `after()`, whose Next.js 16 applicability is **[FROM MEMORY]**).

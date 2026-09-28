@@ -28,7 +28,7 @@ What follows is the evidence.
 - `lib/upgrade.ts:1-13`: "Self-serve checkout isn't live yet". Every paid CTA is a `mailto:` to a hard-coded personal Gmail. It is live on `/pricing` as three `mailto:` links (curl, 2026-09-28).
 - There is no billing code at all. Grepping `app lib migrations components` for invoice, billing, subscription, stripe, paddle, lemon, paypal, cycle or renew finds nothing except comments. `lib/actions.ts` has no function that changes a client's `plan`.
 - Yet `app/pricing/page.tsx:33` promises that "downgrades [apply] at the end of the cycle". No cycle exists.
-- **Rails** (author's likely market **[INFERENCE]**: `+237` and `immopro.cm` in `README-english.md:115, 224`; all 109 commits are stamped `+0100` in July and August, which is West/Central Africa Time, not French summer time):
+- **Rails** (which ones open depends on where the seller's legal entity is registered; some markets Inlet targets in `lib/i18n.ts` are not covered):
   - Stripe lists no Cameroon (https://stripe.com/global).
   - Lemon Squeezy's bank-payout list has no Cameroon (https://docs.lemonsqueezy.com/help/getting-started/supported-countries).
 
@@ -36,9 +36,9 @@ What follows is the evidence.
 
 **The two hidden behind it**
 1. **Nothing is recorded.** No invoice, no VAT, no receipt, no cancellation path. An EU B2B buyer cannot book the expense, and a US buyer has no refund recourse.
-2. **The address may be misspelled [UNVERIFIED].** It reads `eddy.eetame@…` (`lib/upgrade.ts:6`), while the repo's author identity is `Eddy-etame`. If it is a typo, even the manual funnel goes to a stranger.
+2. **The address may be misspelled [UNVERIFIED].** The hard-coded address (`lib/upgrade.ts:6`) does not match the repo's author handle. If it is a typo, even the manual funnel goes to a stranger.
 
-*Mitigation, for fairness:* Paddle does not list Cameroon among unsupported seller countries (https://www.paddle.com/help/start/intro-to-paddle/which-countries-are-supported-by-paddle). A route exists. It simply has not been taken.
+*Mitigation, for fairness:* Paddle's list of unsupported seller countries is short (https://www.paddle.com/help/start/intro-to-paddle/which-countries-are-supported-by-paddle). A route exists. It simply has not been taken.
 
 ---
 
@@ -68,7 +68,7 @@ What follows is the evidence.
 **Evidence**
 - **The stated pool.** `lib/plans.ts:12-14` says delivery "rides Brevo's free tier (300 emails/day aggregate)".
 - **The promises.** Pro is 300/day and Max is 1,000/day (`lib/plans.ts:81, 99`).
-- **The scheme.** `lib/mailAccounts.ts:86-87`: "N Brevo accounts give roughly N× the daily send capacity". Commit `488f4a4` (2026-07-16) says "6 Brevo accounts wired … all send from inlet.forms@gmail.com, 6 distinct logins -> ~6x daily capacity."
+- **The scheme.** `lib/mailAccounts.ts:86-87`: "N Brevo accounts give roughly N× the daily send capacity". Commit `488f4a4` (2026-07-16) says "6 Brevo accounts wired … all send from [one @gmail.com address], 6 distinct logins -> ~6x daily capacity."
 - **The author's own warning.** `docs/adding-email-accounts.md:112-115`: "creating many free accounts on one provider to beat a daily cap violates most providers' terms (Brevo included) and wrecks deliverability once they link them."
 - **Brevo's terms.** §3.1: "You are only allowed to create and use one account." §5.4: use "is strictly personal and shall not be … distributed … to any third party." Version of 2025-10-01 (https://www.brevo.com/legal/termsofuse/).
 - **The arithmetic.**
@@ -383,7 +383,7 @@ What follows is the evidence.
 6. **The AI classifier deletes leads.** Refuted. It only labels them (`lib/spamClassifier.ts:8`).
 7. **Open redirect.** Refuted by `safeRedirect` (`route.ts:81-106`).
 8. **Cross-tenant leakage via MCP.** Refuted. `get_submissions` filters on `client_id` (`app/api/[transport]/route.ts:90`).
-9. **"No payment rail from Cameroon is possible."** Refuted. Paddle does not list Cameroon as unsupported. Only Stripe and Lemon Squeezy are out.
+9. **"No payment rail is possible for a seller outside Stripe's countries."** Refuted. Paddle's unsupported list is short. Only Stripe and Lemon Squeezy have narrow country lists.
 10. **"Anyone may legally clone and sell it."** Refuted. With no license, all rights are reserved. The practical substitute remains (Count 8).
 11. **Gemini key pooling as a clear terms violation.** Not proven. Google limits apply "per project, not per API key" (https://ai.google.dev/gemini-api/docs/rate-limits). Google APIs Terms §2d bars circumventing limits (https://developers.google.com/terms), but I found no explicit multi-project clause. The stronger Gemini charge is the personal-data one (Count 6).
 12. **Anti-DevTools DOM wiping harms customers.** Refuted. It is used only in `components/admin/AdminShell.tsx:10`.

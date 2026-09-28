@@ -310,7 +310,7 @@ What follows is the evidence.
 
 **The two hidden behind it**
 1. **The strategy never went beyond copywriting.** SEO pages and a viral loop were the last commits, shipped before anyone could pay.
-2. **The polish fixed the wrong things.** The "baffled-bar" UX passes fixed dark-mode contrast while the CORS dead-end (Count 2) went unnoticed.
+2. **The polish fixed the wrong things.** The UX polish passes fixed dark-mode contrast while the CORS dead-end (Count 2) went unnoticed.
 
 ---
 

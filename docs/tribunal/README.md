@@ -10,7 +10,7 @@ Everything below was checked against this repository and the live site on **2026
 
 ## The verdict in 30 seconds
 
-> **PIVOT.** Stop selling Inlet to strangers as a self-serve SaaS. Keep the engine: it already carries real leads for the author's own client sites. It becomes the lead back-office of his own web studio, billed as a line in his client retainers. One resale test to agencies that hand-code their clients' sites is allowed, with numeric gates on **2026-10-28**, **2026-11-27** and **2026-12-27**, and no extension.
+> **PIVOT.** Stop selling Inlet to strangers as a self-serve SaaS. Keep the engine: it already carries real leads for the author's own client sites. It becomes the lead back-office of the author's own web studio, billed as a line in the studio's client retainers. One resale test to agencies that hand-code their clients' sites is allowed, with numeric gates on **2026-10-28**, **2026-11-27** and **2026-12-27**, and no extension.
 
 | | Score |
 |---|---|
@@ -26,7 +26,7 @@ Everything below was checked against this repository and the live site on **2026
 3. **Delivery breaks provider terms.** It rotates several free Brevo accounts, although Brevo §3.1 allows one per user, and it sends lead text to free Gemini keys, whose terms say not to send personal data.
 4. **Leads are silently lost.** A substring filter drops any lead containing "seo" (a studio in Seoul, a French request for SEO work, an email address such as "joseortiz@…"), and the anti-spam writes permanent IP bans.
 5. **Cost is not the problem.** Every paid plan keeps a 37–88% margin on paid infrastructure, and honest email costs $20–69 a month.
-6. **The only production user is the author,** through his own client sites. That is why the ruling is PIVOT and not KILL.
+6. **The only production user is the author,** through their own client sites. That is why the ruling is PIVOT and not KILL.
 
 Nine orders apply **immediately, whatever the verdict** (§5a of `05-verdict.md`), all due by 2026-10-19. The first four:
 - stop dropping leads;
@@ -91,7 +91,7 @@ The trial was built so that no single agent's opinion could carry it:
 | "The only form backend that speaks French" | Defense: exhibit | **Struck.** Jotform has a full French site |
 | "The agency-portal wedge is unoccupied" | Defense: exhibit | **Struck.** Agency Label and Duda occupy it |
 | "Every email carries the end-client's brand" | Defense: top exhibit | **Struck.** Branding is per tenant, not per end-client |
-| Probability-weighted MRR at month 12 | Economist: $215 | **Reframed.** Conditional on the author committing: about **$230–320**, i.e. $3–5 an hour for his time over 24 months |
+| Probability-weighted MRR at month 12 | Economist: $215 | **Reframed.** Conditional on the author committing: about **$230–320**, i.e. $3–5 an hour for their time over 24 months |
 | "The author's agency is customer #1" | Economist and Defense | **Unproven.** The real customer #1 is the author's own studio |
 
 ---
@@ -102,7 +102,7 @@ The Chief Judge's auditors went further than this repository. The author reviewe
 
 | Outside evidence | Role in the verdict | Kept? |
 |---|---|---|
-| The author's own public client-site repositories: his sites post leads to Inlet through a server relay he wrote | **Decisive.** It is why the ruling is PIVOT, not KILL | **Kept**, marked ◆. Client names, domains, towns and repository names withheld |
+| The author's own public client-site repositories: these sites post leads to Inlet through a server relay the author wrote | **Decisive.** It is why the ruling is PIVOT, not KILL | **Kept**, marked ◆. Client names, domains, towns and repository names withheld |
 | The same relay can lose leads to a permanent IP ban and keeps no copy | **Decisive** for immediate order A2 | **Kept**, marked ◆, anonymised |
 | New repositories on the author's public profile during the 51 "silent" days | Softens the founder-signal count | **Kept**, generic |
 | A third-party organisation's repositories and internal audit | Only reinforced "customer #1 is unproven", which in-repo evidence already shows (the agency's documented deployment returns 404) | **Removed** |

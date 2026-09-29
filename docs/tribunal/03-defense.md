@@ -147,7 +147,7 @@ All three are fixable in under a day (move #3).
 
 ### Exhibit 7: A real agency dogfooded it, and the author ships fast
 
-**Inlet began as an agency's internal tool, the fingerprints of a real client form are in the code, and the author has shown he can ship at high speed.**
+**Inlet began as an agency's internal tool, the fingerprints of a real client form are in the code, and the author has shown they can ship at high speed.**
 
 Evidence:
 - **An internal agency spec.** `cahier_des_charges.md` asks for an internal service to replace Jotform/EmailJS on "nos sites vitrines", with an admin panel and centralized leads. The README describes centralizing forms from "villas, agences, vitrines clients" (`README.md:4`).

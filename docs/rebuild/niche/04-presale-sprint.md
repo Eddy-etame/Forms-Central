@@ -8,6 +8,13 @@
 
 All URLs were accessed on 2026-09-29. **[HYPOTHESIS]** marks an unverified input of mine. "V" is `docs/tribunal/05-verdict.md` and "R" is `docs/rebuild/README.md`. No repository file was written.
 
+> ⚠️ **Superseded in part: read [`README.md`](README.md) first.** After the hater review (`06`), the round-2 decision replaced three things in this file:
+> - **The instrument:** no €87/€117 prepaid Founding Pass before the court's B1–B3 and before 28 Oct. It is replaced by signed order forms and a separate paid studio audit.
+> - **The shape:** one track (clubs), not two. Studios get unpaid discovery conversations only.
+> - **The prices.**
+>
+> The benchmarks, outreach rules, templates and call scripts below are still useful. **Before pasting any price or offer line from this file, check it against `README.md` §3.**
+
 ## 0. The answer in six lines
 1. **Run a two-niche pre-sale sprint from Thu 1 Oct to Wed 14 Oct 2026, and decide on Thu 15 Oct.** That is before Gate A (Mon 19 Oct, R:191) and inside the court's 28 Oct window for "10 external discovery conversations" (V:305).
 2. **The instrument is a paid "Founding Pass",** not a waitlist and not an LOI:
@@ -37,10 +44,10 @@ All URLs were accessed on 2026-09-29. **[HYPOTHESIS]** marks an unverified input
 ### 1.2 Founder case studies (closest analogues first)
 | Case | Buyer | What they paid for | Result | Lesson for Inlet |
 |---|---|---|---|---|
-| **Content Snare** (James Rose) | Web designers and agencies | Mockups only; a discounted first year | "25 out of 25 available spots in about 2 hours". Web-designer Facebook groups plus people he knew; about 6 months from pre-sale to launch (https://www.failory.com/interview/content-snare) | The **same buyer as niche A** pre-pays against mockups. A cap ("25 spots") is honest scarcity |
+| **Content Snare** (James Rose) | Web designers and agencies | Mockups only; a discounted first year | "25 out of 25 available spots in about 2 hours". Web-designer Facebook groups plus people the founder already knew; about 6 months from pre-sale to launch (https://www.failory.com/interview/content-snare) | The **same buyer as niche A** pre-pays against mockups. A cap ("25 spots") is honest scarcity |
 | **Ops Calendar** (Brian Casel) | Marketers and agencies | A screencast of a mockup; $200 for owners, $500 for agencies; "a full refund guarantee at anytime" | 14 of 15 invited prospects paid, over $3,000 in 6 weeks. Cold @replies: ~20 sent, "about 4 people replied" (https://briancasel.com/validating-a-saas-product-step-by-step) | A refund guarantee plus an agency tier works. Cold channels were thin; the eager hand-picked 15 converted |
 | **Orapa** (Stan Rymkiewicz) | B2B | Yearly plan, ~60% discount, 90-day guarantee | 100+ cold emails → ~10 yearly purchases (secondary: https://www.failory.com/blog/how-to-pre-sell-your-saas) | The best cold-email pre-sale on record here is about 10% of contacts. Above base rates |
-| **WP Curve** (Dan Norris) | Small businesses on WordPress | A productized service at $69/month | Launched in 7 days; 10 paying customers in week 1, all from his existing email list (https://saasclub.io/podcast/dan-norris-wpcurve/) | A productized service sold to an owned list converts fast. Warm beats cold |
+| **WP Curve** (Dan Norris) | Small businesses on WordPress | A productized service at $69/month | Launched in 7 days; 10 paying customers in week 1, all from the founder's existing email list (https://saasclub.io/podcast/dan-norris-wpcurve/) | A productized service sold to an owned list converts fast. Warm beats cold |
 | **WP Engine** (Jason Cohen) | WordPress site owners | Price floated at $50/month in interviews | The spoken price split the market into two segments; "You ask whether they'd buy… they say yes. Then you build it, and they don't buy" (https://longform.asmartbear.com/customer-development/) | Say the price out loud on every call and log the reaction |
 | **Concierge MVP** (Food on the Table) | Consumers | $9.95/week, delivered by hand | One customer, then 20, then software (secondary: https://www.shortform.com/blog/concierge-mvp/) | The report and the setup stay manual until Gate B (R:206) |
 
@@ -155,7 +162,7 @@ All URLs were accessed on 2026-09-29. **[HYPOTHESIS]** marks an unverified input
 | La Fabrique du Net, 803 FR agencies (https://www.lafabriquedunet.fr/agences/pages/agences-site-internet) | 35 rows |
 | Malt and Codeur front-end freelancers (https://www.malt.fr/t/barometre-tarifs/tech) | 25 rows |
 | Webflow Experts, ~1,760 (`04-distribution.md:46`); Framer Experts (https://www.framer.com/experts/); Clutch (https://clutch.co/web-developers), filtered to the US | 40 rows |
-| The author's own contacts: studios and freelancers he knows (excluding the agency the spec was written for, V:320) | 12 warm |
+| The author's own contacts: studios and freelancers they know (excluding the agency the spec was written for, V:320) | 12 warm |
 
 **Qualify each studio** by opening 3 portfolio sites and reading the source:
 - `_next/` or `astro-island` means hand-coded, which is the priority;
@@ -174,7 +181,7 @@ All URLs were accessed on 2026-09-29. **[HYPOTHESIS]** marks an unverified input
 - **FR.** « Merci pour la connexion, {Prénom}. Je fais aussi des sites clients et je teste un contrôle quotidien des formulaires + un rapport mensuel des demandes que les studios ajoutent à leur contrat de maintenance. J'ai analysé {site-client} : je vous envoie le résultat (1 page) ? »
 
 **A3, warm intro (a forwardable blurb):**
-- **EN.** "Could you forward this to {Name}? '{Author} runs a web studio and built a lead line for client sites: every form checked daily, a monthly report per client under the studio's brand. He's taking 10 founding studios at €29/month for 10 sites and starts with a free scan of 3 client sites.'"
+- **EN.** "Could you forward this to {Name}? '{Author} runs a web studio and built a lead line for client sites: every form checked daily, a monthly report per client under the studio's brand. {Author} is taking 10 founding studios at €29/month for 10 sites and starts with a free scan of 3 client sites.'"
 - **FR.** « Tu peux transmettre à {Nom} ? "{Auteur} dirige un studio web et a monté une ligne « demandes » pour les sites clients : chaque formulaire vérifié chaque jour, un rapport mensuel par client au nom du studio. Il ouvre 10 places fondatrices à 29 €/mois pour 10 sites, en commençant par l'analyse gratuite de 3 sites." »
 
 **Community post** (French freelancer group, after asking the admin): "I'll check the contact forms on 3 client sites for free for the first 10 freelancers who comment." Content Snare pre-sold through groups like these.
@@ -240,7 +247,7 @@ All URLs were accessed on 2026-09-29. **[HYPOTHESIS]** marks an unverified input
 | FAQ 5 | *The €117?* The audit (including a test request per location you approve) plus your first 3 months. Full refund until 30 days after your first report. | *Les 117 € ?* L'audit (dont une demande-test par salle que vous validez) + vos 3 premiers mois. Remboursement intégral jusqu'à 30 jours après le premier rapport. |
 
 ### List building (target: 80 screened → at least 50 qualified; 40 FR, 40 US)
-- **Search.** Google Maps for "boxing / MMA / BJJ / muay thai gym" and "salle de boxe / club MMA / JJB" in 3 FR and 3 US metro areas the author chooses. Prefer areas where he can walk in.
+- **Search.** Google Maps for "boxing / MMA / BJJ / muay thai gym" and "salle de boxe / club MMA / JJB" in 3 FR and 3 US metro areas the author chooses. Prefer areas where the author can walk in.
 - **Screen out:**
   - clubs with no web trial form;
   - associations;
@@ -263,7 +270,7 @@ All URLs were accessed on 2026-09-29. **[HYPOTHESIS]** marks an unverified input
 - **FR.** « Bonjour ! Dev web, je fais les sites d'un club de sports de combat. Votre lien en bio mène à {X}, donc les gens qui veulent un essai ne voient pas forcément vos horaires. J'ai fait une analyse gratuite (1 page) de votre parcours d'essai : je vous l'envoie ici ? »
 
 **B3, warm intro (sent by the club client; only true claims):**
-- **EN.** "{Owner}, {Author} runs our sites. Our trial requests get an instant reply and land in one place for all our locations, and he's adding a one-tap "called back" and a monthly report per location. He's opening it to 10 clubs. Worth 15 minutes?"
+- **EN.** "{Owner}, {Author} runs our sites. Our trial requests get an instant reply and land in one place for all our locations, and {Author} is adding a one-tap "called back" and a monthly report per location. It opens to 10 clubs. Worth 15 minutes?"
 - **FR.** « {Prénom}, {Auteur} gère nos sites. Nos demandes d'essai reçoivent une réponse immédiate et arrivent au même endroit pour toutes nos salles ; il ajoute un clic « rappelé » et un rapport mensuel par salle. Il ouvre ça à 10 clubs. Ça vaut 15 minutes ? »
 
 ### Call script: 10 questions
@@ -375,7 +382,7 @@ Build one niche; honour every deposit in the other.
 
 **Other biases:**
 - Deposits from friends are softer, so they are logged apart.
-- The author's charisma and his club reference will not transfer to a hire or to self-serve.
+- The author's charisma and their club reference will not transfer to a hire or to self-serve.
 - Refunds are possible until January: count cash that is still held on 30 Jan.
 
 ---
@@ -395,7 +402,7 @@ Build one niche; honour every deposit in the other.
 2. **LOIs as the main metric.** They are non-binding by design; they are kept only as the fallback when there is no entity (0.25).
 3. **Mystery-shopping prospects without consent.** It is deceptive, wastes their staff's time, and breaks the scanner's "never submits anything" rule (`04-distribution.md:64`). It is allowed only inside the paid audit, with the owner's prior approval.
 4. **Pre-selling a lifetime deal.** 16–17% refunds, costs that never stop, and it does not test recurring willingness to pay (`03-money.md:59`).
-5. **LinkedIn automation tools.** They breach the User Agreement and put at risk the author's account, which is also his client pipeline.
+5. **LinkedIn automation tools.** They breach the User Agreement and put at risk the author's account, which is also their client pipeline.
 6. **Cold email to Germany** (UWG §7) **and to UK sole traders** (PECR).
 7. **Paid ads to a landing page.** The plan already rejects paid search (R:297), and 14 days of clicks prove curiosity, not payment.
 8. **Building the scanner before the sprint.** Hand scans suffice for about 16 calls; build it after the demand is shown (R:205).

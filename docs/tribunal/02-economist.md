@@ -259,7 +259,7 @@ On Paddle, a $19 Pro sale nets $19 − $1.45 = $17.55 (7.6% fee). A $9 Solo sale
 
 ## 7. The number that decides it
 
-**Metric:** the number of **paying external accounts at day 60**. "Paying" means money actually received through a real checkout (Paddle or a mobile-money link) at list price, not a promise. "External" means neither the author's agency nor accounts he set up himself.
+**Metric:** the number of **paying external accounts at day 60**. "Paying" means money actually received through a real checkout (Paddle or a mobile-money link) at list price, not a promise. "External" means neither the author's agency nor accounts the author set up personally.
 
 - **Why this metric.** In this category, usage does not predict revenue: FormSubmit has 400k sites and no subscriptions listed (S12, S44). The trial's open question is willingness to pay, not whether a form can be delivered. It also forces the two prerequisites everything else depends on: a checkout, and one real distribution action.
 - **Base-case forecast for day 60:** about 0.6 self-serve customers (2 months × 300 visitors × 0.10%, from the §4 simulation) plus 1–3 from direct agency outreach, so **about 2–4**.

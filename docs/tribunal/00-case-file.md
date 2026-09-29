@@ -50,7 +50,7 @@ The code then grew past that spec into a public multi-tenant SaaS with sign-up, 
 | E7 | The AI (spam classifier + sales chat) **rotates a pool of free Gemini keys**, then falls back to Groq, then Mistral. Pro and Max are sold "unlimited" AI | `lib/ai.ts:4-5`, `lib/plans.ts:82, 100` |
 | E8 | The marketing claims **"Self-hosted form backend · you own the data"** and "Every plan is self-hosted on your own infrastructure — your data never belongs to us". But the product is a hosted multi-tenant SaaS: sign-ups at `inlett.vercel.app` store data in the operator's Supabase | `lib/dictionaries.ts:64, 100, 145-147, 168, 203, 212` |
 | E9 | JSON-LD calls it a "Self-hosted form backend" with USD offers | `app/pricing/page.tsx:51-63` |
-| E10 | Testimonials are labelled "Early user" (no name, no company), and the third one is from the creator himself | `lib/dictionaries.ts:150-158` |
+| E10 | Testimonials are labelled "Early user" (no name, no company), and the third one is from the creator themselves | `lib/dictionaries.ts:150-158` |
 | E11 | Five SEO comparison pages: Formspree, Jotform, Basin, Getform, Web3Forms | `app/compare/[slug]/page.tsx:18-24` |
 | E12 | A "Powered by Inlet" footer on free/solo emails and the portal | `emails/AutoReply.tsx:88`, `emails/LeadNotification.tsx:174`, `lib/appDict.ts:543` |
 | E13 | Anti-spam stack: honeypot + proof-of-work + keyword/AI classifier + reverse-DNS VPN block + blacklist | `lib/pow.ts`, `lib/spamCore.ts`, `lib/spamClassifier.ts`, `lib/dnsLookup.ts`, `lib/blacklist.ts` |

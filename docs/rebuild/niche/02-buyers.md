@@ -124,7 +124,7 @@ Research done on 2026-09-29. Every URL was accessed that day. Code references po
 
 | Objection | Answer that is true today or by Phase 1 |
 |---|---|
-| "You're a competing studio; you'd see my clients" (C4) | Prospect outside the author's trading area first. F2 per-agency isolation before any external tenant (`README.md:318`). A written no-solicit clause for 12 months. Operator access logged (T2.6). Honest line: "the operator can technically read data; the DPA and the log bind him" |
+| "You're a competing studio; you'd see my clients" (C4) | Prospect outside the author's trading area first. F2 per-agency isolation before any external tenant (`README.md:318`). A written no-solicit clause for 12 months. Operator access logged (T2.6). Honest line: "the operator can technically read data; the DPA and the log bind the operator" |
 | "My sites are on WordPress / CF7" | Server-to-server snippet (about 1 day after A2) or Lead Mirror (M13). **Without one of them, this niche fails** |
 | "My clients won't pay another line" | Put it inside the existing retainer (see margin below) |
 | "RGPD? Where is it hosted?" | EU region, DPA and legal pages (F3). They must exist before the first invoice |

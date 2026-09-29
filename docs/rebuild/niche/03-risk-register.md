@@ -113,7 +113,7 @@ L = likelihood and I = impact, each 1–5. Costs are at 1.0× the court's estima
 
 | # | Risk | L | I | Move | Evidence | Cost | Residual |
 |---|---|---|---|---|---|---|---|
-| 45 | **Demand never tested.** The author himself used direct Resend for one site (N1, N5, V:324) | 4 | 5 | Cannot be removed. **Convert it to evidence:** signed lead lines within 14 days, then prepaid founding deposits | — | 6 h selling | This is the ceiling |
+| 45 | **Demand never tested.** The author already used direct Resend for one site (N1, N5, V:324) | 4 | 5 | Cannot be removed. **Convert it to evidence:** signed lead lines within 14 days, then prepaid founding deposits | — | 6 h selling | This is the ceiling |
 | 46 | Crowded category: LeadDuo, Postbox, HubSpot free, Jotform, Formspree, Web3Forms (H#5) | 5 | 4 | Narrow the edge to per-client packaging + monitoring + proof report | H#5 | 0 | Stays |
 | 47 | **Missed.** Vertical incumbents already include lead capture:<br>• martial arts: Spark ($249/mo, landing pages and leads), Kicksite, Zen Planner (Engage CRM $249);<br>• French real estate: Apimo ("remontée des leads", from €89), Hektor, Netty (site included) | 4 | 4 | **Bypass:** sell only to businesses on custom-built sites, through their studio. Push leads by webhook into their CRM; don't fight it | [Spark/Kicksite/Zen Planner](https://www.wodify.com/blog/pricing-guide-martial-arts-software); [Diffuze](https://www.diffuze.fr/blog/logiciel-immobilier-comparatif-2026) | 0 | Stays |
 
@@ -180,9 +180,16 @@ L = likelihood and I = impact, each 1–5. Costs are at 1.0× the court's estima
 
 **1. A one-paragraph letter to each party** (2 h, €0). French law wants every right named, and its scope, place and duration (L131-3), so the letter spells them out:
 
-> *[Organisation], représentée par [nom, fonction], déclare ne détenir aucun droit sur le logiciel « logiciel-formulaire » / « Inlet » ([URL du dépôt]), toutes versions, code, documentation et œuvres dérivées comprises. Pour autant qu'elle en détiendrait, elle cède à [nom légal de l'auteur], à titre irrévocable, pour le monde entier et pour toute la durée légale des droits, les droits de reproduction, de représentation, d'adaptation, de traduction et de distribution, pour tous usages, y compris commerciaux, contre 1 €. Elle conserve une licence gratuite, perpétuelle, non exclusive et non cessible d'usage interne de son déploiement existant. Elle confirme que le dépôt ne contient aucune de ses informations confidentielles. Fait à [lieu], le [date], signature.*
+> *[Organisation], représentée par [nom, fonction], déclare ne détenir aucun droit sur le logiciel « logiciel-formulaire » / « Inlet » ([URL du dépôt]), toutes versions, code, documentation et œuvres dérivées comprises. Pour autant qu'elle en détiendrait, elle cède à [nom légal de l'auteur], à titre gratuit et irrévocable, pour le monde entier et pour toute la durée légale des droits, les droits de reproduction, de représentation, d'adaptation, de traduction et de distribution, pour tous usages, y compris commerciaux. En contrepartie, elle conserve une licence gratuite, perpétuelle, non exclusive et non cessible d'usage interne de son déploiement existant. Fait à [lieu], le [date], signature.*
 
-The English version has the same content. The free internal licence lowers the other party's cost of saying yes.
+The English version has the same content. The free internal licence is what the other party receives in exchange, and it lowers its cost of saying yes.
+
+> **Corrected after the round-2 hater review (finding 20):**
+> - "contre 1 €" is replaced by "à titre gratuit", with the licence-back as the counterpart. A €1 price risks nullity as derisory consideration (Code civil art. 1169).
+> - The confidentiality sentence is **deleted**, because it could not be signed truthfully: `NOTE.md` describes the code as the agency's internal service.
+> - Before sending:
+>   1. remove `NOTE.md` from HEAD;
+>   2. answer the employment question in `README.md` §10, question 1. If an employment or internship contract exists, read its IP clause first.
 
 **2. If a party refuses or stays silent for 14 days:** ask for a paid **licence-back** (non-exclusive, commercial) before rebuilding anything.
 
@@ -311,6 +318,6 @@ The English version has the same content. The free internal licence lowers the o
 - **About 85%** that recommendations 1–2 (title letters + sole-trader registration) are the correct first move. They are cheap, dominate everything else, and every other gain in §4 is multiplied by them.
 - **About 55%** [HYPOTHESIS] that both letters come back signed within 30 days.
 - What would raise both figures:
-  - the author's actual status with each organisation in Jul–Aug 2026 (employee, intern, contractor or none), and any IP clause he signed;
-  - where he is tax-resident, which picks the one row of §2a that applies;
+  - the author's actual status with each organisation in Jul–Aug 2026 (employee, intern, contractor or none), and any IP clause they signed;
+  - where they are tax-resident, which picks the one row of §2a that applies;
   - whether the imported July code was written for the agency.

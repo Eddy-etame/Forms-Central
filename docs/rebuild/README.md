@@ -1,6 +1,6 @@
 # Rebuild plan: how Inlet makes money
 
-> **Update, 2026-09-29: read [`niche/README.md`](niche/README.md) first.** Round 2 replaces three parts of this plan: the positioning (§1), the prices (§6), and the selling in Phases 0–1 (§5). It replaces them with a two-track, 14-day paid pre-sale that decides the niche with money: combat-sports and fitness clubs, or local lead-gen studios. Everything else below still applies: foundations, court orders, gates, hours, and the staging of the teacher's ideas.
+> **Update, 2026-09-29: read [`niche/README.md`](niche/README.md) first.** Round 2 replaces three parts of this plan: the positioning (§1), the prices (§6), and the selling in Phases 0–1 (§5). It replaces them with one niche, combat-sports and fitness clubs in French-speaking Europe. The niche is tested with the author's own data first (a Day 0 query), then with lawful money: own-client order forms invoiced once B1–B3 are live, and a paid studio audit for other clubs. Local lead-gen studios get unpaid discovery conversations only. Everything else below still applies (foundations, court orders, gates, hours, and the staging of the teacher's ideas), except the overrides listed in `niche/README.md` §8.
 
 **Why this plan exists.** The trial (`docs/tribunal/`) judged Inlet *as it stands* and ruled PIVOT. The author disagrees: Inlet must be rebuilt into a product that earns. This folder answers **how**.
 

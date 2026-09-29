@@ -298,24 +298,24 @@ I CONCEDE the locale bug. French is served to Germany, Brazil and elsewhere (`li
 
 **(a) The 60% bear case mixes two questions.** The bear case is defined by the *author* not resuming (E-180), and the Economist's own sensitivity #3 puts the bear at ~90% without commitment (E-281). Write P(commit) = c and assume a market-failure rate *given* effort of about 30%. Then 60% = c × 0.30 + (1 − c) × 0.90, so **c ≈ 0.5**.
 
-The Court is ruling on "should he keep building?", a choice the author makes. The decision-relevant figure is **P(bear | commits) ≈ 25–35%**. The unconditional 60% is a fair forecast, but the wrong input for this ruling. (The trial itself produced commits on 2026-09-28. I give that almost no weight: reviewing is not building.)
+The Court is ruling on "should the author keep building?", a choice that is the author's to make. The decision-relevant figure is **P(bear | commits) ≈ 25–35%**. The unconditional 60% is a fair forecast, but the wrong input for this ruling. (The trial itself produced commits on 2026-09-28. I give that almost no weight: reviewing is not building.)
 
-**(b) The base case ignores the Economist's own best channel.** He prices direct agency outreach at "50 contacts → 10 calls → 2 paying at $49" with LTV/CAC ≈ 11 (E-163), yet books only "2 network Pro customers in month 3" (E-182).
+**(b) The base case ignores the Economist's own best channel.** The Economist prices direct agency outreach at "50 contacts → 10 calls → 2 paying at $49" with LTV/CAC ≈ 11 (E-163), yet books only "2 network Pro customers in month 3" (E-182).
 
-Recomputed at **half** his own conversion rate, with 4 of the 10 weekly hours spent on outreach:
+Recomputed at **half** the Economist's own conversion rate, with 4 of the 10 weekly hours spent on outreach:
 - 17.3 h/month ÷ 15 h × 2 × 0.5 = **1.15 agencies/month**, from month 3.
 - After 10 months at 3% churn: 1.15 × (1 − 0.97¹⁰) ÷ 0.03 ≈ **10 agencies**.
-- At $29–49 each, that is **$290–490 MRR**, plus his self-serve ≈ $230.
+- At $29–49 each, that is **$290–490 MRR**, plus the Economist's self-serve ≈ $230.
 
-**Corrected base case at month 12: ≈ $520–720 MRR**, against his $254. It is still a side income, not a startup, but it clears the ≈ $66/month fixed cost several times over.
+**Corrected base case at month 12: ≈ $520–720 MRR**, against the Economist's $254. It is still a side income, not a startup, but it clears the ≈ $66/month fixed cost several times over.
 
-**(c) The 0.10% visitor-to-paid rate is fair for self-serve, and on one point too generous.** It matches Web3Forms at 0.12% (E-135). But the Economist assumed **35% activation** (E-132) without knowing Count 2: until that fix ships, self-serve activation is **0%**. The fix therefore gates every non-bear scenario, including his.
+**(c) The 0.10% visitor-to-paid rate is fair for self-serve, and on one point too generous.** It matches Web3Forms at 0.12% (E-135). But the Economist assumed **35% activation** (E-132) without knowing Count 2: until that fix ships, self-serve activation is **0%**. The fix therefore gates every non-bear scenario, including the Economist's.
 
-**(d) The captive value is roughly right, and I concede it.** His $0 floor is slightly too low. None of the checked free tiers includes auto-responders, which the agency uses (Formspree: Professional; Basin: Growth; Web3Forms: Pro). The cheapest plan meeting the agency's spec (auto-replies branded per client) is Basin Growth at $24.17 × 12 = **$290/yr** (Basin lists "Branded emails (logo & colors)" on Growth; whether branding can differ per form is **[UNVERIFIED]**). Corrected fees avoided: $290–1,080. After $240–540 of hosting, the net is **−$250 to +$840**, midpoint ≈ +$300 against his +$270. **The captive case is not a reason to continue**, and I do not argue that it is.
+**(d) The captive value is roughly right, and I concede it.** The Economist's $0 floor is slightly too low. None of the checked free tiers includes auto-responders, which the agency uses (Formspree: Professional; Basin: Growth; Web3Forms: Pro). The cheapest plan meeting the agency's spec (auto-replies branded per client) is Basin Growth at $24.17 × 12 = **$290/yr** (Basin lists "Branded emails (logo & colors)" on Growth; whether branding can differ per form is **[UNVERIFIED]**). Corrected fees avoided: $290–1,080. After $240–540 of hosting, the net is **−$250 to +$840**, midpoint ≈ +$300 against the Economist's +$270. **The captive case is not a reason to continue**, and I do not argue that it is.
 
-**(e) The agency segment was priced on the wrong metric.** A 12-month cumulative-cash EV structurally undervalues recurring revenue compared with a service (c) or a one-off gig (g). On a lifetime basis, using his own inputs:
+**(e) The agency segment was priced on the wrong metric.** A 12-month cumulative-cash EV structurally undervalues recurring revenue compared with a service (c) or a one-off gig (g). On a lifetime basis, using the Economist's own inputs:
 - 10 agencies × ($49 × 75% ÷ 3%) = $12,250.
-- EV = 0.35 × $12,250 + 0.65 × $150 ≈ **$4,380**, against his **$1,040** (E-239).
+- EV = 0.35 × $12,250 + 0.65 × $150 ≈ **$4,380**, against the Economist's **$1,040** (E-239).
 
 That is on par with or above the portfolio option (g), €3–4.5k (E-244). The options also stack: (c) runs on the same engine as (d), and (g) is worth more with paying users.
 
@@ -331,7 +331,7 @@ That is on par with or above the portfolio option (g), €3–4.5k (E-244). The 
 
 **Does the positioning survive? Yes. All three parties converge on the same wedge:**
 - The Prosecution: "The one true differentiator is buried under a false one. That differentiator is multi-client white-label portals" (P-147).
-- The Economist: "The substitute kills the one-site use case but not the many-client-sites use case" (E-228), and he ranks done-for-you service (c) and per-site agency resale (d) first and second.
+- The Economist: "The substitute kills the one-site use case but not the many-client-sites use case" (E-228), and the Economist ranks done-for-you service (c) and per-site agency resale (d) first and second.
 
 What does not survive is **self-serve as the first channel**.
 

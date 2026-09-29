@@ -338,28 +338,28 @@ What follows is the evidence.
 ## The buyer walk-throughs
 
 **1. Camille, freelance developer, Paris.**
-- *Arrival.* She lands on `/compare/formspree`. It is served in French by geo (`lib/i18n.ts:34-36`). She reads "Auto-hébergé — vous possédez les données" and looks for self-host instructions. The site has none. The repo has no license, and its README tells her to make the uploads bucket **Public** (`README.md:125`).
-- *Legal check.* Her clients are French SMEs, so she needs a DPA and a sub-processor list. Neither exists, and there is not even a *mentions légales* page.
-- *Trial.* She signs up anyway. She accepts no terms, because none are shown, and gets no email verification. She creates a form and pastes the helper into her Astro site. The preflight returns **403 CORS_NOT_ALLOWED**, and the remedy tells her to edit "Allowed Domains". She has no such field (Count 2). She tries the plain HTML form and gets a 403 as JSON.
+- *Arrival.* Camille lands on `/compare/formspree`. It is served in French by geo (`lib/i18n.ts:34-36`). They read "Auto-hébergé — vous possédez les données" and look for self-host instructions. The site has none. The repo has no license, and its README tells them to make the uploads bucket **Public** (`README.md:125`).
+- *Legal check.* Their clients are French SMEs, so Camille needs a DPA and a sub-processor list. Neither exists, and there is not even a *mentions légales* page.
+- *Trial.* Camille signs up anyway. They accept no terms, because none are shown, and get no email verification. They create a form and paste the helper into their Astro site. The preflight returns **403 CORS_NOT_ALLOWED**, and the remedy tells them to edit "Allowed Domains". They have no such field (Count 2). They try the plain HTML form and get a 403 as JSON.
 - *Support.* The only contact anywhere is a Gmail `mailto:`.
 - ***Bounces*** to Formspree Free (unlimited forms, working in minutes) or to Claude + Resend.
 
 **2. Brice, 4-person web agency, Douala.**
 - *Fit.* This is Inlet's best-fit buyer: French by default, many client sites, white-label portals for clients like "ImmoPro".
-- *Paying.* He finds USD pricing and a Gmail link, with no card checkout, Mobile Money or local invoice (Count 1).
-- *Team.* His team of four shares one login, and the 3-device cap evicts whoever logs in fourth (`lib/clientSessions.ts:12`).
-- *First incident.* His clients' visitors are on MTN and Orange mobile data. On a property-launch day, a scraper trips `_gotcha` from a carrier IP. That IP is banned forever, across every Inlet form (Count 7), and his clients' leads stop arriving. Meanwhile, the bilingual real-estate site's English "investment" enquiries were already vanishing (Count 4). Under Law 2024/017, his clients' leads are being exported without authorisation (Count 6).
+- *Paying.* Brice finds USD pricing and a Gmail link, with no card checkout, Mobile Money or local invoice (Count 1).
+- *Team.* Brice's team of four shares one login, and the 3-device cap evicts whoever logs in fourth (`lib/clientSessions.ts:12`).
+- *First incident.* Visitors to Brice's client sites are on MTN and Orange mobile data. On a property-launch day, a scraper trips `_gotcha` from a carrier IP. That IP is banned forever, across every Inlet form (Count 7), and the leads of Brice's clients stop arriving. Meanwhile, the bilingual real-estate site's English "investment" enquiries were already vanishing (Count 4). Under Law 2024/017, those clients' leads are being exported without authorisation (Count 6).
 - ***Churns*** after the first incident, having never paid.
 
 **3. Jake, indie hacker, US.**
-- *First impression.* He gets English. He sees `inlett.vercel.app` with a double t, "Self-hosted" on a hosted sign-up, anonymous testimonials, no terms and no privacy page.
-- *Price.* He compares $19 for 2,500 submissions against splitforms at $5 for 5,000, Static Forms at $7.50 for 25,000, Formspark at $25 one-time, or Netlify Forms free.
-- *Setup.* He asks Claude Code: "add a contact form with Resend". It is done before Inlet's pricing page has finished comparing itself to Getform. Had he used Inlet's plain-HTML snippet, his US customers would have received "Merci pour votre message" (Count 11).
+- *First impression.* Jake gets English and sees `inlett.vercel.app` with a double t, "Self-hosted" on a hosted sign-up, anonymous testimonials, no terms and no privacy page.
+- *Price.* Jake compares $19 for 2,500 submissions against splitforms at $5 for 5,000, Static Forms at $7.50 for 25,000, Formspark at $25 one-time, or Netlify Forms free.
+- *Setup.* Jake asks Claude Code: "add a contact form with Resend". It is done before Inlet's pricing page has finished comparing itself to Getform. Had they used Inlet's plain-HTML snippet, their US customers would have received "Merci pour votre message" (Count 11).
 - ***Bounces*** on trust and price in under a minute.
 
 **4. Sophie, operations lead, 60-person B2B SME, Lyon (vendor questionnaire).**
 
-| Questionnaire item | What she finds |
+| Questionnaire item | What Sophie finds |
 |---|---|
 | Legal entity | "King_E" |
 | Contract and SLA | None; `/status` returns 404 |
@@ -412,4 +412,4 @@ Meanwhile the market has moved:
 - Netlify gives forms away free.
 - A developer's own AI agent writes the whole thing for a few lines of code and a free Resend key.
 
-**Requested sentence: KILL the hosted Inlet SaaS as currently sold.** It cannot take money, cannot deliver the volume it sells, silently loses leads it promises to keep, and has no moat against a one-prompt substitute. The Prosecution does not object if the Court lets the author keep the code as his own agency's internal tool, which is what `cahier_des_charges.md` asked for. But it must not be sold to strangers until Counts 1–7 are cured.
+**Requested sentence: KILL the hosted Inlet SaaS as currently sold.** It cannot take money, cannot deliver the volume it sells, silently loses leads it promises to keep, and has no moat against a one-prompt substitute. The Prosecution does not object if the Court lets the author keep the code as their own agency's internal tool, which is what `cahier_des_charges.md` asked for. But it must not be sold to strangers until Counts 1–7 are cured.

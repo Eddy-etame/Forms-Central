@@ -10,6 +10,13 @@ The research ran on 2026-09-29, and every URL below was accessed that day. `file
 
 ---
 
+> ⚠️ **Superseded in part: read [`README.md`](README.md) first.** After the hater review (`06`), the round-2 decision changed three things in this file:
+> - **Price:** per club (up to 3 locations), not per location.
+> - **Name:** the offer is renamed "Trial Request Line" / « Ligne Essais ». "Zero missed" promised more than the fine print.
+> - **Timing:** nothing is charged before the court's B1–B3 orders are live.
+>
+> The guarantees analysis, value math and build-vs-manual table below still stand. **Check any price or offer line against `README.md` §3 before using it.**
+
 ## 0. Answer in 30 seconds
 
 **The one offer to put in front of buyers first:**
@@ -89,7 +96,7 @@ The research ran on 2026-09-29, and every URL below was accessed that day. `file
 
 ---
 
-## 3. Guarantees one person can honour, and ones that would sink him
+## 3. Guarantees one person can honour, and ones that would sink a one-person business
 
 | Guarantee | Verdict | Why |
 |---|---|---|

@@ -12,6 +12,8 @@ import { verifyApiKey } from '@/lib/apiKeys';
 import { isSyntheticEmail, normalizeLang } from '@/lib/domain';
 import { SITE_URL } from '@/lib/seo';
 
+export const maxDuration = 30; // attachments + e-mail + webhook can take a while
+
 /**
  * POST /api/submit/{formId} — the public lead endpoint.
  *

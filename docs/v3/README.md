@@ -20,7 +20,7 @@ history: research, verdicts and options. What is below is what we build.
 | D6 | **MCP v2 is a first-class surface.** 14 tools; `setup_site` from zero to a live form in one call; compact, minified outputs; lead text marked untrusted. | AI agents are the fastest route to the first paying developers. | shipped |
 | D7 | **Every plan includes API + MCP and clients.** Free: 3 forms, 2 clients. Paid plans buy room and brand. | Free must prove the model on a real site, or nobody reaches the paid tiers. | shipped |
 | D8 | **Paid plans are requested, then activated by hand** (`plan_requests`, operator e-mail) until the company exists and card checkout opens. | No `mailto:` to a personal mailbox (court order A5); no fake checkout. | shipped |
-| D9 | **The product moves to the author's own accounts** (GitHub `Eddy-etame`, a new repository, Vercel + Supabase under the Gmail account). | The school account is lost; its Google SSO carries the Vercel/Supabase access. | **pending the author** (see §5) |
+| D9 | **The product moves to the author's own accounts**: Vercel project `inlet` under the Gmail account (done 2026-10-30, deployed from the CLI, secrets transferred), GitHub mirror `EddyEtame/inlet` (repository to be created by the author — the Claude GitHub App cannot create repositories), Supabase: the existing project stays until its ownership is confirmed. | The school account is lost; its Google SSO carries the old Vercel access. | Vercel done · GitHub pending · Supabase to confirm |
 | D10 | **A company carries the product within a month.** Prices stay in USD on the site; the EUR price book mirrors them 1:1 when invoicing opens. | Required for invoicing and for the first €1k. | pending |
 
 ### Court orders from the tribunal — status

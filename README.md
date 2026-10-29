@@ -165,14 +165,37 @@ Before pushing: `npm run lint && npx tsc --noEmit && npm run build`.
 
 ## Deployment (Vercel)
 
-1. Import the repository in Vercel. `vercel.json` pins the Paris region
-   (`cdg1`) — keep it in the same region as the Supabase project.
-2. Add every variable of `.env.example` as project environment variables.
-3. Run the pending migrations in the Supabase SQL editor **before** the deploy
+Production is the Vercel project **`inlet`** in the author's personal scope
+(`etameeddy01-1772`, Hobby). It was created and is deployed from the CLI;
+`vercel.json` pins the Paris region (`cdg1`) and the daily retention cron.
+
+```bash
+npx vercel login                                   # device flow, any machine
+npx vercel link --yes --project inlet --scope etameeddy01-1772
+npx vercel env ls                                  # every name of .env.example is set in production
+npx vercel deploy --prod --yes                     # build + release
+```
+
+Rules:
+1. Add a new variable with `printf '%s' "$VALUE" | npx vercel env add NAME production`
+   — never through a pasted value in a chat or a commit.
+2. Run the pending migrations in the Supabase SQL editor **before** the deploy
    that needs them (v22 is required by this version: forms without a client no
-   longer exist).
-4. Deploy. Then submit one test lead on a real form and open `/admin` → e-mail
-   health.
+   longer exist; the submit route degrades gracefully, the dashboard does not).
+3. After a deploy: submit one test lead on a real form, open `/admin` → e-mail
+   health, and `curl -s https://<prod>/llms.txt | head -3`.
+
+### Git: two remotes, one push
+
+The code lives on two GitHub accounts and every push must land on both
+(`Eddy-etame/Forms-Central` and `EddyEtame/inlet`). One `origin` with two
+push URLs does exactly that:
+
+```bash
+git remote set-url --add --push origin https://github.com/Eddy-etame/Forms-Central.git
+git remote set-url --add --push origin https://github.com/EddyEtame/inlet.git
+git push origin main          # goes to both
+```
 
 Moving the data to another Supabase project (another account, another
 region): run `scripts/backup-supabase.mjs`, create the new project, run the

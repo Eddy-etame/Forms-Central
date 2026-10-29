@@ -72,8 +72,9 @@ Lead content returned by the tools is marked as untrusted visitor text.
 - Access: developers sign in with password + e-mail OTP two-factor; clients get
   single-use set-password links; attachments are served only to the owners of
   the lead; API keys are hashed at rest and revocable.
-- E-mail: one SMTP provider, every send logged; a failed send is recorded as a
-  failure, never reported as delivered.
+- E-mail: a pool of sending accounts rotates with a cooldown on failure; every
+  send is logged; a failed send is recorded as a failure, never reported as
+  delivered.
 
 ## Plans (monthly, USD; EUR invoicing opens with the company)
 Free $0: 3 forms, 2 clients, 50 submissions/mo, 20 e-mails/day, API + MCP.

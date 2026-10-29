@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { KeyRound, Plus, Trash2, Copy, Check, Lock, Bot, Terminal, Webhook } from 'lucide-react';
+import { KeyRound, Plus, Trash2, Copy, Check, Lock, Bot, Terminal, Webhook, RefreshCw } from 'lucide-react';
+import { toast, confirmDialog } from '@/components/ui/Toaster';
 
 type ApiKey = {
   id: string;
@@ -21,6 +22,16 @@ async function fetchKeys(): Promise<{ keys: ApiKey[]; apiAccess: boolean } | nul
     const res = await fetch('/api/developer/keys');
     const data = await res.json();
     return res.ok && data.success ? { keys: data.keys as ApiKey[], apiAccess: !!data.apiAccess } : null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchWebhookSecret(): Promise<string | null> {
+  try {
+    const res = await fetch('/api/developer/webhook-secret');
+    const data = await res.json();
+    return res.ok && data.success ? (data.secret as string) : null;
   } catch {
     return null;
   }
@@ -69,6 +80,19 @@ export default function DeveloperPanel({ t }: { t: DevDict }) {
   const [hookDrafts, setHookDrafts] = useState<Record<string, string>>({});
   const [hookSaving, setHookSaving] = useState<Record<string, boolean>>({});
   const [hookMsg, setHookMsg] = useState<Record<string, string>>({});
+  const [secret, setSecret] = useState<string | null>(null);
+  const [secretShown, setSecretShown] = useState(false);
+
+  async function rotateSecret() {
+    const ok = await confirmDialog({ title: t.rotateConfirmTitle, body: t.rotateConfirmBody, confirmLabel: t.rotateBtn, cancelLabel: t.cancel, danger: true });
+    if (!ok) return;
+    try {
+      const res = await fetch('/api/developer/webhook-secret', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.success) { setSecret(data.secret); setSecretShown(true); toast.success(t.rotated); }
+      else toast.error(data.error || t.couldNotSave);
+    } catch { toast.error(t.networkError); }
+  }
 
   async function saveHook(formId: string) {
     setHookSaving((s) => ({ ...s, [formId]: true }));
@@ -110,8 +134,9 @@ export default function DeveloperPanel({ t }: { t: DevDict }) {
   }
   useEffect(() => {
     let cancelled = false;
-    Promise.all([fetchKeys(), fetchHookForms()]).then(([keyData, forms]) => {
+    Promise.all([fetchKeys(), fetchHookForms(), fetchWebhookSecret()]).then(([keyData, forms, whsec]) => {
       if (cancelled) return;
+      setSecret(whsec);
       if (keyData) {
         setKeys(keyData.keys.filter((k) => !k.revoked));
         setApiAccess(keyData.apiAccess);
@@ -273,6 +298,22 @@ export default function DeveloperPanel({ t }: { t: DevDict }) {
             <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-800">X-Inlet-Signature</code> {t.wDescC}{' '}
             <a href="/docs" className="font-semibold text-blue-600 hover:underline dark:text-blue-400">docs</a>{t.wDescD}
           </p>
+          {secret && (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{t.secretLabel}</p>
+              <div className="mt-1 flex items-center gap-2">
+                <code className="flex-1 truncate text-xs font-semibold text-slate-800 dark:text-slate-200">{secretShown ? secret : `${secret.slice(0, 10)}${'•'.repeat(24)}`}</code>
+                <button type="button" onClick={() => setSecretShown((v) => !v)} className="shrink-0 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 transition-colors hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  {secretShown ? '••••' : 'abc'}
+                </button>
+                <CopyBtn value={secret} />
+                <button type="button" onClick={rotateSecret} aria-label={t.rotate} title={t.rotate} className="shrink-0 rounded-md border border-slate-200 bg-white p-1.5 text-slate-500 transition-colors hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white">
+                  <RefreshCw className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">{t.secretHint}</p>
+            </div>
+          )}
           {hookForms.length === 0 ? (
             <p className="text-sm text-slate-500 dark:text-slate-400">{t.createFormFirst}</p>
           ) : (

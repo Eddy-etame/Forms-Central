@@ -1,8 +1,8 @@
 // Check, create, or reset a CLIENT (subscriber) account — the /developer/login
 // side (email + password), NOT the admin login.
 //
-//   Diagnose only:   node scripts/set-client-password.mjs you@email.com
-//   Set / reset pw:  node scripts/set-client-password.mjs you@email.com "newpass" [Name]
+//   Diagnose only:   node scripts/set-developer-password.mjs you@email.com
+//   Set / reset pw:  node scripts/set-developer-password.mjs you@email.com "newpass" [Name]
 //
 // Reads Supabase creds from .env.local, matches the login's email handling
 // (lowercased), and hashes with scrypt exactly like lib/passwords.ts.
@@ -39,7 +39,7 @@ const email = (process.argv[2] || '').trim().toLowerCase();
 const password = process.argv[3];
 const name = process.argv[4];
 if (!email) {
-  console.error('Usage: node scripts/set-client-password.mjs <email> [password] [name]');
+  console.error('Usage: node scripts/set-developer-password.mjs <email> [password] [name]');
   process.exit(1);
 }
 
@@ -60,12 +60,12 @@ if (!password) {
     console.log('✓ A client account EXISTS for', email);
     console.log('  name:', existing.name, '| plan:', existing.plan, '| created:', existing.created_at);
     console.log('  → password unknown? re-run with a password to reset it:');
-    console.log(`     node scripts/set-client-password.mjs ${email} "yourNewPassword"`);
+    console.log(`     node scripts/set-developer-password.mjs ${email} "yourNewPassword"`);
   } else {
     console.log('✗ NO client account exists for', email);
     console.log('  That is why /developer/login says "Identifiants incorrects."');
     console.log('  → create one now:');
-    console.log(`     node scripts/set-client-password.mjs ${email} "yourNewPassword" "Your Name"`);
+    console.log(`     node scripts/set-developer-password.mjs ${email} "yourNewPassword" "Your Name"`);
   }
   process.exit(0);
 }

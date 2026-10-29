@@ -170,7 +170,7 @@ If the form has a webhook URL, every stored lead is POSTed:
 ```
 
 Verify `X-Inlet-Signature: t=<unix>,v1=<hex>` (HMAC-SHA256 of
-`"<t>.<rawBody>"` with the form's `whsec_…` secret), on the RAW body:
+`"<t>.<rawBody>"` with the account's `whsec_…` secret, shown in Developer → API & MCP), on the RAW body:
 
 ```js
 import crypto from "node:crypto";

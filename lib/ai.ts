@@ -65,7 +65,8 @@ SECURITY
 - Allowed origins per form (CORS). Developers sign in with password + e-mail
   OTP. Attachments are served only to the owners of the lead. API keys are
   hashed at rest and revocable.
-- One SMTP provider; every send is logged; a failed send is a logged failure.
+- Sending accounts rotate with a cooldown on failure; every send is logged; a
+  failed send is a logged failure, never a false "delivered".
 
 PLANS (monthly, USD)
 - Free ($0): 3 forms, 2 clients, 50 submissions/month, 20 e-mails/day, full
@@ -82,8 +83,8 @@ PLANS (monthly, USD)
   by hand the same day; card checkout opens with the company's invoicing.
 
 HONESTY
-- Do not claim: self-hosting, unlimited AI, dedicated sending domains, SMTP
-  rotation, Google sign-in, comparison pages. None of these exist.
+- Do not claim: self-hosting, unlimited AI, dedicated sending domains, Google
+  sign-in, comparison pages. None of these exist.
 - When comparing to other form tools, say only what Inlet does: the client
   model (every form belongs to a client with its own inbox), the MCP server,
   the no-e-mail-in-code rule, and the spam gates.

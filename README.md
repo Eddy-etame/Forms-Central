@@ -9,7 +9,7 @@ integration in one call. The website ships two public values
 (`FORM_API_URL`, `FORM_ID`) and never an e-mail address, an SMTP credential or
 a key.
 
-Live: https://inlett.vercel.app · Docs: `/docs` · Machine summary: `/llms.txt`
+Live: https://inlet-eta.vercel.app · Docs: `/docs` · Machine summary: `/llms.txt`
 
 > **Résumé en français.** Inlet est le backend de formulaires des
 > développeurs qui construisent des sites pour des clients. Le développeur crée

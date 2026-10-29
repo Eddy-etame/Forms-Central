@@ -17,7 +17,7 @@ proof-of-work + keyword flagging + rate limits) and can POST a signed webhook.
   A client = name + e-mail (where leads go) + language (`fr` | `en`).
 - **Every form belongs to one client.** There is no form without a client.
 - The site ships **only** two public values. Never an e-mail address, never a key:
-  - `FORM_API_URL` — the Inlet origin (e.g. `https://inlett.vercel.app`)
+  - `FORM_API_URL` — the Inlet origin (e.g. `https://inlet-eta.vercel.app`)
   - `FORM_ID` — the form's UUID
 
 ## 0. Fastest path: MCP (if the user has an API key)

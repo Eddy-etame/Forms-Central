@@ -14,7 +14,7 @@ import { getLocale } from './i18n';
 // hreflang alternate, OG url, sitemap entry and robots host derives from this.
 // Set NEXT_PUBLIC_SITE_URL in the environment (Vercel) to switch to a custom
 // domain in one place — otherwise it defaults to the live deployment.
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://inlett.vercel.app').replace(/\/+$/, '');
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://inlet-eta.vercel.app').replace(/\/+$/, '');
 export const SITE_NAME = 'Inlet';
 
 export type SeoKey = 'home' | 'pricing' | 'docs';

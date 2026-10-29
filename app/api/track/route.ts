@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
  * areas are ignored. Always returns 204 (fire-and-forget).
  */
 
-const IGNORED = ['/admin', '/api', '/client', '/portal', '/login'];
+const IGNORED = ['/admin', '/api', '/developer', '/portal', '/login'];
 
 function classifyDevice(ua: string): string {
   const u = ua.toLowerCase();

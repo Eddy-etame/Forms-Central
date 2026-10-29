@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, FileText, Users, ScrollText, ShieldAlert, ShieldCheck, BarChart3, DollarSign, Briefcase, Mail, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LogoBadge } from '@/components/Logo';
-import ThemeToggle from '@/components/client/ThemeToggle';
+import ThemeToggle from '@/components/developer/ThemeToggle';
 import type { AppDict } from '@/lib/appDict';
 
 export function Sidebar({ t }: { t: AppDict['admin'] }) {

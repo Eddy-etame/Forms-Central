@@ -3,20 +3,21 @@ import Link from "next/link";
 import { Check, Minus, ArrowRight } from "lucide-react";
 import { Kicker } from "@/components/marketing/Kicker";
 import { getDictionary } from "@/lib/dictionaries";
+import { getAppDict } from "@/lib/appDict";
 import { resolveLocale, buildMetadata } from "@/lib/seo";
 import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
 import AiChat from "@/components/AiChat";
-import { PLANS } from "@/lib/plans";
+import { PLANS, type PlanId } from "@/lib/plans";
 import { SpotlightCard, ScrollProgress } from "@/components/marketing/Interactive";
 import Reveal from "@/components/Reveal";
-import { upgradeMailto } from "@/lib/upgrade";
+import UpgradeButton from "@/components/developer/UpgradeButton";
+import { getDeveloperContext } from "@/lib/developerAuth";
+import { supabase } from "@/lib/supabase";
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
   const { lang } = await searchParams;
   return buildMetadata('pricing', await resolveLocale(lang));
 }
-
-const UPGRADE_MAILTO = (plan: string) => upgradeMailto(plan);
 
 // Structured data (schema.org) stays in English regardless of page locale — convention for JSON-LD.
 const FAQ_JSONLD = [
@@ -26,15 +27,15 @@ const FAQ_JSONLD = [
   },
   {
     q: "Why is there an emails-per-day limit?",
-    a: "Every submission can trigger up to two emails (your notification + the branded auto-reply). Daily caps keep delivery fast and reputable for everyone. Higher tiers get dramatically more throughput.",
+    a: "Every submission can trigger up to two emails (the client's notification + the branded auto-reply). Daily caps keep delivery fast and reputable for everyone. Higher tiers get dramatically more throughput.",
   },
   {
     q: "Can I switch plans anytime?",
-    a: "Yes — upgrades apply immediately, downgrades at the end of the cycle. Your forms, submissions and settings are never touched by a plan change.",
+    a: "Yes. Request a plan from your dashboard and it is activated by hand the same day; downgrades apply at the end of the cycle. Your forms, clients, leads and settings are never touched by a plan change.",
   },
   {
     q: "Is the free plan really free forever?",
-    a: "Yes. Three forms, 50 submissions a month, full anti-spam. It is enough to run a real site — most developers upgrade when they add their second or third client, not because we squeezed them.",
+    a: "Yes. Three forms, two clients, 50 submissions a month, full anti-spam, API and MCP included. It is enough to run a real site — most developers upgrade when they add their third client, not because we squeezed them.",
   },
 ];
 
@@ -52,7 +53,7 @@ const productJsonLd = {
   "@context": "https://schema.org",
   "@type": "Product",
   name: "Inlet",
-  description: "Self-hosted form backend for all your websites.",
+  description: "Form backend for developers and the clients they build for: every form belongs to a client, leads reach the client by e-mail and in a private inbox, AI agents integrate it through MCP.",
   brand: { "@type": "Brand", name: "Inlet" },
   offers: Object.values(PLANS).map((p) => ({
     "@type": "Offer",
@@ -65,40 +66,33 @@ const productJsonLd = {
 type Row = { label: string; values: (string | boolean)[] };
 const fmt = (n: number) => n.toLocaleString("en-US");
 const P = PLANS;
+const ORDER: PlanId[] = ['free', 'solo', 'pro', 'max'];
 
+/** Every row reads from lib/plans so the table can never drift from enforcement. */
 function buildRows(t: ReturnType<typeof getDictionary>["pricing"]): Row[] {
   const valPerMonth = (n: number) => t.valPerMonth.replace("{n}", fmt(n));
   const valDays = (n: number) => t.valDays.replace("{n}", String(n));
-  const valEndClients = (n: number | null) => (n === null ? t.valUnlimited : t.valEndClients.replace("{n}", String(n)));
+  const clients = (n: number | null) => (n === null ? t.valUnlimited : t.valEndClients.replace("{n}", String(n)));
+  const forms = (n: number | null) => (n === null ? t.valUnlimited : String(n));
+  const retention = (d: number | null) => (d === null ? t.valUnlimited : d === 365 ? t.valYearRetention : valDays(d));
+  const ai = (p: PlanId) => (p === 'free' ? t.valTrial : P[p].aiMessages === null ? t.valUnlimited : valPerMonth(P[p].aiMessages as number));
+  const each = <T,>(f: (p: PlanId) => T) => ORDER.map(f);
   return [
-    { label: t.rowForms, values: [String(P.free.formLimit), String(P.solo.formLimit), t.valUnlimited, t.valUnlimited] },
-    {
-      label: t.rowSubmissions,
-      values: [fmt(P.free.submissionsPerMonth), fmt(P.solo.submissionsPerMonth), fmt(P.pro.submissionsPerMonth), fmt(P.max.submissionsPerMonth)],
-    },
-    { label: t.rowEmails, values: [fmt(P.free.emailsPerDay), fmt(P.solo.emailsPerDay), fmt(P.pro.emailsPerDay), fmt(P.max.emailsPerDay)] },
-    { label: t.rowSpam, values: [true, true, true, true] },
-    { label: t.rowAutoReply, values: [true, true, true, true] },
-    { label: t.rowSender, values: [P.free.customSender, P.solo.customSender, P.pro.customSender, P.max.customSender] },
-    { label: t.row2fa, values: [true, true, true, true] },
-    { label: t.rowAi, values: [t.valTrial, valPerMonth(100), t.valUnlimited, t.valUnlimited] },
-    { label: t.rowApi, values: [false, true, true, true] },
-    {
-      label: t.rowPortals,
-      values: [
-        false,
-        valEndClients(P.solo.endClientLimit),
-        valEndClients(P.pro.endClientLimit),
-        t.valUnlimited,
-      ],
-    },
-    { label: t.rowCsv, values: [false, true, true, true] },
-    { label: t.rowAnalytics, values: [false, true, true, true] },
-    { label: t.rowWhiteLabel, values: [false, false, true, true] },
-    { label: t.rowPriority, values: [false, false, true, true] },
-    { label: t.rowRetention, values: [valDays(30), t.valYearRetention, t.valUnlimited, t.valUnlimited] },
-    { label: t.rowSupport, values: [false, false, false, true] },
-    { label: t.rowDkim, values: [false, false, false, true] },
+    { label: t.rowForms, values: each((p) => forms(P[p].formLimit)) },
+    { label: t.rowPortals, values: each((p) => clients(P[p].clientLimit)) },
+    { label: t.rowSubmissions, values: each((p) => fmt(P[p].submissionsPerMonth)) },
+    { label: t.rowEmails, values: each((p) => fmt(P[p].emailsPerDay)) },
+    { label: t.rowSpam, values: each(() => true) },
+    { label: t.rowAutoReply, values: each(() => true) },
+    { label: t.rowApi, values: each((p) => P[p].apiAccess) },
+    { label: t.row2fa, values: each(() => true) },
+    { label: t.rowSender, values: each((p) => P[p].customSender) },
+    { label: t.rowAi, values: each((p) => ai(p)) },
+    { label: t.rowCsv, values: each((p) => P[p].csvExport) },
+    { label: t.rowAnalytics, values: each((p) => P[p].analytics) },
+    { label: t.rowWhiteLabel, values: each((p) => P[p].whiteLabel) },
+    { label: t.rowRetention, values: each((p) => retention(P[p].retentionDays)) },
+    { label: t.rowSupport, values: each((p) => P[p].prioritySupport) },
   ];
 }
 
@@ -115,10 +109,8 @@ function PlanCard({
   mostPopularLabel,
   blurb,
   features,
-  cta,
-  href,
+  action,
   highlight = false,
-  external = false,
 }: {
   name: string;
   price: number;
@@ -126,19 +118,9 @@ function PlanCard({
   mostPopularLabel: string;
   blurb: string;
   features: string[];
-  cta: string;
-  href: string;
+  action: React.ReactNode;
   highlight?: boolean;
-  external?: boolean;
 }) {
-  const inner = (
-    <>
-      {cta} <ArrowRight className="cta-arrow h-4 w-4" />
-    </>
-  );
-  const btnClass = highlight
-    ? "btn-shine btn-shine-soft group mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-medium text-slate-900 transition-all duration-300 hover:bg-slate-100 hover:shadow-lg hover:shadow-white/10"
-    : "btn-shine btn-shine-soft group mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-slate-300 px-5 text-sm font-medium text-slate-800 transition-all duration-300 hover:border-slate-400 hover:shadow-md";
   const content = (
     <>
       <h2 className="relative text-base font-bold">{name}</h2>
@@ -155,11 +137,7 @@ function PlanCard({
           </li>
         ))}
       </ul>
-      {external ? (
-        <a href={href} className={btnClass}>{inner}</a>
-      ) : (
-        <Link href={href} className={btnClass}>{inner}</Link>
-      )}
+      {action}
     </>
   );
 
@@ -191,10 +169,14 @@ function PlanCard({
   );
 }
 
+const BTN_DARK = "btn-shine btn-shine-soft group mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-medium text-slate-900 transition-all duration-300 hover:bg-slate-100 hover:shadow-lg hover:shadow-white/10";
+const BTN_LIGHT = "btn-shine btn-shine-soft group mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-slate-300 px-5 text-sm font-medium text-slate-800 transition-all duration-300 hover:border-slate-400 hover:shadow-md";
+
 export default async function PricingPage({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
   const { lang } = await searchParams;
   const locale = await resolveLocale(lang);
   const dict = getDictionary(locale);
+  const up = getAppDict(locale).upgrade;
   const t = dict.pricing;
   const swipeHint = dict.landing.compare.swipeHint;
   const rows = buildRows(t);
@@ -204,6 +186,39 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
     { q: t.faqQ3, a: t.faqA3 },
     { q: t.faqQ4, a: t.faqA4 },
   ];
+
+  // Signed-in developers request a plan in one click; the operator activates it.
+  const dev = await getDeveloperContext();
+  let pendingPlan: string | null = null;
+  if (dev) {
+    const { data } = await supabase
+      .from('plan_requests')
+      .select('plan')
+      .eq('client_id', dev.developerId)
+      .eq('status', 'open')
+      .order('created_at', { ascending: false })
+      .limit(1);
+    pendingPlan = data?.[0]?.plan ?? null;
+  }
+
+  const planAction = (plan: Exclude<PlanId, 'free'>, label: string, dark: boolean) => {
+    const cls = dark ? BTN_DARK : BTN_LIGHT;
+    if (dev && dev.plan.id === plan) {
+      return <span className={`${cls} cursor-default opacity-80`}><Check className="h-4 w-4" /> {up.current}</span>;
+    }
+    return (
+      <UpgradeButton
+        plan={plan}
+        planName={P[plan].name}
+        label={label}
+        signedIn={!!dev}
+        requested={pendingPlan === plan}
+        t={up}
+        className={cls}
+      />
+    );
+  };
+
   return (
     <>
       <script
@@ -246,8 +261,13 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
               t.planFree.f4,
               t.planFree.f5,
             ]}
-            cta={t.planFree.cta}
-            href="/client/signup"
+            action={
+              dev ? (
+                <Link href="/developer/dashboard" className={BTN_LIGHT}>{dev.plan.id === 'free' ? up.current : t.planFree.name} <ArrowRight className="cta-arrow h-4 w-4" /></Link>
+              ) : (
+                <Link href="/developer/signup" className={BTN_LIGHT}>{t.planFree.cta} <ArrowRight className="cta-arrow h-4 w-4" /></Link>
+              )
+            }
           />
           <PlanCard
             name={t.planSolo.name}
@@ -260,12 +280,10 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
               t.planSolo.f2.replace("{emails}", String(P.solo.emailsPerDay)),
               t.planSolo.f3,
               t.planSolo.f4,
-              t.planSolo.f5.replace("{n}", "100"),
+              t.planSolo.f5.replace("{n}", String(P.solo.aiMessages)),
               t.planSolo.f6,
             ]}
-            cta={t.planSolo.cta}
-            href={UPGRADE_MAILTO("Solo")}
-            external
+            action={planAction('solo', t.planSolo.cta, false)}
           />
           <PlanCard
             name={t.planPro.name}
@@ -282,9 +300,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
               t.planPro.f5,
               t.planPro.f6,
             ]}
-            cta={t.planPro.cta}
-            href={UPGRADE_MAILTO("Pro")}
-            external
+            action={planAction('pro', t.planPro.cta, true)}
           />
           <PlanCard
             name={t.planMax.name}
@@ -299,14 +315,12 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
               t.planMax.f4,
               t.planMax.f5,
             ]}
-            cta={t.planMax.cta}
-            href={UPGRADE_MAILTO("Max")}
-            external
+            action={planAction('max', t.planMax.cta, false)}
           />
         </Reveal>
 
         <p className="mx-auto -mt-6 max-w-2xl px-6 pb-12 text-center text-xs text-slate-400">
-          {t.selfServeNote}
+          {t.selfServeNote}{!dev && <> {up.signIn}</>}
         </p>
 
         {/* Full comparison */}
@@ -322,9 +336,9 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
                   <tr>
                     <th className="max-w-[110px] px-4 py-4 font-medium sm:max-w-none sm:px-5">{t.colCapability}</th>
                     <th className="px-5 py-4 font-medium">{t.planFree.name}</th>
-                    <th className="px-5 py-4 font-medium">{t.planSolo.name} $9</th>
-                    <th className="px-5 py-4 font-semibold text-slate-900">{t.planPro.name} $19</th>
-                    <th className="px-5 py-4 font-medium">{t.planMax.name} $49</th>
+                    <th className="px-5 py-4 font-medium">{t.planSolo.name} ${P.solo.priceMonthly}</th>
+                    <th className="px-5 py-4 font-semibold text-slate-900">{t.planPro.name} ${P.pro.priceMonthly}</th>
+                    <th className="px-5 py-4 font-medium">{t.planMax.name} ${P.max.priceMonthly}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">

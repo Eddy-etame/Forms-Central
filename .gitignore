@@ -53,3 +53,6 @@ next-env.d.ts
 
 # TS build info
 *.tsbuildinfo
+
+# local database backups (scripts/backup-supabase.mjs)
+/backups/

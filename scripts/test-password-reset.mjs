@@ -32,7 +32,7 @@ try {
 
   // signup
   {
-    const res = await post('/api/auth/client-signup', { name: 'Reset Test', email: EMAIL, password: OLD });
+    const res = await post('/api/auth/developer-signup', { name: 'Reset Test', email: EMAIL, password: OLD });
     const { data } = await sb.from('clients').select('id').eq('email', EMAIL).single();
     clientId = data?.id ?? null;
     check('signup works', res.status === 200 && !!clientId, `got ${res.status}`);
@@ -84,13 +84,13 @@ try {
 
   // login with NEW password works
   {
-    const res = await post('/api/auth/client-login', { email: EMAIL, password: NEW });
+    const res = await post('/api/auth/developer-login', { email: EMAIL, password: NEW });
     check('login with new password works', res.status === 200, `got ${res.status}`);
   }
 
   // login with OLD password fails
   {
-    const res = await post('/api/auth/client-login', { email: EMAIL, password: OLD });
+    const res = await post('/api/auth/developer-login', { email: EMAIL, password: OLD });
     check('login with old password rejected (401)', res.status === 401, `got ${res.status}`);
   }
 

@@ -18,10 +18,10 @@ export async function GET(req: Request) {
   const origin = new URL(redirectUri).origin;
   const fail = (reason: string) => {
     logSecurityEvent({ type: SEC.CLIENT_LOGIN_FAILED, severity: 'warn', ip: clientIp(req.headers), detail: `google: ${reason}` });
-    return NextResponse.redirect(new URL('/client/login?error=google', origin));
+    return NextResponse.redirect(new URL('/developer/login?error=google', origin));
   };
 
-  if (!isGoogleConfigured()) return NextResponse.redirect(new URL('/client/login', origin));
+  if (!isGoogleConfigured()) return NextResponse.redirect(new URL('/developer/login', origin));
 
   const url = new URL(req.url);
   const code = url.searchParams.get('code');
@@ -72,7 +72,7 @@ export async function GET(req: Request) {
 
   logSecurityEvent({ type: SEC.CLIENT_LOGIN_OK, severity: 'info', actor: user.email, ip: clientIp(req.headers), meta: { clientId, via: 'google' } });
 
-  const res = NextResponse.redirect(new URL(justCreated ? '/client/choose-plan' : '/client/dashboard', origin));
+  const res = NextResponse.redirect(new URL(justCreated ? '/developer/choose-plan' : '/developer/dashboard', origin));
   res.cookies.set('client_access_token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

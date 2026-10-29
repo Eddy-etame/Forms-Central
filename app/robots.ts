@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         // Keep app internals out of the index; marketing pages stay crawlable.
-        disallow: ["/admin", "/api/", "/client", "/login"],
+        disallow: ["/admin", "/api/", "/developer/dashboard", "/developer/choose-plan", "/portal", "/login"],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

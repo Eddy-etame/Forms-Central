@@ -50,7 +50,7 @@ export async function NavBar({ variant = 'light', locale: localeProp }: { varian
           {signedIn ? (
             <Magnetic strength={0.2}>
               <Link
-                href="/client/dashboard"
+                href="/developer/dashboard"
                 className={`btn-shine inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-all duration-300 ${
                   dark
                     ? 'btn-shine-soft bg-white text-slate-900 hover:bg-slate-100 hover:shadow-md hover:shadow-white/20'
@@ -62,10 +62,10 @@ export async function NavBar({ variant = 'light', locale: localeProp }: { varian
             </Magnetic>
           ) : (
             <>
-              <Link href="/client/login" className={`link-underline hidden text-sm font-medium transition-colors sm:block ${dark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}>{t.signIn}</Link>
+              <Link href="/developer/login" className={`link-underline hidden text-sm font-medium transition-colors sm:block ${dark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}>{t.signIn}</Link>
               <Magnetic strength={0.2}>
                 <Link
-                  href="/client/signup"
+                  href="/developer/signup"
                   className={`btn-shine hidden items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-all duration-300 sm:inline-flex ${
                     dark
                       ? 'btn-shine-soft bg-white text-slate-900 hover:bg-slate-100 hover:shadow-md hover:shadow-white/20'
@@ -89,7 +89,6 @@ export async function SiteFooter({ locale: localeProp }: { locale?: Locale } = {
   const locale = localeProp ?? (await getLocale());
   const dict = getDictionary(locale);
   const t = dict.siteFooter;
-  const nav = dict.nav;
   return (
     <footer className="border-t border-slate-200 bg-white py-12">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 text-sm text-slate-500 sm:flex-row lg:px-8">
@@ -101,9 +100,7 @@ export async function SiteFooter({ locale: localeProp }: { locale?: Locale } = {
           <Link href="/#features" className="link-underline hover:text-slate-900 transition-colors">{t.features}</Link>
           <Link href="/docs" className="link-underline hover:text-slate-900 transition-colors">{t.docs}</Link>
           <Link href="/pricing" className="link-underline hover:text-slate-900 transition-colors">{t.pricing}</Link>
-          <Link href="/compare/formspree" className="link-underline hover:text-slate-900 transition-colors">{nav.compareFormspree}</Link>
-          <Link href="/compare/jotform" className="link-underline hover:text-slate-900 transition-colors">{nav.compareJotform}</Link>
-          <Link href="/client/login" className="link-underline hover:text-slate-900 transition-colors">{t.signIn}</Link>
+          <Link href="/developer/login" className="link-underline hover:text-slate-900 transition-colors">{t.signIn}</Link>
         </nav>
         <p>
           &copy; {new Date().getFullYear()} Inlet

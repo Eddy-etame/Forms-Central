@@ -6,7 +6,7 @@ import { Plus, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
-import { getForms, getClients, createForm, toggleFormStatus, deleteForm } from '@/lib/actions';
+import { getForms, getClients, createForm, toggleFormStatus, deleteForm, getPortalUsersForClient } from '@/lib/actions';
 import { toast, confirmDialog } from '@/components/ui/Toaster';
 import { useLocale } from '@/lib/useLocale';
 import { getAppDict } from '@/lib/appDict';
@@ -17,9 +17,11 @@ interface Form {
   is_active: boolean;
   allowed_origins: string[];
   client_id: string;
+  portal_user_id?: string | null;
   clients: {
     name: string;
   } | null;
+  portal_users?: { name: string } | null;
   created_at: string;
 }
 
@@ -38,6 +40,8 @@ export default function FormsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [clientId, setClientId] = useState('');
+  const [portalUsers, setPortalUsers] = useState<{ id: string; name: string; email: string }[]>([]);
+  const [portalUserId, setPortalUserId] = useState('');
   const [originsInput, setOriginsInput] = useState('');
   const [autoReplyEnabled, setAutoReplyEnabled] = useState(false);
   const [autoReplySubject, setAutoReplySubject] = useState('We received your message');
@@ -67,6 +71,18 @@ export default function FormsPage() {
     }
   }
 
+  useEffect(() => {
+    if (!clientId) { setPortalUsers([]); setPortalUserId(''); return; }
+    let cancelled = false;
+    getPortalUsersForClient(clientId).then((res) => {
+      if (cancelled) return;
+      const list = res.success ? (res.portalUsers as { id: string; name: string; email: string }[]) : [];
+      setPortalUsers(list);
+      setPortalUserId(list[0]?.id ?? '');
+    });
+    return () => { cancelled = true; };
+  }, [clientId]);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !clientId) {
@@ -84,7 +100,7 @@ export default function FormsPage() {
       .filter((o) => o !== '');
 
     try {
-      const res = await createForm(name, clientId, allowedOrigins, autoReplyEnabled, autoReplySubject, autoReplyMessage);
+      const res = await createForm(name, clientId, allowedOrigins, autoReplyEnabled, autoReplySubject, autoReplyMessage, '', portalUserId || null);
       if (res && !res.success) {
         setFormError(res.error || t.createErr);
         return;
@@ -207,7 +223,7 @@ export default function FormsPage() {
                   </button>
                 </div>
                 <p className="text-xs text-slate-400 font-semibold mt-1">
-                  {t.client} : {form.clients ? form.clients.name : t.unknownClient}
+                  {t.client} : {form.clients ? form.clients.name : t.unknownClient}{form.portal_users ? ` → ${form.portal_users.name}` : ''}
                 </p>
                 <div className="mt-4">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
@@ -272,6 +288,23 @@ export default function FormsPage() {
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">{t.clientLabel}</label>
+            <select
+              value={portalUserId}
+              onChange={(e) => setPortalUserId(e.target.value)}
+              disabled={saving}
+              className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
+            >
+              {portalUsers.length === 0 && <option value="">{t.clientDefaultHint}</option>}
+              {portalUsers.map((pu) => (
+                <option key={pu.id} value={pu.id}>
+                  {pu.name} · {pu.email}
                 </option>
               ))}
             </select>

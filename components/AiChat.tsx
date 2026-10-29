@@ -6,12 +6,12 @@ import { MessageCircle, X, Send, Sparkles, Lock, ArrowRight } from 'lucide-react
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
-/** Make product paths in assistant replies tappable (/client/signup, /pricing, /docs). */
+/** Make product paths in assistant replies tappable (/developer/signup, /pricing, /docs). */
 function renderAssistant(content: string) {
   return content.split(/(\/client\/signup|\/pricing|\/docs)/g).map((p, i) =>
-    p === '/client/signup' || p === '/pricing' || p === '/docs' ? (
+    p === '/developer/signup' || p === '/pricing' || p === '/docs' ? (
       <Link key={i} href={p} className="font-semibold text-blue-600 underline underline-offset-2 hover:text-blue-700">
-        {p === '/client/signup' ? 'create your free account' : p}
+        {p === '/developer/signup' ? 'create your free account' : p}
       </Link>
     ) : (
       <span key={i}>{p}</span>
@@ -178,7 +178,7 @@ export default function AiChat() {
           {messages.some((m) => m.role === 'assistant') && !paywalled && (
             <div className="border-t border-slate-100 bg-gradient-to-r from-blue-50 to-cyan-50 px-4 py-2.5">
               <Link
-                href="/client/signup"
+                href="/developer/signup"
                 className="group flex items-center justify-between gap-2 text-sm"
               >
                 <span className="font-semibold text-slate-800">

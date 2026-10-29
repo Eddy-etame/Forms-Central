@@ -1,10 +1,12 @@
 'use server';
 
 import { supabase } from './supabase';
-import { encryptPassword, decryptPassword, generateRandomPassword } from './crypto';
+import { generateRandomPassword } from './crypto';
 import { hashPassword } from './passwords';
-import { sendClientWelcomeEmail, sendPortalUserWelcomeEmail } from './email';
-import { PLANS, getPlan } from './plans';
+import { sendDeveloperAccessEmail, sendClientInviteEmail } from './email';
+import { issueDeveloperReset, issueClientInvite, INVITE_TTL_MS } from './invites';
+import { PLANS, getPlan, isPaidPlanId } from './plans';
+import { normalizeOrigins } from './snippets';
 import { getConfiguredAccountSlots } from './mailAccounts';
 import { getLocale } from './i18n';
 
@@ -106,15 +108,13 @@ export async function saveClient(
         .eq('id', id);
       if (error) throw error;
     } else {
-      // New Client: Generate password, encrypt, save, and email.
-      const rawPassword = generateRandomPassword(12);
-      const encryptedPassword = encryptPassword(rawPassword);
-
-      const { error } = await supabase
+      // New developer account: an unusable random password hash (scrypt), then a
+      // set-password link by e-mail. No password ever travels (court order A9).
+      const { data: created, error } = await supabase
         .from('clients')
         .insert([{
           name,
-          email,
+          email: email.trim().toLowerCase(),
           phone: phone || null,
           logo_url,
           primary_color,
@@ -122,15 +122,18 @@ export async function saveClient(
           sender_name: senderName,
           reply_to_email: replyTo,
           two_factor_enabled,
-          encrypted_password: encryptedPassword
-        }]);
-      if (error) throw error;
+          encrypted_password: hashPassword(generateRandomPassword(32)),
+        }])
+        .select('id')
+        .single();
+      if (error || !created) throw error || new Error('Insert failed');
 
-      // Send the client welcome email with their password
-      const welcomeLocale = await getLocale();
-      await sendClientWelcomeEmail(email, name, rawPassword, undefined, {
-        logo_url, primary_color, font_family
-      }, welcomeLocale).catch(err => console.error("Error sending welcome email:", err));
+      const url = await issueDeveloperReset(created.id, { ttlMs: INVITE_TTL_MS });
+      if (url) {
+        const welcomeLocale = await getLocale();
+        await sendDeveloperAccessEmail(email, name, url, false, { logo_url, primary_color, font_family }, welcomeLocale)
+          .catch(err => console.error('Error sending welcome email:', err));
+      }
     }
     return { success: true };
   } catch (err: any) {
@@ -139,42 +142,24 @@ export async function saveClient(
   }
 }
 
-export async function getClientPassword(id: string) {
-  try {
-    await verifyAdminAuth();
-    const { data, error } = await supabase.from('clients').select('encrypted_password').eq('id', id).single();
-    if (error) throw error;
-    if (!data || !data.encrypted_password) return { success: true, password: null };
-    
-    const decrypted = decryptPassword(data.encrypted_password);
-    return { success: true, password: decrypted };
-  } catch (err: any) {
-    console.error('Error in getClientPassword:', err);
-    return { success: false, error: err.message || String(err) };
-  }
-}
-
 export async function triggerPasswordReset(id: string) {
   try {
     await verifyAdminAuth();
-    const { data: client, error: fetchError } = await supabase.from('clients').select('*').eq('id', id).single();
-    if (fetchError || !client) throw fetchError || new Error('Client not found');
+    const { data: client, error: fetchError } = await supabase.from('clients').select('id, name, email, logo_url, primary_color, font_family').eq('id', id).single();
+    if (fetchError || !client) throw fetchError || new Error('Developer not found');
 
-    const rawPassword = generateRandomPassword(12);
-    const encryptedPassword = encryptPassword(rawPassword);
-
-    const { error: updateError } = await supabase
-      .from('clients')
-      .update({ encrypted_password: encryptedPassword })
-      .eq('id', id);
-    if (updateError) throw updateError;
+    // The current password keeps working until the developer uses the link —
+    // an operator can no longer lock someone out or learn their password.
+    const url = await issueDeveloperReset(id);
+    if (!url) throw new Error('Could not create the reset link');
 
     const resetLocale = await getLocale();
-    await sendClientWelcomeEmail(client.email, client.name, rawPassword, "true", {
+    const sent = await sendDeveloperAccessEmail(client.email, client.name, url, true, {
       logo_url: client.logo_url,
       primary_color: client.primary_color,
       font_family: client.font_family
-    }, resetLocale).catch(err => console.error("Error sending password reset email:", err));
+    }, resetLocale).catch(err => { console.error('Error sending password reset email:', err); return false; });
+    if (!sent) return { success: false, error: 'The e-mail could not be sent. Check the sending configuration.' };
 
     return { success: true };
   } catch (err: any) {
@@ -199,14 +184,14 @@ export async function deleteClient(id: string) {
 // Passwords here are one-way hashed (lib/passwords.ts) — never viewable by
 // anyone, including the super-admin. Only a reset (new password, emailed
 // directly to the end-client) is possible, mirroring the developer's own
-// PATCH /api/client/portal-users flow.
+// PATCH /api/developer/clients flow.
 
 export async function getPortalUsersForClient(clientId: string) {
   try {
     await verifyAdminAuth();
     const { data, error } = await supabase
       .from('portal_users')
-      .select('id, name, email, created_at')
+      .select('id, name, email, website, lang, created_at')
       .eq('parent_client_id', clientId)
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -222,10 +207,10 @@ export async function adminResetPortalUserPassword(portalUserId: string) {
     await verifyAdminAuth();
     const { data: user, error: fetchError } = await supabase
       .from('portal_users')
-      .select('id, name, email, parent_client_id')
+      .select('id, name, email, lang, encrypted_password, parent_client_id')
       .eq('id', portalUserId)
       .single();
-    if (fetchError || !user) throw fetchError || new Error('End-client not found');
+    if (fetchError || !user) throw fetchError || new Error('Client not found');
 
     const { data: dev } = await supabase
       .from('clients')
@@ -233,23 +218,20 @@ export async function adminResetPortalUserPassword(portalUserId: string) {
       .eq('id', user.parent_client_id)
       .maybeSingle();
 
-    const rawPassword = generateRandomPassword(12);
-    const { error: updateError } = await supabase
-      .from('portal_users')
-      .update({ encrypted_password: hashPassword(rawPassword) })
-      .eq('id', portalUserId);
-    if (updateError) throw updateError;
+    const url = await issueClientInvite(portalUserId);
+    if (!url) throw new Error('Could not create the access link');
 
     const resetLocale = await getLocale();
-    sendPortalUserWelcomeEmail(
+    const sent = await sendClientInviteEmail(
       user.email,
       user.name,
       dev?.name || 'Client portal',
-      rawPassword,
-      'true',
+      url,
+      !!user.encrypted_password,
       { logo_url: dev?.logo_url, primary_color: dev?.primary_color, font_family: dev?.font_family },
-      resetLocale
-    ).catch((err) => console.error('Error sending end-client password reset email:', err));
+      user.lang || resetLocale
+    ).catch((err) => { console.error('Error sending client access email:', err); return false; });
+    if (!sent) return { success: false, error: 'The e-mail could not be sent.' };
 
     return { success: true };
   } catch (err: any) {
@@ -264,7 +246,7 @@ export async function getForms() {
   await verifyAdminAuth();
   const { data, error } = await supabase
     .from('forms')
-    .select('id, name, is_active, allowed_origins, client_id, clients(name), created_at')
+    .select('id, name, is_active, allowed_origins, client_id, portal_user_id, clients(name), portal_users(name), created_at')
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];
@@ -275,7 +257,7 @@ export async function getFormDetails(formId: string) {
   const [formRes, subsRes] = await Promise.all([
     supabase
       .from('forms')
-      .select('id, name, is_active, allowed_origins, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, webhook_url, clients(name, email)')
+      .select('id, name, is_active, allowed_origins, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, webhook_url, portal_user_id, clients(name, email), portal_users(name, email)')
       .eq('id', formId)
       .single(),
     supabase
@@ -294,22 +276,50 @@ export async function getFormDetails(formId: string) {
 
 export async function createForm(
   name: string,
-  clientId: string,
+  developerId: string,
   allowedOrigins: string[],
   autoReplyEnabled = false,
   autoReplySubject = 'Confirmation de réception',
   autoReplyMessage = '',
-  successUrl = ''
+  successUrl = '',
+  portalUserId: string | null = null
 ) {
   try {
     await verifyAdminAuth();
+
+    // Every form belongs to a client (migration v22). When the operator does
+    // not pick one, the developer's own default client is found or created.
+    let clientId = portalUserId;
+    if (!clientId) {
+      const { data: first } = await supabase.from('portal_users').select('id').eq('parent_client_id', developerId).order('created_at').limit(1);
+      clientId = first?.[0]?.id ?? null;
+    }
+    if (!clientId) {
+      const { data: dev } = await supabase.from('clients').select('name, email').eq('id', developerId).maybeSingle();
+      if (!dev) throw new Error('Developer not found');
+      const { data: made, error: mkErr } = await supabase
+        .from('portal_users')
+        .insert({ parent_client_id: developerId, name: dev.name, email: dev.email, encrypted_password: null })
+        .select('id')
+        .single();
+      if (mkErr || !made) throw mkErr || new Error('Could not create the default client');
+      clientId = made.id;
+    } else {
+      const { data: owned } = await supabase.from('portal_users').select('id').eq('id', clientId).eq('parent_client_id', developerId).maybeSingle();
+      if (!owned) return { success: false, error: 'That client does not belong to this developer.' };
+    }
+
+    const origins = allowedOrigins.length > 0 ? normalizeOrigins(allowedOrigins) : null;
+    if (allowedOrigins.length > 0 && !origins) return { success: false, error: 'One of the origins is not a valid URL.' };
+
     const { error } = await supabase
       .from('forms')
       .insert([
         {
           name,
-          client_id: clientId,
-          allowed_origins: allowedOrigins.length > 0 ? allowedOrigins : ['*'],
+          client_id: developerId,
+          portal_user_id: clientId,
+          allowed_origins: origins && origins.length ? origins : ['*'],
           is_active: true,
           auto_reply_enabled: autoReplyEnabled,
           auto_reply_subject: autoReplySubject,
@@ -889,6 +899,51 @@ export async function getTrafficStats() {
       path: r.path, referrer: r.referrer, device: r.device, browser: r.browser, country: r.country, created_at: r.created_at,
     })),
   };
+}
+
+// ==================== PLAN REQUESTS (super-admin) ====================
+
+export async function getPlanRequests() {
+  await verifyAdminAuth();
+  const { data, error } = await supabase
+    .from('plan_requests')
+    .select('id, plan, status, message, created_at, clients(id, name, email, plan)')
+    .order('created_at', { ascending: false })
+    .limit(100);
+  if (error) return { success: false, error: error.message, requests: [] as any[] };
+  return { success: true, requests: data || [] };
+}
+
+/** Activate or decline a request. Activating sets the developer's plan. */
+export async function resolvePlanRequest(id: string, decision: 'activated' | 'declined') {
+  try {
+    await verifyAdminAuth();
+    const { data: req } = await supabase.from('plan_requests').select('id, plan, client_id').eq('id', id).maybeSingle();
+    if (!req) return { success: false, error: 'Request not found.' };
+    if (decision === 'activated') {
+      if (!isPaidPlanId(req.plan)) return { success: false, error: 'Unknown plan.' };
+      const { error } = await supabase.from('clients').update({ plan: req.plan, plan_updated_at: new Date().toISOString() }).eq('id', req.client_id);
+      if (error) throw error;
+    }
+    const { error } = await supabase.from('plan_requests').update({ status: decision }).eq('id', id);
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || String(err) };
+  }
+}
+
+/** Set a developer's plan by hand (the only billing switch until checkout exists). */
+export async function setDeveloperPlan(developerId: string, plan: string) {
+  try {
+    await verifyAdminAuth();
+    if (!(plan in PLANS)) return { success: false, error: 'Unknown plan.' };
+    const { error } = await supabase.from('clients').update({ plan, plan_updated_at: new Date().toISOString() }).eq('id', developerId);
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || String(err) };
+  }
 }
 
 // ==================== REVENUE / SUBSCRIBERS (super-admin) ====================

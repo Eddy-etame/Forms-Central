@@ -179,7 +179,7 @@ export default function PortalLeads() {
                   <div key={k} className="rounded-lg border border-slate-100 bg-slate-50 p-4">
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{k.replace(/_/g, ' ')}</p>
                     {isFile ? (
-                      <a href={`/api/download?url=${encodeURIComponent(String(v))}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:underline">
+                      <a href={`/api/download?sid=${encodeURIComponent(selected.id)}&field=${encodeURIComponent(k)}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:underline">
                         <Download className="h-3.5 w-3.5" /> {t.downloadFile}
                       </a>
                     ) : (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useLocale } from '@/lib/useLocale';
 import { getAppDict } from '@/lib/appDict';
 
@@ -87,6 +88,9 @@ export default function PortalLoginPage() {
           >
             {loading ? t.signingIn : t.signIn}
           </button>
+          <p className="text-center text-xs text-slate-500">
+            <Link href="/portal/forgot-password" className="font-semibold text-slate-900 hover:underline">{t.forgot}</Link>
+          </p>
         </form>
       </div>
     </div>

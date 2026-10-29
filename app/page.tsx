@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
-  Shield, Zap, Inbox, Palette, BarChart3, ArrowRight, Check, X,
-  FileDown, RefreshCw, Terminal, Globe, Lock, Quote,
+  Shield, Inbox, Palette, BarChart3, ArrowRight, Check, X,
+  FileDown, RefreshCw, Terminal, Globe, Quote,
 } from "lucide-react";
 import { NavBar } from "@/components/marketing/NavBar";
 import { Kicker } from "@/components/marketing/Kicker";
@@ -155,7 +155,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
               </p>
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Magnetic>
-                  <Link href="/client/signup" className="btn-shine btn-shine-soft inline-flex h-12 items-center gap-2 rounded-full bg-white px-7 text-base font-semibold text-slate-950 shadow-lg shadow-cyan-500/10 transition-all duration-300 hover:bg-slate-100 hover:shadow-xl hover:shadow-cyan-400/20">
+                  <Link href="/developer/signup" className="btn-shine btn-shine-soft inline-flex h-12 items-center gap-2 rounded-full bg-white px-7 text-base font-semibold text-slate-950 shadow-lg shadow-cyan-500/10 transition-all duration-300 hover:bg-slate-100 hover:shadow-xl hover:shadow-cyan-400/20">
                     {t.ctaPrimary} <ArrowRight className="cta-arrow h-4 w-4" />
                   </Link>
                 </Magnetic>
@@ -397,7 +397,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
           </Reveal>
         </section>
 
-        {/* ---------------- Early users ---------------- */}
+        {/* ---------------- Built on live sites ---------------- */}
         <section className="relative overflow-hidden border-t border-slate-100 bg-gradient-to-b from-white to-slate-50 py-24">
           <div aria-hidden className="pointer-events-none absolute left-[14%] top-10 h-64 w-64 rounded-full bg-blue-400/10 blur-[110px]" />
           <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
@@ -406,23 +406,25 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{L.testimonials.title}</h2>
               <p className="mt-4 text-lg text-slate-600">{L.testimonials.subtitle}</p>
             </Reveal>
-            <div className="grid gap-6 md:grid-cols-3">
-              {L.testimonials.items.map((tm, i) => (
-                <Reveal key={i} delay={i * 0.08}>
-                  <SpotlightCard
-                    glow="rgba(59,130,246,0.08)"
-                    className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/10"
-                  >
-                    <Quote className="relative z-10 h-7 w-7 shrink-0 text-blue-500/70" aria-hidden />
-                    <p className="relative z-10 mt-4 flex-1 text-[15px] leading-relaxed text-slate-700">{tm.quote}</p>
-                    <div className="relative z-10 mt-6 border-t border-slate-100 pt-4">
-                      <p className="text-sm font-semibold text-slate-900">{tm.name}</p>
-                      <p className="text-xs text-slate-500">{tm.role}</p>
-                    </div>
-                  </SpotlightCard>
-                </Reveal>
-              ))}
-            </div>
+            {L.testimonials.items.length > 0 && (
+              <div className="grid gap-6 md:grid-cols-3">
+                {L.testimonials.items.map((tm, i) => (
+                  <Reveal key={i} delay={i * 0.08}>
+                    <SpotlightCard
+                      glow="rgba(59,130,246,0.08)"
+                      className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/10"
+                    >
+                      <Quote className="relative z-10 h-7 w-7 shrink-0 text-blue-500/70" aria-hidden />
+                      <p className="relative z-10 mt-4 flex-1 text-[15px] leading-relaxed text-slate-700">{tm.quote}</p>
+                      <div className="relative z-10 mt-6 border-t border-slate-100 pt-4">
+                        <p className="text-sm font-semibold text-slate-900">{tm.name}</p>
+                        <p className="text-xs text-slate-500">{tm.role}</p>
+                      </div>
+                    </SpotlightCard>
+                  </Reveal>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -457,7 +459,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
             <p className="mx-auto mt-5 max-w-xl text-lg text-slate-300">{L.cta.subtitle}</p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Magnetic>
-                <Link href="/client/signup" className="btn-shine btn-shine-soft inline-flex h-12 items-center gap-2 rounded-full bg-white px-7 text-base font-medium text-slate-900 transition-all duration-300 hover:bg-slate-100 hover:shadow-lg hover:shadow-white/10">
+                <Link href="/developer/signup" className="btn-shine btn-shine-soft inline-flex h-12 items-center gap-2 rounded-full bg-white px-7 text-base font-medium text-slate-900 transition-all duration-300 hover:bg-slate-100 hover:shadow-lg hover:shadow-white/10">
                   {L.cta.primary} <ArrowRight className="cta-arrow h-4 w-4" />
                 </Link>
               </Magnetic>
@@ -483,7 +485,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
               <Link href="/pricing" className="link-underline hover:text-slate-900 transition-colors">{L.footer.pricing}</Link>
               <a href="#compare" className="link-underline hover:text-slate-900 transition-colors">{L.footer.compare}</a>
               <a href="#faq" className="link-underline hover:text-slate-900 transition-colors">{L.footer.faq}</a>
-              <Link href="/client/login" className="link-underline hover:text-slate-900 transition-colors">{L.footer.signIn}</Link>
+              <Link href="/developer/login" className="link-underline hover:text-slate-900 transition-colors">{L.footer.signIn}</Link>
             </nav>
             <p>&copy; {new Date().getFullYear()} {SITE_NAME}</p>
           </div>

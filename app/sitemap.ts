@@ -2,17 +2,12 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/seo";
 
 // Only list routes that actually exist (404s in a sitemap hurt SEO).
-// Grow this list as marketing pages ship (/pricing, /docs, /compare/*, …).
+// Grow this list as marketing pages ship (/pricing, /docs, …).
 const ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
   { path: "/", priority: 1.0, changeFrequency: "weekly" },
   { path: "/pricing", priority: 0.9, changeFrequency: "weekly" },
   { path: "/docs", priority: 0.9, changeFrequency: "weekly" },
-  { path: "/compare/formspree", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/compare/jotform", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/compare/basin", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/compare/getform", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/compare/web3forms", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/client/signup", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/developer/signup", priority: 0.6, changeFrequency: "monthly" },
 ];
 
 // Pages served in both languages — declare the fr/en alternates so Google

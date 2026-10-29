@@ -7,7 +7,7 @@ Do NOT put any e-mail address in the page: the lead reaches the client through
 the form id, server-side.
 
 ## Inputs you need from the user
-1. `FORM_API_URL` — the Inlet origin (e.g. https://inlett.vercel.app)
+1. `FORM_API_URL` — the Inlet origin (e.g. https://inlet-eta.vercel.app)
 2. `FORM_ID` — the form's UUID. The user gets it in the dashboard
    ({FORM_API_URL}/developer/dashboard → New form → pick the client → copy),
    or you create it yourself through the MCP server if they give you an API key

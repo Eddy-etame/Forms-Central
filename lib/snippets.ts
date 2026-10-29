@@ -37,7 +37,7 @@ export const SNIPPET_TARGETS: { id: SnippetTarget; label: string; file: string; 
 ];
 
 export interface SnippetInput {
-  apiUrl: string;        // Inlet origin, e.g. https://inlett.vercel.app
+  apiUrl: string;        // Inlet origin, e.g. https://inlet-eta.vercel.app
   formId: string;
   lang?: 'fr' | 'en';    // auto-reply language
   successUrl?: string | null;

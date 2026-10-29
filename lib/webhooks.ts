@@ -23,8 +23,8 @@ export function signWebhook(secret: string, timestamp: number, rawBody: string):
   return crypto.createHmac('sha256', secret).update(`${timestamp}.${rawBody}`).digest('hex');
 }
 
-/** Get the client's signing secret, generating + persisting one on first use. */
-async function getOrCreateSecret(clientId: string): Promise<string | null> {
+/** Get the developer's signing secret, generating + persisting one on first use. */
+export async function getOrCreateSecret(clientId: string): Promise<string | null> {
   try {
     const { data } = await supabase.from('clients').select('webhook_secret').eq('id', clientId).maybeSingle();
     if (data?.webhook_secret) return data.webhook_secret;
@@ -98,4 +98,11 @@ export async function dispatchLeadWebhook(args: {
   } catch (err) {
     console.warn('[webhook] dispatch skipped:', (err as Error)?.message);
   }
+}
+
+/** Replace the developer's signing secret (every form signs with it). */
+export async function rotateWebhookSecret(clientId: string): Promise<string | null> {
+  const secret = 'whsec_' + crypto.randomBytes(24).toString('hex');
+  const { error } = await supabase.from('clients').update({ webhook_secret: secret }).eq('id', clientId);
+  return error ? null : secret;
 }

@@ -103,6 +103,7 @@ interface AppDict {
     loading: string; noKeys: string; lastUsed: string; neverUsed: string;
     couldNotCreate: string; couldNotReach: string;
     webhooksTitle: string; wDescA: string; wDescB: string; wDescC: string; wDescD: string;
+      secretLabel: string; secretHint: string; rotate: string; rotateConfirmTitle: string; rotateConfirmBody: string; rotateBtn: string; cancel: string; rotated: string;
     createFormFirst: string; webhookPlaceholder: string; saving: string; save: string; saved: string; couldNotSave: string; networkError: string;
     mcpTitle: string; mcpDescA: string; mcpDescStrong: string; mcpDescB: string; endpoint: string; toolsAvailable: string;
   };
@@ -417,6 +418,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
       loading: 'Loading…', noKeys: 'No active keys.', lastUsed: 'last used {date}', neverUsed: 'never used',
       couldNotCreate: 'Could not create the key.', couldNotReach: 'Could not reach the server.',
       webhooksTitle: 'Webhooks — every lead, POSTed to your app',
+      secretLabel: 'Signing secret', secretHint: 'One secret for your whole account — every form signs its webhooks with it. Keep it on your server only.', rotate: 'Rotate', rotateConfirmTitle: 'Rotate the signing secret?', rotateConfirmBody: 'Every endpoint you run must be updated with the new secret, or its signature checks will fail.', rotateBtn: 'Rotate secret', cancel: 'Cancel', rotated: 'Secret rotated — update your endpoints.',
       wDescA: 'Set an https endpoint per form and every stored lead arrives as a signed',
       wDescB: 'POST — verify the', wDescC: 'header (snippet in the', wDescD: '). Delivery never blocks or loses a lead.',
       createFormFirst: 'Create a form first — webhooks are configured per form.', webhookPlaceholder: 'https://api.yourapp.com/hooks/inlet (empty = disabled)', saving: 'Saving…', save: 'Save', saved: 'Saved.', couldNotSave: 'Could not save.', networkError: 'Network error.',
@@ -741,6 +743,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
       loading: 'Chargement…', noKeys: 'Aucune clé active.', lastUsed: 'utilisée le {date}', neverUsed: 'jamais utilisée',
       couldNotCreate: 'Impossible de créer la clé.', couldNotReach: 'Impossible de joindre le serveur.',
       webhooksTitle: 'Webhooks — chaque lead, envoyé (POST) à votre application',
+      secretLabel: 'Secret de signature', secretHint: 'Un seul secret pour tout votre compte — chaque formulaire signe ses webhooks avec. Gardez-le côté serveur uniquement.', rotate: 'Renouveler', rotateConfirmTitle: 'Renouveler le secret de signature ?', rotateConfirmBody: 'Chaque endpoint que vous exploitez devra être mis à jour avec le nouveau secret, sinon ses vérifications de signature échoueront.', rotateBtn: 'Renouveler le secret', cancel: 'Annuler', rotated: 'Secret renouvelé — mettez vos endpoints à jour.',
       wDescA: 'Définissez un endpoint https par formulaire et chaque lead stocké arrive en POST signé',
       wDescB: '— vérifiez l’en-tête', wDescC: '(extrait dans la', wDescD: '). La livraison ne bloque ni ne perd jamais un lead.',
       createFormFirst: 'Créez d’abord un formulaire — les webhooks se configurent par formulaire.', webhookPlaceholder: 'https://api.votreapp.com/hooks/inlet (vide = désactivé)', saving: 'Enregistrement…', save: 'Enregistrer', saved: 'Enregistré.', couldNotSave: 'Impossible d’enregistrer.', networkError: 'Erreur réseau.',

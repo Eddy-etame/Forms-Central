@@ -80,7 +80,8 @@ lib/
   snippets.ts                   integration code generator (dashboard + docs + MCP use it)
   clients.ts / forms.ts         services shared by the API routes and the MCP tools
   invites.ts                    set-password links (sha256 at rest)
-  email.ts + emails/*           one SMTP provider, React Email templates
+  email.ts + mailAccounts.ts    sending-account pool with rotation + cooldown, every send logged
+  emails/*                      React Email templates
   blacklist.ts                  temporary bans (expires_at)
   spamClassifier.ts             optional AI classifier, off unless AI_CLASSIFIER_ENABLED=true
   appDict.ts / dictionaries.ts  app + marketing copy, EN/FR
@@ -128,9 +129,10 @@ See `.env.example` — every variable is documented there. The ones people miss:
 | `NEXT_PUBLIC_APP_URL` | origin used in e-mail links, snippets and MCP output |
 | `SUPABASE_SERVICE_ROLE_KEY` | bypasses RLS — server only, never `NEXT_PUBLIC_` |
 | `JWT_SECRET` | signs the three session cookies |
-| `SMTP_*` | **one** provider; `SMTP_FROM` must be a verified sender |
+| `SMTP_*`, `SMTP_<n>_*` | the sending-account pool (rotation + cooldown); every `FROM` must be a verified sender on its account |
 | `OPERATOR_EMAIL` | receives plan requests (falls back to `ADMIN_2FA_EMAIL`) |
 | `AI_CLASSIFIER_ENABLED` | the AI spam classifier runs only when exactly `true` |
+| `CRON_SECRET` | authorises the daily retention cron (`/api/cron/retention`) |
 
 ---
 
@@ -155,7 +157,7 @@ Other scripts:
 | `scripts/migrate-supabase.mjs [--dry-run]` | copy a whole project to another Supabase project, rewriting attachment URLs |
 | `scripts/build-agent-docs.mjs` | regenerate `lib/agentDocs.ts` from `docs/agent/*.md` |
 | `scripts/set-admin-password.mjs` | operator password hash |
-| `scripts/set-client-password.mjs` | (legacy name) set a **developer** account password by hand |
+| `scripts/set-developer-password.mjs` | set a **developer** account password by hand (table `clients`) |
 
 Before pushing: `npm run lint && npx tsc --noEmit && npm run build`.
 
@@ -190,8 +192,9 @@ migrations, then `scripts/migrate-supabase.mjs`. Rotate every key afterwards.
 4. **Bans are temporary** (`blacklist.expires_at`, 24 h).
 5. **Attachments go through `/api/download?sid=&field=`** with session +
    ownership checks; the storage URL never reaches a browser.
-6. **One SMTP provider; every send logged; a failed send is a failure**, never
-   reported as delivered. The daily e-mail budget is charged after success.
+6. **Every send is logged; a failed send is a failure**, never reported as
+   delivered. Sending accounts (`SMTP_*`, `SMTP_<n>_*`) rotate with a cooldown
+   on failure; the daily e-mail budget is charged after success.
 7. **The AI classifier is off by default** (`AI_CLASSIFIER_ENABLED`); when on,
    it only labels leads that have no label yet and treats content as untrusted.
 8. **Service role stays on the server.** Public clients never see it; RLS is

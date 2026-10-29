@@ -33,7 +33,7 @@ history: research, verdicts and options. What is below is what we build.
 | A4 | AI classifier off unless `AI_CLASSIFIER_ENABLED=true`; labels only unlabeled leads | done (`lib/spamClassifier.ts`) |
 | A5 | no `mailto:` upgrade path, no personal mailbox | done (`plan_requests`, `UpgradeButton`) |
 | A6 | truth pass on every claim (landing, pricing, llms.txt, AI knowledge, docs) | done — no self-hosting, no unlimited AI, no DKIM, no SMTP rotation, no compare pages, no fake testimonials |
-| A7 | one e-mail provider; a failed send is logged as a failure | done (`lib/email.ts`) |
+| A7 | a failed send is logged as a failure, never a false "delivered"; the account pool keeps rotating with a cooldown (author's decision 2026-10-29: keep rotation) | done (`lib/email.ts`, `lib/mailAccounts.ts`) |
 | A8 | daily e-mail budget charged after a successful send | done |
 | A9 | set-password links instead of e-mailed passwords (clients, developers, admin) | done (`lib/invites.ts`, portal set-password / forgot-password) |
 
@@ -100,13 +100,15 @@ SQL editor before the next deploy.
 
 1. No card checkout — plans are activated by hand (D8). Blocks nothing until
    the company exists; blocks scale after.
-2. The custom-sender (SMTP per developer) feature still exists in the admin;
-   it conflicts with "one provider" and should be reviewed or removed.
-3. Webhook secret display: the form settings page saves the URL; the
-   `whsec_…` secret is shown in the API & MCP page only. Should be one place.
+2. Custom sender per developer (admin feature) and the sending-account
+   rotation both stay — the author's call (2026-10-29).
+3. Webhook secret: one per account, now shown in Developer → API & MCP next
+   to the per-form webhook URLs (2026-10-29).
 4. The client inbox has no per-form notification toggle (only per client).
 5. No e-mail deliverability setup for a custom domain (SPF/DKIM) — Inlet sends
-   from the provider's verified sender; fine for now, needed for white-label.
+   from the pool's verified senders; fine for now, needed for white-label.
+5b. Data retention is now enforced: `/api/cron/retention` runs daily (Vercel
+   cron, `CRON_SECRET`) and deletes leads + attachments past the plan window.
 6. The AI assistant on the marketing site answers from `lib/ai.ts` knowledge;
    it should link to `/docs#…` anchors — small.
 7. Tests do not cover e-mail content (templates render in `emails/`); a
@@ -130,9 +132,8 @@ not yet *earning*. The next 10 points are §3 week 0–1.
    with `scripts/migrate-supabase.mjs`, keys rotated?** Proposed: yes, this
    week, while the school session still works; run `backup-supabase.mjs`
    first. → *yes / keep the school project for now*
-4. **Custom sender per developer (admin feature): keep or remove?** Proposed:
-   remove from the product surface, keep the columns; one provider, white-label
-   through the sender *name* only. → *remove / keep*
+4. ~~Custom sender per developer: keep or remove?~~ Answered 2026-10-29:
+   keep, and keep the sending-account rotation.
 5. **Checkout provider when the company exists?** Proposed: Paddle (merchant
    of record handles EU VAT and US sales tax; no invoices to generate). →
    *Paddle / Stripe*

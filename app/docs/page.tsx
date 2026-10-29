@@ -213,7 +213,7 @@ const DOC: Record<Locale, DocDict> = {
         { t: "Keyword flagging, never silent drops.", d: "A lead that trips the keyword filter is stored and flagged “suspect”, the auto-reply is withheld, and the notification subject says [Check]. You decide; nothing disappears." },
         { t: "Rate limits and temporary bans.", d: "Per-IP limits; abusers are banned for 24 hours, not forever, so a shared office IP recovers." },
         { t: "Attachments.", d: "Downloads go through an endpoint that checks the session and the ownership of the lead; the storage URL is never handed to a browser." },
-        { t: "Accounts.", d: "Developers sign in with password + e-mail OTP. Clients get single-use set-password links. API keys are hashed at rest and revocable. One SMTP provider; every send is logged; a failed send is a failure, never a false “delivered”." },
+        { t: "Accounts.", d: "Developers sign in with password + e-mail OTP. Clients get single-use set-password links. API keys are hashed at rest and revocable. Sending accounts rotate with a cooldown on failure; every send is logged; a failed send is a failure, never a false “delivered”." },
       ],
     },
     mcp: {
@@ -234,7 +234,7 @@ const DOC: Record<Locale, DocDict> = {
       intro: "Add a webhook URL in a form's settings and every stored lead is POSTed to it as submission.created, signed Stripe-style in the X-Inlet-Signature header. Delivery is fire-and-forget with one retry — a down endpoint can never block or lose a lead.",
       payloadTitle: "What you receive",
       verifyIntro: "Verify the signature on the raw body and reject replays in five lines:",
-      note: "Endpoints must be https. The signing secret (whsec_…) is shown once in the form settings.",
+      note: "Endpoints must be https. The signing secret (whsec_…) is one per account — all your forms sign with it — and is shown in Developer → API & MCP.",
     },
     errors: {
       title: "Error codes",
@@ -254,7 +254,7 @@ const DOC: Record<Locale, DocDict> = {
         { q: "Can I use one form on several sites?", a: "Yes. Add each site's origin to the form (settings → allowed origins, or set_origins through MCP). Leads from both land in the same client inbox. If the sites belong to different businesses, make two clients and two forms." },
         { q: "Does the client have to use the inbox?", a: "No. Leads arrive by e-mail regardless. The inbox is there for clients who want history, attachments and search without asking you." },
         { q: "Where does the e-mail come from?", a: "From Inlet's sending address, with Reply-To set to the visitor so the client answers in one click. Paid plans can set a custom sender name and reply-to." },
-        { q: "What about GDPR?", a: "Leads live in a database in the EU region of our provider; the client (your customer) is the controller of its leads, you and Inlet are processors. Retention follows your plan; export is one click; deletion of a form deletes its leads." },
+        { q: "What about GDPR?", a: "Leads live in a database in the EU region of our provider; the client (your customer) is the controller of its leads, you and Inlet are processors. Retention is enforced by plan (a daily job deletes leads and attachments past the window); export is one click; deletion of a form deletes its leads." },
         { q: "Can I export?", a: "CSV export per form and across forms (Solo and up). The MCP tools list_leads / get_lead give an agent the same data." },
         { q: "Why does JavaScript need a proof-of-work and HTML does not?", a: "A native HTML post comes from a real page load with an Origin and a redirect; scripted floods come from JavaScript. The challenge costs a bot CPU and a visitor a blink." },
         { q: "My site is static (Astro, Hugo, plain HTML). Do I need the relay?", a: "No. Use the HTML or Astro snippet. The relay exists for sites that already have a server and want the browser to talk only to their own domain." },
@@ -350,7 +350,7 @@ const DOC: Record<Locale, DocDict> = {
         { t: "Mots-clés signalés, jamais supprimés en silence.", d: "Un lead qui déclenche le filtre est stocké et marqué « à vérifier », la réponse automatique est retenue, et le sujet de la notification dit [À vérifier]. Vous décidez ; rien ne disparaît." },
         { t: "Limites de débit et bannissements temporaires.", d: "Limites par IP ; les abuseurs sont bannis 24 heures, pas pour toujours, pour qu’une IP de bureau partagée s’en remette." },
         { t: "Pièces jointes.", d: "Les téléchargements passent par un point d’accès qui vérifie la session et la propriété du lead ; l’URL de stockage n’est jamais remise à un navigateur." },
-        { t: "Comptes.", d: "Les développeurs se connectent avec mot de passe + code OTP par e-mail. Les clients reçoivent des liens à usage unique. Les clés API sont hachées et révocables. Un seul fournisseur SMTP ; chaque envoi est journalisé ; un envoi échoué est un échec, jamais un faux « délivré »." },
+        { t: "Comptes.", d: "Les développeurs se connectent avec mot de passe + code OTP par e-mail. Les clients reçoivent des liens à usage unique. Les clés API sont hachées et révocables. Les comptes d’envoi tournent avec une mise en pause en cas d’échec ; chaque envoi est journalisé ; un envoi échoué est un échec, jamais un faux « délivré »." },
       ],
     },
     mcp: {
@@ -371,7 +371,7 @@ const DOC: Record<Locale, DocDict> = {
       intro: "Ajoutez une URL de webhook dans les réglages d’un formulaire et chaque lead stocké y est envoyé (POST) en submission.created, signé façon Stripe dans l’en-tête X-Inlet-Signature. La livraison est asynchrone avec une nouvelle tentative — un endpoint en panne ne peut jamais bloquer ni perdre un lead.",
       payloadTitle: "Ce que vous recevez",
       verifyIntro: "Vérifiez la signature sur le corps brut et rejetez les rejeux en cinq lignes :",
-      note: "Les endpoints doivent être en https. Le secret de signature (whsec_…) s’affiche une fois dans les réglages du formulaire.",
+      note: "Les endpoints doivent être en https. Le secret de signature (whsec_…) est unique par compte — tous vos formulaires signent avec — et s’affiche dans Développeur → API & MCP.",
     },
     errors: {
       title: "Codes d’erreur",
@@ -391,7 +391,7 @@ const DOC: Record<Locale, DocDict> = {
         { q: "Puis-je utiliser un formulaire sur plusieurs sites ?", a: "Oui. Ajoutez l’origine de chaque site au formulaire (réglages → origines autorisées, ou set_origins via MCP). Les leads des deux arrivent dans la même boîte client. Si les sites appartiennent à des entreprises différentes, créez deux clients et deux formulaires." },
         { q: "Le client doit-il utiliser la boîte ?", a: "Non. Les leads arrivent par e-mail dans tous les cas. La boîte est là pour les clients qui veulent l’historique, les pièces jointes et la recherche sans vous solliciter." },
         { q: "D’où part l’e-mail ?", a: "De l’adresse d’envoi d’Inlet, avec un Reply-To sur le visiteur pour que le client réponde en un clic. Les forfaits payants peuvent définir un nom d’expéditeur et un reply-to personnalisés." },
-        { q: "Et le RGPD ?", a: "Les leads vivent dans une base en région UE chez notre fournisseur ; le client (votre client) est responsable de traitement de ses leads, vous et Inlet êtes sous-traitants. La rétention suit votre forfait ; l’export tient en un clic ; supprimer un formulaire supprime ses leads." },
+        { q: "Et le RGPD ?", a: "Les leads vivent dans une base en région UE chez notre fournisseur ; le client (votre client) est responsable de traitement de ses leads, vous et Inlet êtes sous-traitants. La rétention est appliquée par forfait (un travail quotidien supprime les leads et pièces jointes hors fenêtre) ; l’export tient en un clic ; supprimer un formulaire supprime ses leads." },
         { q: "Puis-je exporter ?", a: "Export CSV par formulaire et sur l’ensemble (Solo et plus). Les outils MCP list_leads / get_lead donnent les mêmes données à un agent." },
         { q: "Pourquoi le JavaScript a-t-il besoin d’une preuve de travail et pas le HTML ?", a: "Un POST HTML natif vient d’un vrai chargement de page avec une Origin et une redirection ; les envois massifs viennent de JavaScript. Le défi coûte du CPU à un bot et un clignement d’œil à un visiteur." },
         { q: "Mon site est statique (Astro, Hugo, HTML pur). Ai-je besoin du relais ?", a: "Non. Utilisez l’extrait HTML ou Astro. Le relais existe pour les sites qui ont déjà un serveur et veulent que le navigateur ne parle qu’à leur propre domaine." },

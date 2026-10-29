@@ -57,6 +57,16 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
+  // The developer workspace moved from /client/* to /developer/* (the word
+  // "client" now means the businesses a developer builds for). Old links in
+  // e-mails and bookmarks keep working.
+  async redirects() {
+    return [
+      { source: "/client/dashboard/developer", destination: "/developer/dashboard/api", permanent: true },
+      { source: "/client/:path*", destination: "/developer/:path*", permanent: true },
+      { source: "/compare/:slug*", destination: "/docs", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

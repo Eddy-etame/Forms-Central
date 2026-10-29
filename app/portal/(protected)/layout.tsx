@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { getPortalSession } from '@/lib/portalAuth';
 import { supabase } from '@/lib/supabase';
 import { getPlan } from '@/lib/plans';
-import SignOutLink from '@/components/client/SignOutLink';
+import SignOutLink from '@/components/developer/SignOutLink';
 import { getLocale } from '@/lib/i18n';
 import { getAppDict } from '@/lib/appDict';
 import { SITE_URL } from '@/lib/seo';

@@ -69,9 +69,13 @@ interface AppDict {
     detailsTitle: string; receivedVia: string; // {date} {form} placeholders
     downloadFile: string;
     nf: {
-      createTitle: string; liveTitle: string; nameHint: string; namePlaceholder: string;
+      createTitle: string; liveTitle: string; nameHint: string; nameLabel: string; namePlaceholder: string;
       seePro: string; creating: string; createBtn: string;
       readyBody: string; openGuide: string; done: string; couldNotCreate: string; couldNotReach: string;
+      clientLabel: string; clientPlaceholder: string; newClientOption: string; needClient: string;
+      clientNameLabel: string; clientEmailLabel: string; clientEmailHint: string; siteUrlLabel: string; siteUrlHint: string;
+      langLabel: string; inviteLabel: string; leadsGoTo: string; noEmailInCode: string; originsOpenWarn: string;
+      envTitle: string; openSettings: string;
     };
     onboarding: {
       kicker: string; title: string; subtitle: string;
@@ -113,6 +117,10 @@ interface AppDict {
     couldNotCreate: string; couldNotReach: string;
     resetBtn: string; resetConfirmTitle: string; resetConfirmBody: string; resetConfirmBtn: string; cancel: string;
     resetting: string; resetOk: string; resetErr: string;
+    websiteLabel: string; websitePlaceholder: string; langLabel: string; inviteNow: string; inviteHint: string;
+    sendAccess: string; resendAccess: string; accessSent: string; hasAccess: string; noAccessYet: string;
+    notifyLeads: string; edit: string; save: string; cancelEdit: string; deleteBlocked: string; deleteConfirmTitle: string; deleteConfirmBody: string; deleteBtn: string;
+    leadsBy: string; createdExisting: string;
   };
   formPage: {
     formView: string; subtitle: string; exportCsv: string;
@@ -121,7 +129,19 @@ interface AppDict {
     structuredData: string; searchResults: string;
     date: string; more: string; noData: string; file: string; viewDetails: string;
     fullSubmission: string; submittedAt: string; attachedDoc: string; downloadFile: string;
+    settings: {
+      title: string; subtitle: string; loading: string;
+      nameLabel: string; clientLabel: string; originsLabel: string; originsHint: string;
+      successUrlLabel: string; successUrlHint: string; webhookLabel: string; webhookHint: string;
+      autoReplyLabel: string; autoReplyHint: string; subjectLabel: string; messageLabel: string; messageHint: string;
+      developerCopyLabel: string; developerCopyHint: string; activeLabel: string; activeHint: string;
+      save: string; saving: string; saved: string; saveErr: string;
+      integrationTitle: string; integrationSubtitle: string; leadsGoTo: string;
+      deleteTitle: string; deleteBody: string; deleteBtn: string; deleteErr: string; cancel: string;
+    };
   };
+  snippets: { copy: string; copied: string; helperTab: string; filesHint: string; noEmail: string };
+  upgrade: { request: string; requested: string; pending: string; signIn: string; err: string; current: string; note: string };
   admin: {
     nav: { dashboard: string; analytics: string; revenue: string; forms: string; clients: string; emailHealth: string; security: string; logs: string; blacklist: string; myAtelier: string; signOut: string; adminLabel: string; lightMode: string; darkMode: string };
     home: {
@@ -148,13 +168,14 @@ interface AppDict {
       deleteConfirmTitle: string; deleteConfirmBody: string; deleteConfirmBtn: string; deleteErr: string; deletedOk: string;
       needClientFirst: string;
       modalTitle: string; formNameLabel: string; formNamePlaceholder: string;
-      recipientLabel: string; corsLabel: string; corsPlaceholder: string; corsHint: string;
+      recipientLabel: string; clientLabel: string; clientDefaultHint: string; corsLabel: string; corsPlaceholder: string; corsHint: string;
       autoReply: string; subjectLabel: string; subjectPlaceholder: string;
       messageLabel: string; messagePlaceholder: string; messageHint: string;
       cancel: string; creating: string; create: string;
     };
     clients: {
       title: string; subtitle: string; newClient: string; noClients: string;
+      accessLinkLabel: string; sendAccessLink: string;
       requiredErr: string; saveErr: string;
       deleteConfirmTitle: string; deleteConfirmBody: string; deleteConfirmBtn: string; deleteErr: string; deletedOk: string;
       passwordErr: string; networkErr: string;
@@ -249,7 +270,13 @@ interface AppDict {
     login: {
       title: string; subtitle: string; emailLabel: string; passwordLabel: string;
       signingIn: string; signIn: string; errTooMany: string; errIncorrect: string; errNetwork: string;
+      forgot: string;
     };
+    setPassword: {
+      title: string; resetTitle: string; subtitle: string; passwordLabel: string; confirmLabel: string; placeholder: string;
+      submit: string; submitting: string; errMismatch: string; errShort: string; errNetwork: string; missingToken: string; askNew: string;
+    };
+    forgot: { title: string; body: string; emailLabel: string; send: string; sending: string; sent: string; back: string };
     layout: {
       defaultBrandName: string; poweredBy: string; signOut: string;
     };
@@ -271,8 +298,8 @@ export const appDictionaries: Record<Locale, AppDict> = {
         badgeText: 'One backend for every site you build', headlineA: 'The form backend that', headlineHighlight: 'disappears into your stack.',
         point1Title: 'No SMTP, no backend', point1Desc: 'Two values wire any site — the service does the rest.',
         point2Title: 'AI + proof-of-work anti-spam', point2Desc: 'Modern spam blocked before it ever reaches you.',
-        point3Title: 'Self-hosted, you own the data', point3Desc: 'Your leads live on your infrastructure, always.',
-        footerTagline: 'Self-hosted · privacy-first · you own the data', backToSite: '← Back to site', orDivider: 'or',
+        point3Title: 'Every lead stored, then delivered', point3Desc: 'The lead is saved first; your client gets it by e-mail and in a private inbox.',
+        footerTagline: 'One developer account · your clients · their forms · every lead kept', backToSite: '← Back to site', orDivider: 'or',
       },
       adminLogin: {
         enterCode: 'Enter your code', adminAccess: 'Admin access',
@@ -285,7 +312,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
       clientLogin: {
         enterCode: 'Enter your code', codeEmailedBody: 'We emailed a 6-digit code to {email}. It expires in 10 minutes.',
         verificationCodeLabel: 'Verification code', verifying: 'Verifying…', verifyAndSignIn: 'Verify & sign in', useDifferentAccount: '← Use a different account',
-        welcomeBack: 'Welcome back', subtitle: 'Sign in to see your leads and performance.', googleSignIn: 'Sign in with Google',
+        welcomeBack: 'Welcome back', subtitle: 'Developer sign-in — your clients, forms and leads.', googleSignIn: 'Sign in with Google',
         emailLabel: 'Email', passwordLabel: 'Password', forgotPassword: 'Forgot password?', signingIn: 'Signing in…', signIn: 'Sign in',
         noAccount: 'No account yet?', createOneFree: 'Create one free',
         errGoogleFailed: 'Google sign-in failed or was cancelled. Try again or use your password.',
@@ -293,7 +320,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
         errTooMany: 'Too many attempts. Please wait a minute and try again.', errIncorrect: 'Incorrect email or password.', errNetwork: 'Could not reach the server.', errIncorrectCode: 'Incorrect code.',
       },
       clientSignup: {
-        title: 'Create your account', subtitle: 'Start free — one form backend for all your websites.', googleSignUp: 'Sign up with Google',
+        title: 'Create your developer account', subtitle: 'Developers sign up here, then create their clients and wire their forms. Free to start.', googleSignUp: 'Sign up with Google',
         nameLabel: 'Name or company', namePlaceholder: 'Acme Studio', emailLabel: 'Email', passwordLabel: 'Password', passwordPlaceholder: 'At least 8 characters',
         creating: 'Creating your account…', createAccount: 'Create account', alreadyHave: 'Already have an account?', signIn: 'Sign in',
         errCouldNotCreate: 'Could not create the account.', errNetwork: 'Could not reach the server.',
@@ -315,14 +342,14 @@ export const appDictionaries: Record<Locale, AppDict> = {
     choosePlan: {
       kicker: 'Account created',
       title: 'Pick the plan that grows with you',
-      subtitle: 'Change or cancel anytime — upgrades are activated same-day by email.',
+      subtitle: 'Change or cancel anytime. Paid plans are activated on request, the same day, while card checkout opens.',
       recommended: 'Recommended',
       ctaChoose: 'Get {plan}',
       continueFree: 'Continue with the limited Free plan',
       freeNote: '3 forms · 50 submissions/mo — enough to try it on a real site.',
     },
     sidebar: {
-      general: 'General', overview: 'Overview', developer: 'Developer', endClients: 'End-clients',
+      general: 'General', overview: 'Overview', developer: 'API & MCP', endClients: 'Clients',
       yourForms: 'Your forms', noForms: 'No forms connected yet.', signOut: 'Sign out', lightMode: 'Light mode', darkMode: 'Dark mode',
     },
     dashboard: {
@@ -346,17 +373,24 @@ export const appDictionaries: Record<Locale, AppDict> = {
       receivedVia: 'Received {date} via {form}',
       downloadFile: 'Download file',
       nf: {
-        createTitle: 'Create a form', liveTitle: 'Your form is live',
-        nameHint: "Name it after the website or purpose — you'll get its ID and a working snippet right away.",
-        namePlaceholder: 'e.g. Portfolio contact form',
-        seePro: 'See Pro plans', creating: 'Creating…', createBtn: 'Create form',
-        readyBody: 'is ready to receive submissions. Wire it with these two values:',
+        createTitle: 'Create a form', liveTitle: 'Your form is live', nameLabel: 'Form name',
+        nameHint: 'Every form belongs to a client: the business whose site it lives on. Its leads go to that client — the e-mail never appears in your code.',
+        namePlaceholder: 'e.g. Contact — acme.com',
+        seePro: 'See plans', creating: 'Creating…', createBtn: 'Create form',
+        readyBody: 'is live. Pick your stack and paste the code — it ships only the public form id.',
         openGuide: 'Open the integration guide', done: 'Done', couldNotCreate: 'Could not create the form.', couldNotReach: 'Could not reach the server.',
+        clientLabel: 'Client', clientPlaceholder: 'Pick a client…', newClientOption: '+ New client', needClient: 'Create a client first — every form belongs to one.',
+        clientNameLabel: 'Business name', clientEmailLabel: 'Where leads go (client e-mail)', clientEmailHint: 'Stored on our side only. Never written in your HTML.',
+        siteUrlLabel: 'Site URL', siteUrlHint: 'We allow this site (and its www twin) to post. Add more sites later in the form settings.',
+        langLabel: 'Auto-reply language', inviteLabel: 'E-mail the client a link to their lead inbox now',
+        leadsGoTo: 'Leads go to', noEmailInCode: 'no e-mail address in your code',
+        originsOpenWarn: 'No site URL given: any site can post to this form until you set one in the settings.',
+        envTitle: 'Env values', openSettings: 'Open form settings',
       },
       onboarding: {
         kicker: 'Getting started', title: "Let's get your first lead", subtitle: 'Three steps, about two minutes. No SMTP, no backend to run.',
         s1Title: 'Create a form', s1Done: 'Done · {n} form{s}', s1Forms: '', s1Body: "Name it after the website it lives on. You'll get an ID to wire up.",
-        s2Title: 'Add it to your website', s2Body: 'Paste this HTML anywhere. It works with no JavaScript and no email setup.',
+        s2Title: 'Add it to your website', s2Body: 'Pick your stack and paste the code. It ships only the public form id — no e-mail, no key.',
         jsAlt: 'Prefer a JavaScript integration with proof-of-work spam protection?', readDocs: 'Read the docs', orPointAiAt: 'or point your AI at',
         s3Title: 'Receive your first lead', s3Body: 'Submit your form once to test it. Your lead lands here instantly — with the owner notified and a branded auto-reply sent for you.',
         waiting: 'Waiting for your first submission… refresh after you send one.',
@@ -369,16 +403,16 @@ export const appDictionaries: Record<Locale, AppDict> = {
       nothingMatches: 'Nothing matches', navigate: 'navigate', open: 'open',
       gNavigate: 'Navigate', gForms: 'Forms', gResources: 'Resources', gAccount: 'Account',
       overview: 'Overview', overviewHint: 'Dashboard home',
-      clientPortals: 'Client portals', clientPortalsHint: 'End-client access',
-      devApi: 'Developer & API', devApiHint: 'Keys, MCP, webhooks',
+      clientPortals: 'Clients', clientPortalsHint: 'Businesses & their inboxes',
+      devApi: 'API & MCP', devApiHint: 'Keys, MCP, webhooks',
       openForm: 'Open form',
       documentation: 'Documentation', documentationHint: 'Integration guide',
       pricing: 'Pricing & plans', pricingHint: 'Upgrade',
       signOut: 'Sign out', signOutHint: 'End session',
     },
     developer: {
-      title: 'Developer', subtitle: 'API keys and the MCP server — let your AI assistant run your forms.',
-      lockTitle: 'API & MCP access starts on the Solo plan', lockBody: 'Connect Claude, Cursor or any MCP client and let it create forms and read your leads for you.', seePlans: 'See plans',
+      title: 'API & MCP', subtitle: 'API keys, webhooks and the MCP server — your AI assistant can set a whole site up in one call.',
+      lockTitle: 'API & MCP access is not included in this plan', lockBody: 'Connect Claude, Cursor or any MCP client and let it create clients, forms and read your leads for you.', seePlans: 'See plans',
       apiKeys: 'API keys', newKeyOnce: 'Your new key — shown only once, store it now', keyNamePlaceholder: 'Key name (e.g. claude-code)', creating: 'Creating…', newKey: 'New key',
       loading: 'Loading…', noKeys: 'No active keys.', lastUsed: 'last used {date}', neverUsed: 'never used',
       couldNotCreate: 'Could not create the key.', couldNotReach: 'Could not reach the server.',
@@ -386,19 +420,24 @@ export const appDictionaries: Record<Locale, AppDict> = {
       wDescA: 'Set an https endpoint per form and every stored lead arrives as a signed',
       wDescB: 'POST — verify the', wDescC: 'header (snippet in the', wDescD: '). Delivery never blocks or loses a lead.',
       createFormFirst: 'Create a form first — webhooks are configured per form.', webhookPlaceholder: 'https://api.yourapp.com/hooks/inlet (empty = disabled)', saving: 'Saving…', save: 'Save', saved: 'Saved.', couldNotSave: 'Could not save.', networkError: 'Network error.',
-      mcpTitle: 'MCP server — your AI runs your forms', mcpDescA: 'Connect Claude Code, Cursor, or any MCP client and your assistant can', mcpDescStrong: 'create forms, read leads, and fetch integration snippets', mcpDescB: 'without leaving the editor.', endpoint: 'Endpoint', toolsAvailable: 'Tools available:',
+      mcpTitle: 'MCP server — your AI runs your forms', mcpDescA: 'Connect Claude Code, Cursor, or any MCP client and your assistant can', mcpDescStrong: 'create clients and forms, fetch the exact embed for the framework, check form health and read leads', mcpDescB: 'without leaving the editor. One call, `setup_site`, takes a site from zero to live.', endpoint: 'Endpoint', toolsAvailable: 'Tools:',
     },
     endClients: {
-      title: 'End-clients', subtitle: 'Give each client a private, branded portal to view only their own leads.', newBtn: 'New end-client',
-      lockTitle: 'Client portals start on the Solo plan', lockBody: 'Create white-label portals so each client logs in and sees only their leads.', seePlans: 'See plans',
-      emailedMsg: 'Credentials have been emailed directly to {email} — you never see their password.',
-      namePlaceholder: 'Client name (e.g. Acme Corp)', emailPlaceholder: 'client@company.com', creating: 'Creating…', createBtn: 'Create end-client',
-      portalLogin: 'Portal login:', count: '{n} / {limit} end-clients', loading: 'Loading…',
-      emptyTitle: 'No end-clients yet', emptyBody: 'Create one, then assign the forms whose leads they should see.',
-      formsTheySee: 'Forms they can see', noneAssigned: 'None assigned yet.', assignForm: '+ Assign a form…',
-      couldNotCreate: 'Could not create the end-client.', couldNotReach: 'Could not reach the server.',
-      resetBtn: 'Reset password', resetConfirmTitle: 'Reset this end-client’s password?', resetConfirmBody: 'A new password is generated and emailed directly to them. Their current password stops working immediately.', resetConfirmBtn: 'Reset & email', cancel: 'Cancel',
-      resetting: 'Resetting…', resetOk: 'Password reset — new credentials emailed to them.', resetErr: 'Could not reset the password.',
+      title: 'Clients', subtitle: 'The businesses you build sites for. Each one receives its leads by e-mail and in a private, branded inbox.', newBtn: 'New client',
+      lockTitle: 'Client limit reached', lockBody: 'Your plan’s client limit is reached. Upgrade to add more businesses.', seePlans: 'See plans',
+      emailedMsg: 'An access link was e-mailed to {email} — they choose their own password; you never see it.',
+      namePlaceholder: 'Business name (e.g. Acme Corp)', emailPlaceholder: 'contact@acme.com — where their leads go', creating: 'Creating…', createBtn: 'Create client',
+      portalLogin: 'Their inbox:', count: '{n} / {limit} clients', loading: 'Loading…',
+      emptyTitle: 'No clients yet', emptyBody: 'Create the first business you build for. Every form you create belongs to one of your clients.',
+      formsTheySee: 'Their forms', noneAssigned: 'No form yet — create one from the overview.', assignForm: '+ Move a form here…',
+      couldNotCreate: 'Could not create the client.', couldNotReach: 'Could not reach the server.',
+      resetBtn: 'Send access link', resetConfirmTitle: 'Send a new access link?', resetConfirmBody: 'They receive a single-use link to choose a new password. Their current password keeps working until they use it.', resetConfirmBtn: 'Send link', cancel: 'Cancel',
+      resetting: 'Sending…', resetOk: 'Access link sent.', resetErr: 'Could not send the link.',
+      websiteLabel: 'Website', websitePlaceholder: 'https://acme.com (optional)', langLabel: 'Language', inviteNow: 'E-mail them their inbox access now', inviteHint: 'A single-use link; they pick their password. Nothing is sent if unchecked.',
+      sendAccess: 'Send access', resendAccess: 'Resend access', accessSent: 'Link sent', hasAccess: 'Has access', noAccessYet: 'No access yet',
+      notifyLeads: 'Gets each lead by e-mail', edit: 'Edit', save: 'Save', cancelEdit: 'Cancel', deleteBlocked: 'This client still has forms — move or delete them first.',
+      deleteConfirmTitle: 'Remove this client?', deleteConfirmBody: 'Their inbox access ends. Their forms must be moved or deleted first.', deleteBtn: 'Remove',
+      leadsBy: 'Leads by e-mail', createdExisting: 'You already have a client with this e-mail.',
     },
     formPage: {
       formView: 'Form view', subtitle: 'Data and files submitted through this form.', exportCsv: 'Export CSV',
@@ -407,7 +446,22 @@ export const appDictionaries: Record<Locale, AppDict> = {
       structuredData: 'Structured data', searchResults: 'Search these results…',
       date: 'Date', more: '… ({n} more)', noData: 'No data found.', file: 'File', viewDetails: 'View details →',
       fullSubmission: 'Full submission', submittedAt: 'Submitted {date}', attachedDoc: 'Attached document', downloadFile: 'Download file',
+      settings: {
+        title: 'Form settings', subtitle: 'Who receives the leads, which sites may post, what the visitor gets back.', loading: 'Loading settings…',
+        nameLabel: 'Form name', clientLabel: 'Client (receives the leads)', originsLabel: 'Allowed sites', originsHint: 'One origin per line, e.g. https://acme.com. Use * to allow any site (not recommended).',
+        successUrlLabel: 'Success page', successUrlHint: 'Where the visitor lands after a native (no-JavaScript) submit. Optional.',
+        webhookLabel: 'Webhook URL', webhookHint: 'Every stored lead is POSTed here as signed JSON (X-Inlet-Signature). https only. Optional.',
+        autoReplyLabel: 'Auto-reply to the visitor', autoReplyHint: 'Sent to the “email” field, in the client’s brand. Withheld for leads flagged as suspect.',
+        subjectLabel: 'Subject', messageLabel: 'Message', messageHint: 'Use {{name}} for the visitor’s name. Empty = the default message.',
+        developerCopyLabel: 'Copy me on every lead', developerCopyHint: 'The client always receives the lead; this adds a copy for you.',
+        activeLabel: 'Form is live', activeHint: 'Paused forms answer 403 and store nothing.',
+        save: 'Save settings', saving: 'Saving…', saved: 'Saved.', saveErr: 'Could not save.',
+        integrationTitle: 'Integration', integrationSubtitle: 'Pick your stack. The code carries only the public form id.', leadsGoTo: 'Leads go to',
+        deleteTitle: 'Delete this form', deleteBody: 'The form and every lead it stored are deleted. Sites still posting to it will get a 404.', deleteBtn: 'Delete form', deleteErr: 'Could not delete the form.', cancel: 'Cancel',
+      },
     },
+    snippets: { copy: 'Copy', copied: 'Copied', helperTab: 'inlet.js (helper)', filesHint: 'Two files: the helper once per project, the form where you need it.', noEmail: 'No e-mail address and no key in this code — the form id routes to your client’s inbox on our side.' },
+    upgrade: { request: 'Request {plan}', requested: '{plan} requested — we confirm by e-mail', pending: 'Request pending', signIn: 'Sign in to request', err: 'Could not send the request.', current: 'Current plan', note: 'Card checkout opens with invoicing. Until then a request is activated by hand, the same day.' },
     admin: {
       nav: { dashboard: 'Dashboard', analytics: 'Analytics', revenue: 'Revenue', forms: 'Forms', clients: 'Clients', emailHealth: 'Email health', security: 'Security', logs: 'Logs & failures', blacklist: 'Blacklist', myAtelier: 'My Atelier', signOut: 'Sign out', adminLabel: 'Admin', lightMode: 'Light mode', darkMode: 'Dark mode' },
       home: {
@@ -432,19 +486,20 @@ export const appDictionaries: Record<Locale, AppDict> = {
         client: 'Client', unknownClient: 'Unknown', corsOrigins: 'CORS origins', integration: 'Integration',
         requiredErr: 'Name and client are required.', createErr: 'Could not create the form.', activatedOk: 'Form activated.', pausedOk: 'Form paused.', updateErr: 'Could not update the form.',
         deleteConfirmTitle: 'Delete this form?', deleteConfirmBody: 'The form and its settings are permanently deleted. Sites still posting to it will start receiving 404s.', deleteConfirmBtn: 'Delete form', deleteErr: 'Could not delete the form.', deletedOk: 'Form deleted.',
-        needClientFirst: 'Create at least one client first — every form belongs to a client.',
+        needClientFirst: 'Create at least one developer first — every form belongs to a developer and one of its clients.',
         modalTitle: 'Create a form', formNameLabel: 'Form name', formNamePlaceholder: 'e.g. Acme contact form',
-        recipientLabel: 'Recipient client', corsLabel: 'Allowed CORS origins (comma-separated)', corsPlaceholder: 'e.g. https://acme.com, https://blog.acme.com (or * for all)', corsHint: 'Comma-separate multiple sites. Use `*` to allow all.',
+        recipientLabel: 'Developer', clientLabel: 'Client (receives the leads)', clientDefaultHint: 'No client yet — a default one is created from the developer’s own details', corsLabel: 'Allowed CORS origins (comma-separated)', corsPlaceholder: 'e.g. https://acme.com, https://blog.acme.com (or * for all)', corsHint: 'Comma-separate multiple sites. Use `*` to allow all.',
         autoReply: 'Auto-reply', subjectLabel: 'Email subject', subjectPlaceholder: 'We received your message',
         messageLabel: 'Confirmation message', messagePlaceholder: "e.g. Thanks for your message. We'll get back to you soon…", messageHint: "Leave empty to use the default message (which includes the recipient client's name).",
         cancel: 'Cancel', creating: 'Creating…', create: 'Create',
       },
       clients: {
-        title: 'Clients', subtitle: 'Manage the recipients who get form notifications.', newClient: 'New client', noClients: 'No clients yet.',
-        requiredErr: 'Name and email are required.', saveErr: 'Could not save the client.',
+        title: 'Developers', subtitle: 'The developer accounts on the platform. Each one creates its own clients and forms.', newClient: 'New developer', noClients: 'No developers yet.',
+        accessLinkLabel: 'Password: never visible. Send a set-password link instead.', sendAccessLink: 'Send link',
+        requiredErr: 'Name and email are required.', saveErr: 'Could not save the developer.',
         deleteConfirmTitle: 'Delete this client?', deleteConfirmBody: 'This permanently deletes the client and every form they own. Their leads stay in the database but lose their owner.', deleteConfirmBtn: 'Delete client', deleteErr: 'Could not delete the client.', deletedOk: 'Client deleted.',
         passwordErr: 'Could not retrieve the password.', networkErr: 'Network error.',
-        resetConfirmTitle: 'Reset this client’s password?', resetConfirmBody: 'A new temporary password is generated and emailed to the client. Their current password stops working immediately.', resetConfirmBtn: 'Reset & email', resetOk: 'Password reset and emailed to the client.', resetErr: 'Could not reset the password.',
+        resetConfirmTitle: 'Send a set-password link?', resetConfirmBody: 'The developer receives a single-use link (1 hour) to choose a new password. Their current password keeps working until they use it.', resetConfirmBtn: 'Send link', resetOk: 'Set-password link sent.', resetErr: 'Could not send the link.',
         hide: 'Hide', show: 'Show', resetPasswordTitle: 'Reset password', edit: 'Edit', delete: 'Delete',
         editModalTitle: 'Edit client', createModalTitle: 'Create a client',
         clientNameLabel: 'Client name', clientNamePlaceholder: 'e.g. Acme Corp',
@@ -460,8 +515,8 @@ export const appDictionaries: Record<Locale, AppDict> = {
         securityTitle: 'Security', twoFactorLabel: 'Require two-factor sign-in', twoFactorHint: 'After their password, this client must enter a 6-digit code emailed to {email}.', theirAddress: 'their address',
         cancel: 'Cancel', saving: 'Saving…', save: 'Save',
         endClientsToggle: 'End-clients', endClientsEmpty: 'No end-clients yet.', endClientsLoading: 'Loading…', endClientsLoadErr: 'Could not load end-clients.',
-        endClientResetTitle: 'Reset password', endClientResetConfirmTitle: 'Reset this end-client’s password?', endClientResetConfirmBody: 'A new password is generated and emailed directly to them. Their current password stops working immediately.', endClientResetConfirmBtn: 'Reset & email',
-        endClientResetOk: 'Password reset — new credentials emailed.', endClientResetErr: 'Could not reset the password.',
+        endClientResetTitle: 'Send access link', endClientResetConfirmTitle: 'Send this client a new access link?', endClientResetConfirmBody: 'They receive a single-use link to choose a new password.', endClientResetConfirmBtn: 'Send link',
+        endClientResetOk: 'Access link sent.', endClientResetErr: 'Could not send the link.',
       },
       formDetail: {
         notFoundTitle: 'Form not found', backToList: 'Back to list', backToForms: 'Back to forms', recipientClient: 'Recipient client:',
@@ -535,10 +590,19 @@ export const appDictionaries: Record<Locale, AppDict> = {
     },
     portal: {
       login: {
-        title: 'Client portal', subtitle: 'Sign in to view your leads.', emailLabel: 'Email', passwordLabel: 'Password',
+        title: 'Your lead inbox', subtitle: 'Sign in to see and answer the requests sent from your website.', emailLabel: 'Email', passwordLabel: 'Password',
         signingIn: 'Signing in…', signIn: 'Sign in',
         errTooMany: 'Too many attempts. Please wait a minute and try again.', errIncorrect: 'Incorrect email or password.', errNetwork: 'Could not reach the server.',
+        forgot: 'Forgot password?',
       },
+      setPassword: {
+        title: 'Choose your password', resetTitle: 'Choose a new password', subtitle: 'This opens your private inbox: every request sent from your website, kept and answerable.',
+        passwordLabel: 'Password', confirmLabel: 'Confirm password', placeholder: 'At least 8 characters',
+        submit: 'Save and open my inbox', submitting: 'Saving…',
+        errMismatch: 'Passwords do not match.', errShort: 'Password must be at least 8 characters.', errNetwork: 'Could not reach the server.',
+        missingToken: 'This link is incomplete. Open it again from the e-mail, or ask for a new one.', askNew: 'Ask for a new link',
+      },
+      forgot: { title: 'Reset your password', body: 'Enter the e-mail your inbox was created with. If it exists, a single-use link is on its way.', emailLabel: 'Email', send: 'Send the link', sending: 'Sending…', sent: 'If an account exists for this address, a link has been sent. It expires in 1 hour.', back: '← Back to sign in' },
       layout: {
         defaultBrandName: 'Client portal', poweredBy: 'Powered by Inlet', signOut: 'Sign out',
       },
@@ -558,8 +622,8 @@ export const appDictionaries: Record<Locale, AppDict> = {
         badgeText: 'Un seul backend pour tous vos sites', headlineA: 'Le backend de formulaires qui', headlineHighlight: 'disparaît dans votre stack.',
         point1Title: 'Sans SMTP, sans backend', point1Desc: 'Deux valeurs suffisent à câbler n’importe quel site — le service fait le reste.',
         point2Title: 'IA + anti-spam par preuve de travail', point2Desc: 'Le spam moderne est bloqué avant même de vous atteindre.',
-        point3Title: 'Auto-hébergé, vous possédez vos données', point3Desc: 'Vos leads restent sur votre propre infrastructure, toujours.',
-        footerTagline: 'Auto-hébergé · respect de la vie privée · vous possédez vos données', backToSite: '← Retour au site', orDivider: 'ou',
+        point3Title: 'Chaque lead enregistré, puis livré', point3Desc: 'Le lead est d’abord sauvegardé ; votre client le reçoit par e-mail et dans une boîte privée.',
+        footerTagline: 'Un compte développeur · vos clients · leurs formulaires · chaque lead conservé', backToSite: '← Retour au site', orDivider: 'ou',
       },
       adminLogin: {
         enterCode: 'Saisissez votre code', adminAccess: 'Accès administrateur',
@@ -572,7 +636,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
       clientLogin: {
         enterCode: 'Saisissez votre code', codeEmailedBody: 'Nous avons envoyé un code à 6 chiffres à {email}. Il expire dans 10 minutes.',
         verificationCodeLabel: 'Code de vérification', verifying: 'Vérification…', verifyAndSignIn: 'Vérifier & se connecter', useDifferentAccount: '← Utiliser un autre compte',
-        welcomeBack: 'Content de vous revoir', subtitle: 'Connectez-vous pour voir vos leads et vos performances.', googleSignIn: 'Se connecter avec Google',
+        welcomeBack: 'Content de vous revoir', subtitle: 'Connexion développeur — vos clients, vos formulaires et vos leads.', googleSignIn: 'Se connecter avec Google',
         emailLabel: 'E-mail', passwordLabel: 'Mot de passe', forgotPassword: 'Mot de passe oublié ?', signingIn: 'Connexion…', signIn: 'Se connecter',
         noAccount: 'Pas encore de compte ?', createOneFree: 'Créez-en un gratuitement',
         errGoogleFailed: 'La connexion Google a échoué ou a été annulée. Réessayez ou utilisez votre mot de passe.',
@@ -580,7 +644,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
         errTooMany: 'Trop de tentatives. Veuillez patienter une minute et réessayer.', errIncorrect: 'E-mail ou mot de passe incorrect.', errNetwork: 'Impossible de joindre le serveur.', errIncorrectCode: 'Code incorrect.',
       },
       clientSignup: {
-        title: 'Créez votre compte', subtitle: 'Commencez gratuitement — un seul backend de formulaires pour tous vos sites.', googleSignUp: 'S’inscrire avec Google',
+        title: 'Créez votre compte développeur', subtitle: 'Les développeurs s’inscrivent ici, puis créent leurs clients et câblent leurs formulaires. Gratuit pour commencer.', googleSignUp: 'S’inscrire avec Google',
         nameLabel: 'Nom ou entreprise', namePlaceholder: 'Acme Studio', emailLabel: 'E-mail', passwordLabel: 'Mot de passe', passwordPlaceholder: 'Au moins 8 caractères',
         creating: 'Création de votre compte…', createAccount: 'Créer le compte', alreadyHave: 'Déjà un compte ?', signIn: 'Se connecter',
         errCouldNotCreate: 'Impossible de créer le compte.', errNetwork: 'Impossible de joindre le serveur.',
@@ -602,14 +666,14 @@ export const appDictionaries: Record<Locale, AppDict> = {
     choosePlan: {
       kicker: 'Compte créé',
       title: 'Choisissez le forfait qui vous accompagne',
-      subtitle: 'Changez ou annulez à tout moment — les mises à niveau sont activées le jour même par e-mail.',
+      subtitle: 'Changez ou annulez à tout moment. Les forfaits payants sont activés sur demande, le jour même, en attendant le paiement par carte.',
       recommended: 'Recommandé',
       ctaChoose: 'Choisir {plan}',
       continueFree: 'Continuer avec le forfait Gratuit (limité)',
       freeNote: '3 formulaires · 50 soumissions/mois — de quoi l’essayer sur un vrai site.',
     },
     sidebar: {
-      general: 'Général', overview: 'Vue d’ensemble', developer: 'Développeur', endClients: 'Clients finaux',
+      general: 'Général', overview: 'Vue d’ensemble', developer: 'API & MCP', endClients: 'Clients',
       yourForms: 'Vos formulaires', noForms: 'Aucun formulaire connecté pour l’instant.', signOut: 'Se déconnecter', lightMode: 'Mode clair', darkMode: 'Mode sombre',
     },
     dashboard: {
@@ -633,17 +697,24 @@ export const appDictionaries: Record<Locale, AppDict> = {
       receivedVia: 'Reçu le {date} via {form}',
       downloadFile: 'Télécharger le fichier',
       nf: {
-        createTitle: 'Créer un formulaire', liveTitle: 'Votre formulaire est en ligne',
-        nameHint: 'Nommez-le d’après le site ou son objectif — vous obtiendrez son ID et un extrait fonctionnel immédiatement.',
-        namePlaceholder: 'ex. Formulaire de contact portfolio',
-        seePro: 'Voir les forfaits Pro', creating: 'Création…', createBtn: 'Créer le formulaire',
-        readyBody: 'est prêt à recevoir des soumissions. Câblez-le avec ces deux valeurs :',
+        createTitle: 'Créer un formulaire', liveTitle: 'Votre formulaire est en ligne', nameLabel: 'Nom du formulaire',
+        nameHint: 'Chaque formulaire appartient à un client : l’entreprise dont le site l’héberge. Ses leads vont à ce client — l’e-mail n’apparaît jamais dans votre code.',
+        namePlaceholder: 'ex. Contact — acme.com',
+        seePro: 'Voir les forfaits', creating: 'Création…', createBtn: 'Créer le formulaire',
+        readyBody: 'est en ligne. Choisissez votre stack et collez le code — il ne contient que l’identifiant public du formulaire.',
         openGuide: 'Ouvrir le guide d’intégration', done: 'Terminé', couldNotCreate: 'Impossible de créer le formulaire.', couldNotReach: 'Impossible de joindre le serveur.',
+        clientLabel: 'Client', clientPlaceholder: 'Choisir un client…', newClientOption: '+ Nouveau client', needClient: 'Créez d’abord un client — chaque formulaire lui appartient.',
+        clientNameLabel: 'Nom de l’entreprise', clientEmailLabel: 'Destination des leads (e-mail du client)', clientEmailHint: 'Conservé uniquement de notre côté. Jamais écrit dans votre HTML.',
+        siteUrlLabel: 'URL du site', siteUrlHint: 'Nous autorisons ce site (et sa version www) à envoyer. Ajoutez d’autres sites plus tard dans les réglages du formulaire.',
+        langLabel: 'Langue de la réponse automatique', inviteLabel: 'Envoyer dès maintenant au client un lien vers sa boîte de leads',
+        leadsGoTo: 'Les leads vont à', noEmailInCode: 'aucune adresse e-mail dans votre code',
+        originsOpenWarn: 'Aucune URL de site : n’importe quel site peut envoyer à ce formulaire tant que vous n’en définissez pas une dans les réglages.',
+        envTitle: 'Valeurs d’environnement', openSettings: 'Ouvrir les réglages du formulaire',
       },
       onboarding: {
         kicker: 'Pour commencer', title: 'Obtenez votre premier lead', subtitle: 'Trois étapes, environ deux minutes. Sans SMTP, sans backend à gérer.',
         s1Title: 'Créez un formulaire', s1Done: 'Terminé · {n} formulaire{s}', s1Forms: '', s1Body: "Nommez-le d'après le site sur lequel il vit. Vous obtiendrez un ID à câbler.",
-        s2Title: 'Ajoutez-le à votre site', s2Body: 'Collez ce HTML n’importe où. Ça fonctionne sans JavaScript et sans configuration e-mail.',
+        s2Title: 'Ajoutez-le à votre site', s2Body: 'Choisissez votre stack et collez le code. Il ne contient que l’identifiant public du formulaire — ni e-mail, ni clé.',
         jsAlt: 'Vous préférez une intégration JavaScript avec protection anti-spam par preuve de travail ?', readDocs: 'Lire la documentation', orPointAiAt: 'ou pointez votre IA vers',
         s3Title: 'Recevez votre premier lead', s3Body: 'Soumettez votre formulaire une fois pour le tester. Votre lead arrive ici instantanément — le propriétaire est notifié et une réponse automatique à votre image est envoyée pour vous.',
         waiting: 'En attente de votre première soumission… actualisez après en avoir envoyé une.',
@@ -656,16 +727,16 @@ export const appDictionaries: Record<Locale, AppDict> = {
       nothingMatches: 'Aucun résultat pour', navigate: 'naviguer', open: 'ouvrir',
       gNavigate: 'Naviguer', gForms: 'Formulaires', gResources: 'Ressources', gAccount: 'Compte',
       overview: 'Vue d’ensemble', overviewHint: 'Accueil du tableau de bord',
-      clientPortals: 'Portails clients', clientPortalsHint: 'Accès des clients finaux',
-      devApi: 'Développeur & API', devApiHint: 'Clés, MCP, webhooks',
+      clientPortals: 'Clients', clientPortalsHint: 'Entreprises & leurs boîtes de leads',
+      devApi: 'API & MCP', devApiHint: 'Clés, MCP, webhooks',
       openForm: 'Ouvrir le formulaire',
       documentation: 'Documentation', documentationHint: 'Guide d’intégration',
       pricing: 'Tarifs & forfaits', pricingHint: 'Passer à un forfait supérieur',
       signOut: 'Se déconnecter', signOutHint: 'Terminer la session',
     },
     developer: {
-      title: 'Développeur', subtitle: 'Clés API et serveur MCP — laissez votre assistant IA piloter vos formulaires.',
-      lockTitle: 'L’accès API & MCP démarre au forfait Solo', lockBody: 'Connectez Claude, Cursor ou n’importe quel client MCP et laissez-le créer des formulaires et lire vos leads pour vous.', seePlans: 'Voir les forfaits',
+      title: 'API & MCP', subtitle: 'Clés API, webhooks et serveur MCP — votre assistant IA peut configurer un site entier en un appel.',
+      lockTitle: 'L’accès API & MCP n’est pas inclus dans ce forfait', lockBody: 'Connectez Claude, Cursor ou n’importe quel client MCP et laissez-le créer vos clients, vos formulaires et lire vos leads pour vous.', seePlans: 'Voir les forfaits',
       apiKeys: 'Clés API', newKeyOnce: 'Votre nouvelle clé — affichée une seule fois, enregistrez-la maintenant', keyNamePlaceholder: 'Nom de la clé (ex. claude-code)', creating: 'Création…', newKey: 'Nouvelle clé',
       loading: 'Chargement…', noKeys: 'Aucune clé active.', lastUsed: 'utilisée le {date}', neverUsed: 'jamais utilisée',
       couldNotCreate: 'Impossible de créer la clé.', couldNotReach: 'Impossible de joindre le serveur.',
@@ -673,19 +744,24 @@ export const appDictionaries: Record<Locale, AppDict> = {
       wDescA: 'Définissez un endpoint https par formulaire et chaque lead stocké arrive en POST signé',
       wDescB: '— vérifiez l’en-tête', wDescC: '(extrait dans la', wDescD: '). La livraison ne bloque ni ne perd jamais un lead.',
       createFormFirst: 'Créez d’abord un formulaire — les webhooks se configurent par formulaire.', webhookPlaceholder: 'https://api.votreapp.com/hooks/inlet (vide = désactivé)', saving: 'Enregistrement…', save: 'Enregistrer', saved: 'Enregistré.', couldNotSave: 'Impossible d’enregistrer.', networkError: 'Erreur réseau.',
-      mcpTitle: 'Serveur MCP — votre IA pilote vos formulaires', mcpDescA: 'Connectez Claude Code, Cursor ou n’importe quel client MCP et votre assistant peut', mcpDescStrong: 'créer des formulaires, lire les leads et récupérer des extraits d’intégration', mcpDescB: 'sans quitter l’éditeur.', endpoint: 'Endpoint', toolsAvailable: 'Outils disponibles :',
+      mcpTitle: 'Serveur MCP — votre IA pilote vos formulaires', mcpDescA: 'Connectez Claude Code, Cursor ou n’importe quel client MCP et votre assistant peut', mcpDescStrong: 'créer des clients et des formulaires, récupérer le code exact pour le framework, vérifier la santé d’un formulaire et lire les leads', mcpDescB: 'sans quitter l’éditeur. Un seul appel, `setup_site`, met un site en ligne.', endpoint: 'Endpoint', toolsAvailable: 'Outils :',
     },
     endClients: {
-      title: 'Clients finaux', subtitle: 'Offrez à chaque client un portail privé à sa marque pour consulter uniquement ses propres leads.', newBtn: 'Nouveau client final',
-      lockTitle: 'Les portails clients démarrent au forfait Solo', lockBody: 'Créez des portails en marque blanche pour que chaque client se connecte et ne voie que ses leads.', seePlans: 'Voir les forfaits',
-      emailedMsg: 'Les identifiants ont été envoyés directement à {email} — vous ne voyez jamais son mot de passe.',
-      namePlaceholder: 'Nom du client (ex. Acme Corp)', emailPlaceholder: 'client@entreprise.com', creating: 'Création…', createBtn: 'Créer le client final',
-      portalLogin: 'Connexion au portail :', count: '{n} / {limit} clients finaux', loading: 'Chargement…',
-      emptyTitle: 'Aucun client final pour l’instant', emptyBody: 'Créez-en un, puis affectez les formulaires dont il doit voir les leads.',
-      formsTheySee: 'Formulaires qu’il peut voir', noneAssigned: 'Aucun affecté pour l’instant.', assignForm: '+ Affecter un formulaire…',
-      couldNotCreate: 'Impossible de créer le client final.', couldNotReach: 'Impossible de joindre le serveur.',
-      resetBtn: 'Réinitialiser le mot de passe', resetConfirmTitle: 'Réinitialiser le mot de passe de ce client final ?', resetConfirmBody: 'Un nouveau mot de passe est généré et envoyé directement par e-mail. Son mot de passe actuel cesse de fonctionner immédiatement.', resetConfirmBtn: 'Réinitialiser & envoyer', cancel: 'Annuler',
-      resetting: 'Réinitialisation…', resetOk: 'Mot de passe réinitialisé — nouveaux identifiants envoyés.', resetErr: 'Impossible de réinitialiser le mot de passe.',
+      title: 'Clients', subtitle: 'Les entreprises pour lesquelles vous créez des sites. Chacune reçoit ses leads par e-mail et dans une boîte privée à sa marque.', newBtn: 'Nouveau client',
+      lockTitle: 'Limite de clients atteinte', lockBody: 'La limite de clients de votre forfait est atteinte. Passez à un forfait supérieur pour ajouter d’autres entreprises.', seePlans: 'Voir les forfaits',
+      emailedMsg: 'Un lien d’accès a été envoyé à {email} — il choisit son propre mot de passe ; vous ne le voyez jamais.',
+      namePlaceholder: 'Nom de l’entreprise (ex. Acme Corp)', emailPlaceholder: 'contact@acme.com — là où vont ses leads', creating: 'Création…', createBtn: 'Créer le client',
+      portalLogin: 'Sa boîte :', count: '{n} / {limit} clients', loading: 'Chargement…',
+      emptyTitle: 'Aucun client pour l’instant', emptyBody: 'Créez la première entreprise pour laquelle vous travaillez. Chaque formulaire que vous créez appartient à l’un de vos clients.',
+      formsTheySee: 'Ses formulaires', noneAssigned: 'Aucun formulaire — créez-en un depuis la vue d’ensemble.', assignForm: '+ Déplacer un formulaire ici…',
+      couldNotCreate: 'Impossible de créer le client.', couldNotReach: 'Impossible de joindre le serveur.',
+      resetBtn: 'Envoyer un lien d’accès', resetConfirmTitle: 'Envoyer un nouveau lien d’accès ?', resetConfirmBody: 'Il reçoit un lien à usage unique pour choisir un nouveau mot de passe. Son mot de passe actuel continue de fonctionner tant qu’il ne l’utilise pas.', resetConfirmBtn: 'Envoyer le lien', cancel: 'Annuler',
+      resetting: 'Envoi…', resetOk: 'Lien d’accès envoyé.', resetErr: 'Impossible d’envoyer le lien.',
+      websiteLabel: 'Site web', websitePlaceholder: 'https://acme.com (optionnel)', langLabel: 'Langue', inviteNow: 'Lui envoyer dès maintenant l’accès à sa boîte', inviteHint: 'Un lien à usage unique ; il choisit son mot de passe. Rien n’est envoyé si décoché.',
+      sendAccess: 'Envoyer l’accès', resendAccess: 'Renvoyer l’accès', accessSent: 'Lien envoyé', hasAccess: 'A accès', noAccessYet: 'Pas encore d’accès',
+      notifyLeads: 'Reçoit chaque lead par e-mail', edit: 'Modifier', save: 'Enregistrer', cancelEdit: 'Annuler', deleteBlocked: 'Ce client a encore des formulaires — déplacez-les ou supprimez-les d’abord.',
+      deleteConfirmTitle: 'Retirer ce client ?', deleteConfirmBody: 'Son accès à sa boîte prend fin. Ses formulaires doivent d’abord être déplacés ou supprimés.', deleteBtn: 'Retirer',
+      leadsBy: 'Leads par e-mail', createdExisting: 'Vous avez déjà un client avec cet e-mail.',
     },
     formPage: {
       formView: 'Vue du formulaire', subtitle: 'Données et fichiers soumis via ce formulaire.', exportCsv: 'Exporter CSV',
@@ -694,7 +770,22 @@ export const appDictionaries: Record<Locale, AppDict> = {
       structuredData: 'Données structurées', searchResults: 'Rechercher dans ces résultats…',
       date: 'Date', more: '… ({n} de plus)', noData: 'Aucune donnée trouvée.', file: 'Fichier', viewDetails: 'Voir les détails →',
       fullSubmission: 'Soumission complète', submittedAt: 'Soumis le {date}', attachedDoc: 'Document joint', downloadFile: 'Télécharger le fichier',
+      settings: {
+        title: 'Réglages du formulaire', subtitle: 'Qui reçoit les leads, quels sites peuvent envoyer, ce que le visiteur reçoit en retour.', loading: 'Chargement des réglages…',
+        nameLabel: 'Nom du formulaire', clientLabel: 'Client (reçoit les leads)', originsLabel: 'Sites autorisés', originsHint: 'Une origine par ligne, ex. https://acme.com. Utilisez * pour autoriser tous les sites (déconseillé).',
+        successUrlLabel: 'Page de succès', successUrlHint: 'Où le visiteur arrive après un envoi natif (sans JavaScript). Optionnel.',
+        webhookLabel: 'URL de webhook', webhookHint: 'Chaque lead enregistré est envoyé ici en JSON signé (X-Inlet-Signature). https uniquement. Optionnel.',
+        autoReplyLabel: 'Réponse automatique au visiteur', autoReplyHint: 'Envoyée au champ « email », à la marque du client. Retenue pour les leads signalés comme suspects.',
+        subjectLabel: 'Objet', messageLabel: 'Message', messageHint: 'Utilisez {{name}} pour le nom du visiteur. Vide = message par défaut.',
+        developerCopyLabel: 'Me mettre en copie de chaque lead', developerCopyHint: 'Le client reçoit toujours le lead ; ceci ajoute une copie pour vous.',
+        activeLabel: 'Formulaire en ligne', activeHint: 'Un formulaire en pause répond 403 et n’enregistre rien.',
+        save: 'Enregistrer', saving: 'Enregistrement…', saved: 'Enregistré.', saveErr: 'Impossible d’enregistrer.',
+        integrationTitle: 'Intégration', integrationSubtitle: 'Choisissez votre stack. Le code ne contient que l’identifiant public du formulaire.', leadsGoTo: 'Les leads vont à',
+        deleteTitle: 'Supprimer ce formulaire', deleteBody: 'Le formulaire et tous les leads qu’il a enregistrés sont supprimés. Les sites qui lui envoient encore des données recevront un 404.', deleteBtn: 'Supprimer le formulaire', deleteErr: 'Impossible de supprimer le formulaire.', cancel: 'Annuler',
+      },
     },
+    snippets: { copy: 'Copier', copied: 'Copié', helperTab: 'inlet.js (helper)', filesHint: 'Deux fichiers : le helper une fois par projet, le formulaire là où vous en avez besoin.', noEmail: 'Ni adresse e-mail ni clé dans ce code — l’identifiant du formulaire est routé vers la boîte de votre client de notre côté.' },
+    upgrade: { request: 'Demander {plan}', requested: '{plan} demandé — nous confirmons par e-mail', pending: 'Demande en attente', signIn: 'Connectez-vous pour demander', err: 'Impossible d’envoyer la demande.', current: 'Forfait actuel', note: 'Le paiement par carte ouvre avec la facturation. D’ici là, une demande est activée à la main, le jour même.' },
     admin: {
       nav: { dashboard: 'Tableau de bord', analytics: 'Analytique', revenue: 'Revenus', forms: 'Formulaires', clients: 'Clients', emailHealth: 'Santé e-mail', security: 'Sécurité', logs: 'Journaux & échecs', blacklist: 'Liste noire', myAtelier: 'Mon atelier', signOut: 'Se déconnecter', adminLabel: 'Admin', lightMode: 'Mode clair', darkMode: 'Mode sombre' },
       home: {
@@ -719,19 +810,20 @@ export const appDictionaries: Record<Locale, AppDict> = {
         client: 'Client', unknownClient: 'Inconnu', corsOrigins: 'Origines CORS', integration: 'Intégration',
         requiredErr: 'Le nom et le client sont requis.', createErr: 'Impossible de créer le formulaire.', activatedOk: 'Formulaire activé.', pausedOk: 'Formulaire mis en pause.', updateErr: 'Impossible de mettre à jour le formulaire.',
         deleteConfirmTitle: 'Supprimer ce formulaire ?', deleteConfirmBody: 'Le formulaire et ses paramètres sont supprimés définitivement. Les sites qui lui envoient encore des données recevront des erreurs 404.', deleteConfirmBtn: 'Supprimer le formulaire', deleteErr: 'Impossible de supprimer le formulaire.', deletedOk: 'Formulaire supprimé.',
-        needClientFirst: 'Créez d’abord au moins un client — chaque formulaire appartient à un client.',
+        needClientFirst: 'Créez d’abord au moins un développeur — chaque formulaire appartient à un développeur et à l’un de ses clients.',
         modalTitle: 'Créer un formulaire', formNameLabel: 'Nom du formulaire', formNamePlaceholder: 'ex. Formulaire de contact Acme',
-        recipientLabel: 'Client destinataire', corsLabel: 'Origines CORS autorisées (séparées par des virgules)', corsPlaceholder: 'ex. https://acme.com, https://blog.acme.com (ou * pour tout autoriser)', corsHint: 'Séparez plusieurs sites par des virgules. Utilisez `*` pour tout autoriser.',
+        recipientLabel: 'Développeur', clientLabel: 'Client (reçoit les leads)', clientDefaultHint: 'Pas encore de client — un client par défaut est créé à partir des coordonnées du développeur', corsLabel: 'Origines CORS autorisées (séparées par des virgules)', corsPlaceholder: 'ex. https://acme.com, https://blog.acme.com (ou * pour tout autoriser)', corsHint: 'Séparez plusieurs sites par des virgules. Utilisez `*` pour tout autoriser.',
         autoReply: 'Réponse automatique', subjectLabel: 'Objet de l’e-mail', subjectPlaceholder: 'Nous avons bien reçu votre message',
         messageLabel: 'Message de confirmation', messagePlaceholder: 'ex. Merci pour votre message. Nous revenons vers vous rapidement…', messageHint: 'Laissez vide pour utiliser le message par défaut (qui inclut le nom du client destinataire).',
         cancel: 'Annuler', creating: 'Création…', create: 'Créer',
       },
       clients: {
-        title: 'Clients', subtitle: 'Gérez les destinataires qui reçoivent les notifications de formulaires.', newClient: 'Nouveau client', noClients: 'Aucun client pour l’instant.',
-        requiredErr: 'Le nom et l’e-mail sont requis.', saveErr: 'Impossible de sauvegarder le client.',
+        title: 'Développeurs', subtitle: 'Les comptes développeurs de la plateforme. Chacun crée ses propres clients et formulaires.', newClient: 'Nouveau développeur', noClients: 'Aucun développeur pour l’instant.',
+        accessLinkLabel: 'Mot de passe : jamais visible. Envoyez un lien de définition à la place.', sendAccessLink: 'Envoyer le lien',
+        requiredErr: 'Le nom et l’e-mail sont requis.', saveErr: 'Impossible de sauvegarder le développeur.',
         deleteConfirmTitle: 'Supprimer ce client ?', deleteConfirmBody: 'Cette action supprime définitivement le client et tous les formulaires qui lui appartiennent. Leurs leads restent dans la base de données mais perdent leur propriétaire.', deleteConfirmBtn: 'Supprimer le client', deleteErr: 'Impossible de supprimer le client.', deletedOk: 'Client supprimé.',
         passwordErr: 'Impossible de récupérer le mot de passe.', networkErr: 'Erreur réseau.',
-        resetConfirmTitle: 'Réinitialiser le mot de passe de ce client ?', resetConfirmBody: 'Un nouveau mot de passe temporaire est généré et envoyé par e-mail au client. Son mot de passe actuel cesse de fonctionner immédiatement.', resetConfirmBtn: 'Réinitialiser & envoyer', resetOk: 'Mot de passe réinitialisé et envoyé par e-mail au client.', resetErr: 'Impossible de réinitialiser le mot de passe.',
+        resetConfirmTitle: 'Envoyer un lien de définition du mot de passe ?', resetConfirmBody: 'Le développeur reçoit un lien à usage unique (1 heure) pour choisir un nouveau mot de passe. Son mot de passe actuel continue de fonctionner tant qu’il ne l’utilise pas.', resetConfirmBtn: 'Envoyer le lien', resetOk: 'Lien envoyé.', resetErr: 'Impossible d’envoyer le lien.',
         hide: 'Cacher', show: 'Voir', resetPasswordTitle: 'Réinitialiser le mot de passe', edit: 'Modifier', delete: 'Supprimer',
         editModalTitle: 'Modifier le client', createModalTitle: 'Créer un client',
         clientNameLabel: 'Nom du client', clientNamePlaceholder: 'ex. Acme Corp',
@@ -747,8 +839,8 @@ export const appDictionaries: Record<Locale, AppDict> = {
         securityTitle: 'Sécurité', twoFactorLabel: 'Exiger une connexion à deux facteurs', twoFactorHint: 'Après son mot de passe, ce client doit saisir un code à 6 chiffres envoyé à {email}.', theirAddress: 'son adresse',
         cancel: 'Annuler', saving: 'Enregistrement…', save: 'Enregistrer',
         endClientsToggle: 'Clients finaux', endClientsEmpty: 'Aucun client final pour l’instant.', endClientsLoading: 'Chargement…', endClientsLoadErr: 'Impossible de charger les clients finaux.',
-        endClientResetTitle: 'Réinitialiser le mot de passe', endClientResetConfirmTitle: 'Réinitialiser le mot de passe de ce client final ?', endClientResetConfirmBody: 'Un nouveau mot de passe est généré et envoyé directement par e-mail. Son mot de passe actuel cesse de fonctionner immédiatement.', endClientResetConfirmBtn: 'Réinitialiser & envoyer',
-        endClientResetOk: 'Mot de passe réinitialisé — nouveaux identifiants envoyés.', endClientResetErr: 'Impossible de réinitialiser le mot de passe.',
+        endClientResetTitle: 'Envoyer un lien d’accès', endClientResetConfirmTitle: 'Envoyer à ce client un nouveau lien d’accès ?', endClientResetConfirmBody: 'Il reçoit un lien à usage unique pour choisir un nouveau mot de passe.', endClientResetConfirmBtn: 'Envoyer le lien',
+        endClientResetOk: 'Lien d’accès envoyé.', endClientResetErr: 'Impossible d’envoyer le lien.',
       },
       formDetail: {
         notFoundTitle: 'Formulaire introuvable', backToList: 'Retour à la liste', backToForms: 'Retour aux formulaires', recipientClient: 'Client destinataire :',
@@ -822,10 +914,19 @@ export const appDictionaries: Record<Locale, AppDict> = {
     },
     portal: {
       login: {
-        title: 'Portail client', subtitle: 'Connectez-vous pour consulter vos leads.', emailLabel: 'E-mail', passwordLabel: 'Mot de passe',
+        title: 'Votre boîte de leads', subtitle: 'Connectez-vous pour voir et traiter les demandes envoyées depuis votre site.', emailLabel: 'E-mail', passwordLabel: 'Mot de passe',
         signingIn: 'Connexion…', signIn: 'Se connecter',
         errTooMany: 'Trop de tentatives. Veuillez patienter une minute et réessayer.', errIncorrect: 'E-mail ou mot de passe incorrect.', errNetwork: 'Impossible de joindre le serveur.',
+        forgot: 'Mot de passe oublié ?',
       },
+      setPassword: {
+        title: 'Choisissez votre mot de passe', resetTitle: 'Choisissez un nouveau mot de passe', subtitle: 'Il ouvre votre boîte privée : chaque demande envoyée depuis votre site, conservée et prête à être traitée.',
+        passwordLabel: 'Mot de passe', confirmLabel: 'Confirmez le mot de passe', placeholder: 'Au moins 8 caractères',
+        submit: 'Enregistrer et ouvrir ma boîte', submitting: 'Enregistrement…',
+        errMismatch: 'Les mots de passe ne correspondent pas.', errShort: 'Le mot de passe doit contenir au moins 8 caractères.', errNetwork: 'Impossible de joindre le serveur.',
+        missingToken: 'Ce lien est incomplet. Rouvrez-le depuis l’e-mail, ou demandez-en un nouveau.', askNew: 'Demander un nouveau lien',
+      },
+      forgot: { title: 'Réinitialisez votre mot de passe', body: 'Saisissez l’e-mail avec lequel votre boîte a été créée. S’il existe, un lien à usage unique est en route.', emailLabel: 'E-mail', send: 'Envoyer le lien', sending: 'Envoi…', sent: 'Si un compte existe pour cette adresse, un lien a été envoyé. Il expire dans 1 heure.', back: '← Retour à la connexion' },
       layout: {
         defaultBrandName: 'Portail client', poweredBy: 'Propulsé par Inlet', signOut: 'Se déconnecter',
       },

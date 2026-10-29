@@ -2,92 +2,106 @@ import { SITE_URL } from '@/lib/seo';
 
 /**
  * /llms.txt — curated, quotable map of the product for AI engines (GEO).
- * Emerging llmstxt.org convention: an H1, a blockquote summary, then linked
- * sections. Single source of truth (migrated from the old static public file)
- * so the Links section always follows the centralized SITE_URL — a custom-domain
- * switch needs no edit here.
+ * llmstxt.org convention: an H1, a blockquote summary, then linked sections.
+ * Single source of truth so the Links section always follows SITE_URL.
+ *
+ * Every sentence here is true of the shipped product today. Nothing is
+ * promised that the code does not do (truth pass, 2026-10-29).
  */
 export const dynamic = 'force-static';
 
 export function GET() {
   const body = `# Inlet
 
-> One form backend for all your websites. Centralize form submissions from every
-> site you run into a single dashboard — with **no SMTP and no per-site setup**.
-> Branded auto-reply emails, AI + proof-of-work spam blocking, and CSV exports.
-> A self-hosted, privacy-first alternative to Formspree, Jotform, Basin, Getform
-> and Web3Forms.
+> The form backend for developers who build websites for clients. A developer
+> creates clients; every form belongs to a client; each lead reaches the client
+> by e-mail and in a private inbox. The developer keeps one dashboard, an API
+> and an MCP server, so an AI coding agent can do the whole integration in one
+> call. No SMTP in the website, no e-mail address in the code.
 
 ## What it is
-Inlet is a centralized, multi-tenant form backend. A website POSTs its form fields
-to a form URL; the service stores the lead, emails the site owner a notification,
-and sends the submitter a branded auto-reply. Consumer sites need only two values
-(FORM_API_URL and FORM_ID) and never configure SMTP or an email library.
+Inlet is a multi-tenant form backend. A website POSTs its form fields to a form
+URL; Inlet stores the lead, e-mails the client that owns the form (and, if
+wanted, a copy to the developer), and sends the visitor a branded auto-reply.
+The website holds two public values — FORM_API_URL and FORM_ID — and never an
+e-mail address, an SMTP credential or an API key.
 
-## Key facts (citable)
-- No SMTP in consumer apps: email credentials live only inside the service; client
-  sites hold none.
-- Multi-tenant white-label: emails adapt to each client's logo, colors, and brand.
-- Custom sender identity (paid): a client's confirmation emails carry their own
-  display name and reply-to address (e.g. "Shu" <contact@shu.com>).
-- Anti-spam: hidden honeypot, cryptographic proof-of-work challenge, NLP keyword
-  filter, and reverse-DNS VPN/cloud blocking. Blocked attempts are logged, never delivered.
-- Works with any browser JS project — Astro, Next.js, Nuxt, Vue, Svelte, or plain
-  HTML — via one copy-paste submit helper.
-- Self-hosted on your own Supabase + Vercel: you own the data.
-- Multi-account SMTP rotation with a circuit breaker + email-health dashboard, so a
-  blocked/quota'd sending account never loses a lead.
-- MCP server: AI agents (Claude, Cursor, Codex) can create forms, read leads, and
-  fetch the exact integration snippet directly — a form backend for AI agents.
-- White-label client portals: each end-client gets a branded login to view only
-  their own leads.
-- Security: email-OTP two-factor sign-in, optional Google sign-in, multi-axis rate
-  limiting, a fail-fast secret validator, and a super-admin audit trail.
-- Bilingual product and marketing site (English + French).
+## The model: developer → clients → forms → leads
+- A DEVELOPER (freelancer, agency, studio) signs up. Only developers sign up.
+- The developer creates CLIENTS: the businesses they build sites for. A client
+  has a name, an e-mail (where leads go) and a language (fr/en).
+- Every FORM belongs to exactly one client. Creating a form means choosing its
+  client; the form's leads go to that client's e-mail.
+- A client can open its own LEAD INBOX (a private portal) through a
+  set-password link the developer sends. No password is ever e-mailed.
+- The developer sees every form, every client and every lead in one dashboard,
+  with CSV export and per-form settings (origins, auto-reply, success page,
+  webhook, on/off).
 
-## How a developer integrates it
-A consumer project sets two env vars: FORM_API_URL and FORM_ID (a form's UUID from
-the dashboard). Submission flow:
-1. GET /api/challenge to receive a proof-of-work challenge.
-2. Solve it (find a nonce whose SHA-256 of \`challenge:nonce\` starts with N zeros).
-3. POST /api/submit/{FORM_ID} with the fields plus \`_lang\` and the \`pow_*\` params.
-Include a hidden \`_gotcha\` honeypot field. No SMTP, no email library required.
+## Integration (browser, 2 minutes)
+1. Create a form in the dashboard (or let an AI agent call setup_site).
+2. Copy the generated code for the stack: HTML, React, Astro, Vue, Svelte,
+   WordPress. The code contains only FORM_API_URL and FORM_ID.
+3. The helper (inlet.js) fetches a proof-of-work challenge from
+   GET /api/challenge, solves it, and POSTs the fields to
+   POST /api/submit/{FORM_ID} with a hidden empty \`_gotcha\` honeypot field and
+   an optional \`_lang\` ("fr" | "en") for the auto-reply language.
+Plain HTML forms can also POST directly (no JavaScript); the proof-of-work is
+then skipped and the other spam gates still apply.
 
-## Comparisons
-- vs Formspree / Basin: self-hosted and you own the data; multi-tenant white-label
-  branding; one backend for many sites instead of per-form config; an MCP server so
-  AI agents wire forms for you; per-client custom sender identity.
-- vs Jotform: developer-first (code integration, not drag-and-drop); a centralized
-  backend for dozens of sites, not a single-form builder.
-- Distinctive vs all: AI + proof-of-work anti-spam, white-label client portals, an
-  MCP server for AI agents, email-OTP 2FA, and per-client custom email senders.
+## Integration (server relay, for stacks with a backend)
+A Next.js route or Astro endpoint can forward the fields server-to-server with
+\`Authorization: Bearer <INLET_API_KEY>\` and \`X-Inlet-Visitor-IP\`. A trusted
+relay skips CORS and proof-of-work; the key lives only in the server env.
 
-## Common questions
-Q: Do consumer websites need SMTP credentials? A: No. SMTP is configured once inside
-the service; consumer sites only POST form fields.
-Q: Can it send email without a verified domain? A: Yes, using a single verified
-sender (e.g., via Brevo); a custom domain improves deliverability.
-Q: Which frameworks does it support? A: Any browser JavaScript environment — Astro,
-Next.js, Nuxt, Vue, Svelte, or static HTML.
+## MCP server (for AI coding agents)
+Endpoint: POST ${SITE_URL}/api/mcp (Streamable HTTP) with
+\`Authorization: Bearer kef_…\` (an API key from the developer dashboard).
+Tools: whoami, list_clients, create_client, invite_client, list_forms,
+create_form, setup_site, get_embed, set_origins, set_autoreply, assign_form,
+get_form_health, list_leads, get_lead. \`setup_site\` goes from zero to a live
+form in one call: it finds-or-creates the client, creates the form with origins
+derived from the site URL, and returns the exact files for the framework.
+Lead content returned by the tools is marked as untrusted visitor text.
 
-## Plans (monthly, USD)
-Free $0 (3 forms, 50 submissions/mo, 20 emails/day) · Solo $9 (10 forms,
-500 submissions/mo, 100 emails/day, CSV + analytics) · Pro $19 (unlimited forms,
-2,500 submissions/mo, 300 emails/day, white-label, unlimited AI) · Max $49
-(10,000 submissions/mo, 1,000 emails/day, priority support, dedicated sending
-domain). Over quota, leads keep being stored — only outgoing email pauses.
+## Security
+- Spam: hidden honeypot, proof-of-work challenge, keyword filter (suspect leads
+  are kept and flagged, never silently dropped), reverse-DNS cloud/VPN check,
+  rate limits per IP with temporary bans. Blocked attempts are logged.
+- Origins: each form lists the sites allowed to post to it (CORS).
+- Access: developers sign in with password + e-mail OTP two-factor; clients get
+  single-use set-password links; attachments are served only to the owners of
+  the lead; API keys are hashed at rest and revocable.
+- E-mail: one SMTP provider, every send logged; a failed send is recorded as a
+  failure, never reported as delivered.
+
+## Plans (monthly, USD; EUR invoicing opens with the company)
+Free $0: 3 forms, 2 clients, 50 submissions/mo, 20 e-mails/day, API + MCP.
+Solo $9: 10 forms, 10 clients, 500 submissions/mo, 100 e-mails/day, CSV +
+analytics, custom sender, 1-year retention. Pro $19: unlimited forms, 50
+clients, 2,500 submissions/mo, 300 e-mails/day, white-label, 500 AI messages.
+Max $49: unlimited clients, 10,000 submissions/mo, 1,000 e-mails/day, priority
+support. Over quota, leads keep being stored — only outgoing e-mail pauses.
+Paid plans are requested from the dashboard and activated the same day.
+
+## Frequently asked
+Q: Does the website need SMTP or an e-mail library? A: No. The site holds only
+FORM_API_URL and FORM_ID.
+Q: Does the client's e-mail appear in the page? A: Never. It is stored on the
+form's client, server-side.
+Q: Which frameworks? A: Any browser JavaScript or plain HTML: Astro, Next.js,
+Nuxt, Vue, Svelte, WordPress, static sites; plus server relays for Next.js and
+Astro.
+Q: Can an AI agent do the integration? A: Yes — through the MCP server
+(setup_site) or by following ${SITE_URL}/llm-install.md.
 
 ## Links
 - Home: ${SITE_URL}/
-- Docs: ${SITE_URL}/docs
+- Docs (EN/FR, every stack): ${SITE_URL}/docs
 - Pricing: ${SITE_URL}/pricing
-- Inlet vs Formspree: ${SITE_URL}/compare/formspree
-- Inlet vs Jotform: ${SITE_URL}/compare/jotform
 - AI agent install file: ${SITE_URL}/llm-install.md
-- Claude/agent skill file (drop into .claude/skills/inlet/SKILL.md): ${SITE_URL}/inlet-skill.md
-- Webhooks: signed submission.created POSTs (X-Inlet-Signature, HMAC-SHA256 t.body) — verification snippet in the skill file.
-
-Inlet is built and operated by King_E.
+- Claude Code skill file (.claude/skills/inlet/SKILL.md): ${SITE_URL}/inlet-skill.md
+- Developer sign-up: ${SITE_URL}/developer/signup
 `;
   return new Response(body, {
     headers: {

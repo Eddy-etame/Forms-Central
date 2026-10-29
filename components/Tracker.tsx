@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
-const IGNORED = ['/admin', '/client', '/portal', '/login'];
+const IGNORED = ['/admin', '/developer', '/portal', '/login'];
 
 /** First-party pageview beacon — public marketing pages only. */
 export default function Tracker() {

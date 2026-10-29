@@ -60,14 +60,14 @@ export function MobileMenu({ dark = false }: { dark?: boolean }) {
             ))}
             <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-6">
               <Link
-                href="/client/signup"
+                href="/developer/signup"
                 onClick={() => setOpen(false)}
                 className="btn-shine inline-flex h-12 items-center justify-center gap-2 rounded-full bg-slate-900 text-base font-semibold text-white"
               >
                 Get started free <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href="/client/login"
+                href="/developer/login"
                 onClick={() => setOpen(false)}
                 className="inline-flex h-12 items-center justify-center rounded-full border border-slate-200 text-base font-medium text-slate-800"
               >

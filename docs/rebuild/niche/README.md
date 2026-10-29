@@ -1,3 +1,9 @@
+> **Superseded (2026-10-29).** The author read this round and decided against
+> going niche: Inlet stays a platform where developers hold *clients*, every
+> form belongs to a client, and AI agents integrate it through MCP. The
+> decision, its reasons and the roadmap are in `docs/v3/README.md`. This
+> round is kept as research; nothing in it is a plan of record.
+
 # Round 2: go niche, take out the odds
 
 **The brief (the author, 2026-09-29):**

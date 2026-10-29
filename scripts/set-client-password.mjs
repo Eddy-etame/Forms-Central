@@ -1,4 +1,4 @@
-// Check, create, or reset a CLIENT (subscriber) account — the /client/login
+// Check, create, or reset a CLIENT (subscriber) account — the /developer/login
 // side (email + password), NOT the admin login.
 //
 //   Diagnose only:   node scripts/set-client-password.mjs you@email.com
@@ -63,7 +63,7 @@ if (!password) {
     console.log(`     node scripts/set-client-password.mjs ${email} "yourNewPassword"`);
   } else {
     console.log('✗ NO client account exists for', email);
-    console.log('  That is why /client/login says "Identifiants incorrects."');
+    console.log('  That is why /developer/login says "Identifiants incorrects."');
     console.log('  → create one now:');
     console.log(`     node scripts/set-client-password.mjs ${email} "yourNewPassword" "Your Name"`);
   }
@@ -89,4 +89,4 @@ if (existing) {
   if (insErr) { console.error('Create failed:', insErr.message); process.exit(1); }
   console.log('✓ Account CREATED for', email, '(plan: free)');
 }
-console.log('  Now sign in at /client/login with this email + the password you set.');
+console.log('  Now sign in at /developer/login with this email + the password you set.');

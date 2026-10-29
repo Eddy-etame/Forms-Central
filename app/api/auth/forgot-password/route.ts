@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString();
   await supabase.from('clients').update({ reset_token: hash, reset_token_expires: expires }).eq('id', client.id);
 
-  const resetUrl = `${new URL(req.url).origin}/client/reset-password?token=${raw}`;
+  const resetUrl = `${new URL(req.url).origin}/developer/reset-password?token=${raw}`;
   sendPasswordResetEmail(cleanEmail, resetUrl, await getLocale()).catch((e) => console.error('reset email error:', e));
 
   return NextResponse.json({ success: true });

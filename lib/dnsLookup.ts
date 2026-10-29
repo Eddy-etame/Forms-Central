@@ -1,6 +1,6 @@
 import dns from 'dns';
 import { promisify } from 'util';
-import { blacklistTarget } from './blacklist';
+import { blacklistTarget, AUTO_BAN_TTL_MS } from './blacklist';
 
 const reverseDns = promisify(dns.reverse);
 
@@ -47,11 +47,11 @@ export async function handleHoneypotTrigger(ipAddress: string, fingerprint: stri
   console.warn(`[SECURITY WARN] Honeypot triggered by IP: ${ipAddress}, Fingerprint: ${fingerprint}`);
   
   // 1. Blacklist the IP address immediately
-  await blacklistTarget(ipAddress, 'ip', 'Honeypot Triggered');
+  await blacklistTarget(ipAddress, 'ip', 'Honeypot Triggered', AUTO_BAN_TTL_MS);
   
   // 2. Blacklist the fingerprint
   if (fingerprint) {
-    await blacklistTarget(fingerprint, 'fingerprint', 'Honeypot Triggered');
+    await blacklistTarget(fingerprint, 'fingerprint', 'Honeypot Triggered', AUTO_BAN_TTL_MS);
   }
 
   // 3. Reverse lookup and blacklist host domain if matches keywords
@@ -59,6 +59,6 @@ export async function handleHoneypotTrigger(ipAddress: string, fingerprint: stri
   if (resolvedHost) {
     const isHostingOrVpn = HOSTING_KEYWORDS.some(keyword => resolvedHost.includes(keyword));
     const reason = isHostingOrVpn ? 'Honeypot Triggered (Hosting/VPN Host)' : 'Honeypot Triggered (Host)';
-    await blacklistTarget(resolvedHost, 'host', reason);
+    await blacklistTarget(resolvedHost, 'host', reason, AUTO_BAN_TTL_MS);
   }
 }

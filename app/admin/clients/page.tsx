@@ -5,7 +5,7 @@ import { Plus, Edit2, Trash2, Key, RefreshCw, ChevronDown, Users } from 'lucide-
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
-import { getClients, saveClient, deleteClient, getClientPassword, triggerPasswordReset, getPortalUsersForClient, adminResetPortalUserPassword } from '@/lib/actions';
+import { getClients, saveClient, deleteClient, triggerPasswordReset, getPortalUsersForClient, adminResetPortalUserPassword } from '@/lib/actions';
 import { toast, confirmDialog } from '@/components/ui/Toaster';
 import { useLocale } from '@/lib/useLocale';
 import { getAppDict } from '@/lib/appDict';
@@ -54,9 +54,7 @@ export default function ClientsPage() {
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Password state: maps client ID to their decrypted password
-  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, string>>({});
-  const [loadingPassword, setLoadingPassword] = useState<Record<string, boolean>>({});
+  // Access links: the operator can only SEND a set-password link, never see a password.
   const [resettingPassword, setResettingPassword] = useState<Record<string, boolean>>({});
 
   // End-clients (portal_users) state: expandable per-client section
@@ -171,34 +169,6 @@ export default function ClientsPage() {
     }
   };
 
-  const handleTogglePassword = async (id: string) => {
-    if (visiblePasswords[id]) {
-      // Hide password
-      setVisiblePasswords(prev => {
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      });
-      return;
-    }
-
-    // Fetch password
-    setLoadingPassword(prev => ({ ...prev, [id]: true }));
-    try {
-      const res = await getClientPassword(id);
-      if (res.success && res.password) {
-        setVisiblePasswords(prev => ({ ...prev, [id]: res.password }));
-      } else {
-        toast.error(res.error || t.passwordErr);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(t.networkErr);
-    } finally {
-      setLoadingPassword(prev => ({ ...prev, [id]: false }));
-    }
-  };
-
   const handleResetPassword = async (id: string) => {
     const ok = await confirmDialog({
       title: t.resetConfirmTitle,
@@ -213,12 +183,6 @@ export default function ClientsPage() {
       const res = await triggerPasswordReset(id);
       if (res.success) {
         toast.success(t.resetOk);
-        // Hide password if it was visible, as it's no longer valid
-        setVisiblePasswords(prev => {
-          const next = { ...prev };
-          delete next[id];
-          return next;
-        });
       } else {
         toast.error(res.error || t.resetErr);
       }
@@ -327,37 +291,22 @@ export default function ClientsPage() {
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 truncate">{client.email}</p>
                 {client.phone && <p className="text-xs text-slate-400 mt-1 font-medium">{client.phone}</p>}
 
-                {/* Password Section */}
-                <div className="mt-4 flex items-center justify-between border border-slate-100 dark:border-slate-800 rounded-lg p-2 bg-slate-50">
+                {/* Access: a set-password link by e-mail — nobody sees a password */}
+                <div className="mt-4 flex items-center justify-between border border-slate-100 dark:border-slate-800 rounded-lg p-2 bg-slate-50 dark:bg-slate-950/40">
                   <div className="flex items-center gap-2 overflow-hidden">
                     <Key className="h-4 w-4 text-slate-400" />
-                    {visiblePasswords[client.id] ? (
-                      <span className="font-mono text-xs font-bold text-slate-900 dark:text-white bg-white px-2 py-1 rounded border border-slate-200">
-                        {visiblePasswords[client.id]}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-slate-400 font-medium">••••••••</span>
-                    )}
+                    <span className="text-xs text-slate-500 font-medium truncate">{t.accessLinkLabel}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => handleTogglePassword(client.id)}
-                      disabled={loadingPassword[client.id]}
-                      className="h-7 px-2 text-[10px] uppercase font-bold tracking-wider text-slate-500 hover:text-slate-900 dark:hover:text-white"
-                    >
-                      {loadingPassword[client.id] ? "..." : visiblePasswords[client.id] ? t.hide : t.show}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleResetPassword(client.id)}
-                      disabled={resettingPassword[client.id]}
-                      title={t.resetPasswordTitle}
-                      className="h-7 w-7 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
-                    >
-                      <RefreshCw className={`h-3.5 w-3.5 ${resettingPassword[client.id] ? 'animate-spin' : ''}`} />
-                    </Button>
-                  </div>
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleResetPassword(client.id)}
+                    disabled={resettingPassword[client.id]}
+                    title={t.resetPasswordTitle}
+                    className="h-7 px-2 text-[10px] uppercase font-bold tracking-wider text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                  >
+                    <RefreshCw className={`mr-1 h-3.5 w-3.5 ${resettingPassword[client.id] ? 'animate-spin' : ''}`} />
+                    {t.sendAccessLink}
+                  </Button>
                 </div>
 
                 {/* End-clients (portal_users) — expandable, reset-only */}

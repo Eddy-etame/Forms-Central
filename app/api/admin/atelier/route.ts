@@ -12,9 +12,9 @@ import { hashPassword } from '@/lib/passwords';
  * endpoint verifies that admin session, resolves the owner's client account
  * (ATELIER_EMAIL, falling back to ADMIN_2FA_EMAIL — creating it once if it
  * doesn't exist yet), mints a normal client session, and drops the operator
- * on /client/dashboard. Previously "My Atelier" just linked to
- * /client/dashboard, which requires a CLIENT cookie the admin doesn't have —
- * so it bounced to /client/login. That's the bug this closes.
+ * on /developer/dashboard. Previously "My Atelier" just linked to
+ * /developer/dashboard, which requires a CLIENT cookie the admin doesn't have —
+ * so it bounced to /developer/login. That's the bug this closes.
  */
 export async function GET(req: Request) {
   const JWT_SECRET = process.env.JWT_SECRET;
@@ -45,7 +45,7 @@ export async function GET(req: Request) {
     .maybeSingle();
 
   // Create the atelier account once if it doesn't exist (random unusable
-  // password — the owner enters via admin, never via /client/login here).
+  // password — the owner enters via admin, never via /developer/login here).
   if (!client) {
     const { data: created, error: insErr } = await supabase
       .from('clients')
@@ -73,7 +73,7 @@ export async function GET(req: Request) {
   };
   const token = await signJWT(payload, JWT_SECRET);
 
-  const res = NextResponse.redirect(new URL('/client/dashboard', req.url));
+  const res = NextResponse.redirect(new URL('/developer/dashboard', req.url));
   res.cookies.set('client_access_token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

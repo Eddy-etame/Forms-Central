@@ -1,90 +1,80 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
-import { isBlacklisted, blacklistTarget } from '@/lib/blacklist';
+import { isBlacklisted, blacklistTarget, AUTO_BAN_TTL_MS } from '@/lib/blacklist';
 import { handleHoneypotTrigger, resolveHostDomain } from '@/lib/dnsLookup';
 import { verifyChallenge } from '@/lib/pow';
 import { sendLeadEmail, sendAutoReplyEmail } from '@/lib/email';
 import { getQuotaState, logEmailSend } from '@/lib/quota';
 import { getPlan } from '@/lib/plans';
 import { checkRateLimit as dbCheckRateLimit } from '@/lib/rateLimit';
+import { verifyApiKey } from '@/lib/apiKeys';
+import { isSyntheticEmail, normalizeLang } from '@/lib/domain';
+import { SITE_URL } from '@/lib/seo';
 
-// Basic in-memory cache for anti-replay (holds challenges for 5 mins)
+/**
+ * POST /api/submit/{formId} — the public lead endpoint.
+ *
+ * Invariants (court orders A1, A2, A7, A8):
+ *  • A lead that passes the gates is ALWAYS stored before anything else is
+ *    attempted. A keyword hit does not drop it: it is stored as `suspect`.
+ *  • Automatic bans are temporary (24 h). Nothing bans a visitor forever.
+ *  • A request authenticated with the developer's API key is a server-to-server
+ *    submit: CORS and proof-of-work are waived, and the forwarded visitor IP is
+ *    what rate limits and spam gates look at — never the relay's own IP.
+ *  • E-mails are "sent" only when the provider accepted them; a failed send is
+ *    logged as SMTP_FAILED and the daily budget is charged only on success.
+ *  • The client (the business) receives the lead; the developer gets a copy
+ *    only if the form says so. Reply-To is the visitor.
+ */
+
+// In-memory guards (per instance): anti-replay cache for PoW challenges and a
+// burst limiter. The DB-backed limiter below is the authoritative one.
 const challengeReplayCache = new Set<string>();
-
-// Rate limiting in-memory store (cleared every 1 minute)
 const rateLimitMap = new Map<string, { count: number; timestamp: number }>();
+const autoReplyRateLimitMap = new Map<string, number[]>();
 
-function checkRateLimit(key: string, limit = 5): boolean {
+function checkBurst(key: string, limit = 5): boolean {
   const now = Date.now();
   const entry = rateLimitMap.get(key);
-  
-  if (!entry) {
+  if (!entry || now - entry.timestamp > 60 * 1000) {
     rateLimitMap.set(key, { count: 1, timestamp: now });
     return true;
   }
-  
-  // Clear counts older than 1 minute
-  if (now - entry.timestamp > 60 * 1000) {
-    rateLimitMap.set(key, { count: 1, timestamp: now });
-    return true;
-  }
-  
   entry.count++;
   return entry.count <= limit;
 }
 
-// In-memory rate limiting store for auto-replies (holds timestamps of e-mails sent within 10 mins)
-const autoReplyRateLimitMap = new Map<string, number[]>();
-
 function checkAutoReplyRateLimit(email: string, limit = 3, timeframeMs = 10 * 60 * 1000): boolean {
   const now = Date.now();
-  const normalizedEmail = email.toLowerCase().trim();
-  const timestamps = autoReplyRateLimitMap.get(normalizedEmail) || [];
-  
-  // Filter out timestamps older than 10 minutes
-  const recentTimestamps = timestamps.filter(t => now - t < timeframeMs);
-  
-  if (recentTimestamps.length >= limit) {
-    return false;
-  }
-  
-  recentTimestamps.push(now);
-  autoReplyRateLimitMap.set(normalizedEmail, recentTimestamps);
+  const key = email.toLowerCase().trim();
+  const recent = (autoReplyRateLimitMap.get(key) || []).filter((t) => now - t < timeframeMs);
+  if (recent.length >= limit) return false;
+  recent.push(now);
+  autoReplyRateLimitMap.set(key, recent);
   return true;
 }
 
 function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (m) => {
-    switch (m) {
-      case '&': return '&amp;';
-      case '<': return '&lt;';
-      case '>': return '&gt;';
-      case '"': return '&quot;';
-      case "'": return '&#039;';
-      default: return m;
-    }
-  });
+  return text.replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m] as string));
 }
 
-// Input hardening (public, unauthenticated endpoint). Body cap allows a few MB
-// of legitimate base64 file uploads but blocks memory-DoS / DB-bloat bodies.
-const MAX_BODY_BYTES = 6 * 1024 * 1024; // 6 MB
+const MAX_BODY_BYTES = 6 * 1024 * 1024; // 6 MB — leaves room for a few base64 photos
 const MAX_FIELDS = 100;
 
+// Keyword hits never drop a lead (court order A1): the lead is stored as
+// "suspect", the client is told, and the auto-reply is withheld.
+const SPAM_KEYWORDS = ['seo', 'crypto', 'viagra', 'enlarge', 'casino', 'bitcoin', 'investment', 'backlink', 'backlinks', 'guest post'];
+const SPAM_RE = new RegExp(`\\b(${SPAM_KEYWORDS.map((k) => k.replace(/\s+/g, '\\s+')).join('|')})\\b`, 'i');
+
+const IP_RE = /^(?:(?:\d{1,3}\.){3}\d{1,3}|[0-9a-f:]{2,45})$/i;
+
 /**
- * Prevent open redirect. After a native form submit we redirect the browser,
- * and the target can come from attacker-controlled `redirect_url`/`referer`.
- * Only allow: the form's owner-configured success_url, or a URL whose origin
- * is one of the form's allowed_origins (or this app's own origin). Anything
- * else (an external phishing target) falls back to a safe default.
+ * Prevent open redirects: after a native form submit we send the browser
+ * somewhere, and the target can come from attacker-controlled input. Allow only
+ * the owner's success_url, an allowed origin, this app, or the referring page.
  */
-function safeRedirect(
-  candidate: string,
-  appOrigin: string,
-  allowedOrigins: string[],
-  successUrl?: string | null,
-  referer?: string | null
-): string {
+function safeRedirect(candidate: string, appOrigin: string, allowedOrigins: string[], successUrl?: string | null, referer?: string | null): string {
   const fallback = (successUrl && successUrl.trim()) || `${appOrigin}/`;
   if (!candidate) return fallback;
   if (successUrl && candidate === successUrl) return candidate;
@@ -96,8 +86,6 @@ function safeRedirect(
       if (o && o !== '*') { try { allowed.add(new URL(o).origin); } catch {} }
     }
     if (successUrl) { try { allowed.add(new URL(successUrl).origin); } catch {} }
-    // The submitting page's own origin (browser-set referer) is always a safe
-    // redirect target — the user is already there; it can't be an escalation.
     if (referer) { try { allowed.add(new URL(referer).origin); } catch {} }
     return allowed.has(target.origin) ? target.toString() : fallback;
   } catch {
@@ -105,773 +93,410 @@ function safeRedirect(
   }
 }
 
-async function logFailure(formId: string | null, errorType: string, errorMessage: string, payload: any = {}) {
+/** failures_log never receives lead content (only field names). */
+async function logFailure(formId: string | null, errorType: string, errorMessage: string, payloadKeys: string[] = []) {
   try {
     await supabase.from('failures_log').insert([{
       form_id: formId || null,
       error_type: errorType,
-      error_message: errorMessage,
-      payload: payload
+      error_message: errorMessage.slice(0, 500),
+      payload: payloadKeys.length ? { fields: payloadKeys.slice(0, 50) } : {},
     }]);
   } catch (e) {
     console.error('[LOG FAILURE ERROR]', e);
   }
 }
 
-/**
- * Creates a structured error response.
- * If origin is present (AJAX/Fetch request), it returns a JSON response with proper CORS headers.
- * Otherwise, it returns a user-friendly HTML error page.
- */
-function createErrorResponse(
-  status: number,
-  code: string,
-  message: string,
-  remedy: string | null,
-  origin: string | null,
-  isJson: boolean,
-  redirectUrl: string
-): NextResponse {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
+function successPage(): NextResponse {
+  return new NextResponse(
+    `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Message envoyé / Message sent</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#F9FAFB;color:#0F172A}.card{background:#fff;padding:2.5rem;border-radius:1.5rem;border:1px solid #F1F5F9;box-shadow:0 10px 15px -3px rgba(0,0,0,.05);text-align:center;max-width:400px}.icon{font-size:3rem;margin-bottom:1rem}h1{font-size:1.25rem;font-weight:700;margin:0 0 .5rem}p{font-size:.875rem;color:#64748B;line-height:1.6;margin:0}.back{display:inline-block;margin-top:1.5rem;padding:.625rem 1.25rem;background:#0F172A;color:#fff;text-decoration:none;border-radius:.75rem;font-size:.875rem;font-weight:600}</style></head>
+<body><div class="card"><div class="icon">✓</div><h1>Message envoyé !</h1><p>Votre message a bien été enregistré. Le destinataire a été notifié.</p><a href="javascript:history.back()" class="back">Retour / Back</a></div></body></html>`,
+    { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+  );
+}
+
+function createErrorResponse(status: number, code: string, message: string, remedy: string | null, origin: string | null, isJson: boolean): NextResponse {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (origin) {
     headers['Access-Control-Allow-Origin'] = origin;
     headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
-    headers['Access-Control-Allow-Headers'] = 'Content-Type, x-client-fingerprint';
+    headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Inlet-Visitor-IP, x-client-fingerprint';
   }
-
   if (isJson || origin) {
-    return new NextResponse(
-      JSON.stringify({
-        success: false,
-        code,
-        error: message,
-        ...(remedy ? { remedy } : {})
-      }),
-      { status, headers }
-    );
-  } else {
-    // Return friendly HTML error page for native submissions
-    return new NextResponse(
-      `<!DOCTYPE html>
-       <html>
-         <head>
-           <meta charset="utf-8">
-           <title>Erreur de soumission / Submission Error</title>
-           <style>
-             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #FFF5F5; color: #9B2C2C; }
-             .card { background: white; padding: 2.5rem; border-radius: 1.5rem; border: 1px solid #FED7D7; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); text-align: center; max-width: 450px; }
-             .icon { font-size: 3rem; margin-bottom: 1rem; color: #E53E3E; }
-             h1 { color: #9B2C2C; font-size: 1.25rem; font-weight: 700; margin: 0 0 0.5rem 0; }
-             p { font-size: 0.875rem; color: #C53030; line-height: 1.6; margin: 0; }
-             .code { font-family: monospace; background: #FEEBC8; color: #C05621; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.75rem; display: inline-block; margin-top: 0.5rem; }
-             .remedy { margin-top: 1rem; font-size: 0.875rem; color: #742A2A; background: #FED7D7; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #FC8181; }
-             .back-btn { display: inline-block; margin-top: 1.5rem; padding: 0.625rem 1.25rem; background: #E53E3E; color: white; text-decoration: none; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 600; transition: opacity 0.2s; }
-             .back-btn:hover { opacity: 0.9; }
-           </style>
-         </head>
-         <body>
-           <div class="card">
-             <div class="icon">⚠</div>
-             <h1>Erreur de soumission</h1>
-             <p>${escapeHtml(message)}</p>
-             ${remedy ? `<div class="remedy"><strong>Solution :</strong> ${escapeHtml(remedy)}</div>` : ''}
-             <div class="code">Code: ${escapeHtml(code)}</div>
-             <br />
-             <a href="javascript:history.back()" class="back-btn">Retour / Back</a>
-           </div>
-         </body>
-       </html>`,
-      {
-        status,
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8',
-        },
-      }
-    );
+    return new NextResponse(JSON.stringify({ success: false, code, error: message, ...(remedy ? { remedy } : {}) }), { status, headers });
   }
+  return new NextResponse(
+    `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Erreur de soumission / Submission error</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#FFF5F5;color:#9B2C2C}.card{background:#fff;padding:2.5rem;border-radius:1.5rem;border:1px solid #FED7D7;box-shadow:0 10px 15px -3px rgba(0,0,0,.05);text-align:center;max-width:450px}.icon{font-size:3rem;margin-bottom:1rem;color:#E53E3E}h1{font-size:1.25rem;font-weight:700;margin:0 0 .5rem}p{font-size:.875rem;color:#C53030;line-height:1.6;margin:0}.code{font-family:monospace;background:#FEEBC8;color:#C05621;padding:.2rem .4rem;border-radius:.25rem;font-size:.75rem;display:inline-block;margin-top:.5rem}.remedy{margin-top:1rem;font-size:.875rem;color:#742A2A;background:#FED7D7;padding:.75rem;border-radius:.5rem;border:1px solid #FC8181}.back{display:inline-block;margin-top:1.5rem;padding:.625rem 1.25rem;background:#E53E3E;color:#fff;text-decoration:none;border-radius:.75rem;font-size:.875rem;font-weight:600}</style></head>
+<body><div class="card"><div class="icon">⚠</div><h1>Erreur de soumission</h1><p>${escapeHtml(message)}</p>${remedy ? `<div class="remedy"><strong>Solution :</strong> ${escapeHtml(remedy)}</div>` : ''}<div class="code">Code: ${escapeHtml(code)}</div><br /><a href="javascript:history.back()" class="back">Retour / Back</a></div></body></html>`,
+    { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+  );
 }
 
-export async function OPTIONS(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function OPTIONS(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id: formId } = await params;
-  
-  // CORS Preflight request
   const origin = request.headers.get('origin');
   if (!origin) {
-    return new NextResponse(
-      JSON.stringify({ success: false, error: 'Missing Origin header', code: 'MISSING_ORIGIN' }),
-      { 
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+    return new NextResponse(JSON.stringify({ success: false, error: 'Missing Origin header', code: 'MISSING_ORIGIN' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
   }
-
-  // Lookup form in Supabase to verify CORS dynamically
-  const { data: form, error } = await supabase
-    .from('forms')
-    .select('allowed_origins, is_active')
-    .eq('id', formId)
-    .single();
-
-  if (error || !form) {
-    return new NextResponse(
-      JSON.stringify({ success: false, error: 'Form not found', code: 'FORM_NOT_FOUND' }),
-      {
-        status: 404,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': origin,
-        }
-      }
-    );
-  }
-
-  if (!form.is_active) {
-    return new NextResponse(
-      JSON.stringify({ success: false, error: 'Form is deactivated', code: 'FORM_INACTIVE' }),
-      {
-        status: 403,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': origin,
-        }
-      }
-    );
-  }
-
-  // Check origins
+  const { data: form } = await supabase.from('forms').select('allowed_origins, is_active').eq('id', formId).maybeSingle();
+  const json = (status: number, body: unknown) =>
+    new NextResponse(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } });
+  if (!form) return json(404, { success: false, error: 'Form not found', code: 'FORM_NOT_FOUND' });
+  if (!form.is_active) return json(403, { success: false, error: 'Form is deactivated', code: 'FORM_INACTIVE' });
   if (!form.allowed_origins.includes(origin) && !form.allowed_origins.includes('*')) {
-    return new NextResponse(
-      JSON.stringify({ success: false, error: `Origin '${origin}' is not authorized`, code: 'CORS_NOT_ALLOWED' }),
-      {
-        status: 403,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': origin,
-        }
-      }
-    );
+    return json(403, { success: false, error: `Origin '${origin}' is not authorized`, code: 'CORS_NOT_ALLOWED' });
   }
-
   return new NextResponse(null, {
     status: 204,
     headers: {
       'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, x-client-fingerprint',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Inlet-Visitor-IP, x-client-fingerprint',
       'Access-Control-Max-Age': '86400',
     },
   });
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+type FormJoin = {
+  name: string;
+  is_active: boolean;
+  allowed_origins: string[];
+  notify_email: boolean;
+  auto_reply_enabled: boolean;
+  auto_reply_subject: string | null;
+  auto_reply_message: string | null;
+  success_url: string | null;
+  webhook_url: string | null;
+  client_id: string;
+  portal_user_id: string | null;
+  clients: { name: string; email: string; logo_url?: string | null; primary_color?: string | null; font_family?: string | null; plan?: string | null; sender_name?: string | null; reply_to_email?: string | null } | null;
+  portal_users: { id: string; name: string; email: string; lang: string | null; notify_leads: boolean | null } | null;
+};
+
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id: formId } = await params;
   const origin = request.headers.get('origin');
   const referer = request.headers.get('referer');
+  const contentType = request.headers.get('content-type') || '';
+  const isJson = contentType.includes('application/json');
 
-  // Reject oversized bodies up front (memory-DoS / DB-bloat guard) before any work.
   const declaredLen = parseInt(request.headers.get('content-length') || '0', 10);
   if (declaredLen > MAX_BODY_BYTES) {
-    return createErrorResponse(
-      413, 'PAYLOAD_TOO_LARGE', 'Submission body is too large.',
-      'Reduce the size of your submission or file attachments.',
-      origin, (request.headers.get('content-type') || '').includes('application/json'), referer || '/'
-    );
+    return createErrorResponse(413, 'PAYLOAD_TOO_LARGE', 'Submission body is too large.', 'Reduce the size of your submission or file attachments.', origin, isJson);
   }
 
-  // Determine client IP
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
-  
-  // Read client fingerprint if present in headers
-  const fingerprint = request.headers.get('x-client-fingerprint') || 'no_fingerprint';
-
-  let isJson = false;
-  let redirectUrl = referer || '/';
-
-  const contentType = request.headers.get('content-type') || '';
-  if (contentType.includes('application/json')) {
-    isJson = true;
-  }
-
-  // 1. General Blacklist Check (IP, Fingerprint, Host)
-  if (await isBlacklisted(ipAddress) || (fingerprint !== 'no_fingerprint' && await isBlacklisted(fingerprint))) {
-    await logFailure(formId, 'BLACKLIST_TRIGGER', `Blocked IP/Fingerprint: ${ipAddress}`);
-    return createErrorResponse(
-      403,
-      'SENDER_BLACKLISTED',
-      'Your IP address or browser signature has been blocked due to suspicious activity.',
-      'Ensure you are not using a blacklisted VPN or making abusive requests.',
-      origin,
-      isJson,
-      redirectUrl
-    );
-  }
-  
-  // Reverse lookup check for hostname blacklist
-  const resolvedHost = await resolveHostDomain(ipAddress);
-  if (resolvedHost && await isBlacklisted(resolvedHost)) {
-    return createErrorResponse(
-      403,
-      'HOST_BLACKLISTED',
-      'This submission was blocked by security filters (Hosting/VPN block).',
-      'Please disable your VPN, proxy, or datacenter IP to submit this form.',
-      origin,
-      isJson,
-      redirectUrl
-    );
-  }
-
-  // maybeSingle: a missing form must resolve to a clean 404 below, not a 500 —
-  // .single() reports "no rows" as a query error and would mask FORM_NOT_FOUND.
-  const { data: form, error: formError } = await supabase
+  // ── Form + server-to-server auth ────────────────────────────────────────
+  const FORM_COLUMNS = 'name, is_active, allowed_origins, notify_email, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, webhook_url, client_id, portal_user_id, clients(name, email, logo_url, primary_color, font_family, plan, sender_name, reply_to_email)';
+  let { data: form, error: formError } = await supabase
     .from('forms')
-    .select('name, is_active, allowed_origins, notify_email, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, webhook_url, client_id, clients(name, email, logo_url, primary_color, font_family, plan, sender_name, reply_to_email)')
+    .select(`${FORM_COLUMNS}, portal_users(id, name, email, lang, notify_leads)`)
     .eq('id', formId)
-    .maybeSingle();
+    .maybeSingle<FormJoin>();
 
-  if (form && form.success_url && form.success_url.trim() !== '') {
-    redirectUrl = form.success_url;
+  // Deployed before migration v22 (no lang / notify_leads on portal_users)?
+  // A visitor's lead must never die on an operator's migration order: retry
+  // without the new columns and fall back to the defaults.
+  if (formError && /column|schema cache/i.test(formError.message || '')) {
+    console.error('[SUBMIT] migration v22 missing — degraded form lookup:', formError.message);
+    const retry = await supabase
+      .from('forms')
+      .select(`${FORM_COLUMNS}, portal_users(id, name, email)`)
+      .eq('id', formId)
+      .maybeSingle<FormJoin>();
+    form = retry.data;
+    formError = retry.error;
   }
 
   if (formError) {
     console.error('[SUBMIT] Database query error:', formError);
-    return createErrorResponse(
-      500,
-      'DATABASE_QUERY_ERROR',
-      `A database error occurred while fetching the form: ${formError.message}`,
-      'Check your database schema. Ensure the forms and clients tables exist and contain all required columns (including recent migrations).',
-      origin,
-      isJson,
-      redirectUrl
-    );
+    return createErrorResponse(500, 'DATABASE_QUERY_ERROR', 'A database error occurred while fetching the form.', 'Check that every migration in migrations/README.md has been applied.', origin, isJson);
   }
-
   if (!form) {
-    return createErrorResponse(
-      404,
-      'FORM_NOT_FOUND',
-      `The Form ID '${formId}' is invalid, deactivated, or does not exist.`,
-      'Check the Form ID in your fetch URL or form action. You can copy the correct ID from the admin dashboard.',
-      origin,
-      isJson,
-      redirectUrl
-    );
+    return createErrorResponse(404, 'FORM_NOT_FOUND', `The form id '${formId}' does not exist.`, 'Copy the form id again from your Inlet dashboard (Forms → your form).', origin, isJson);
   }
-
   if (!form.is_active) {
-    return createErrorResponse(
-      403,
-      'FORM_INACTIVE',
-      'This form has been deactivated by the administrator.',
-      'Log into the Inlet dashboard and toggle "Active" for this form.',
-      origin,
-      isJson,
-      redirectUrl
-    );
+    return createErrorResponse(403, 'FORM_INACTIVE', 'This form is paused.', 'Open the form in your Inlet dashboard and switch it back on.', origin, isJson);
   }
 
-  // Dynamic CORS Verification (for AJAX submissions)
-  if (origin) {
+  const bearer = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
+  let trusted = false;
+  if (bearer) {
+    const auth = bearer.startsWith('kef_') ? await verifyApiKey(bearer) : null;
+    if (!auth || auth.clientId !== form.client_id) {
+      return createErrorResponse(401, 'INVALID_API_KEY', 'The API key is invalid, revoked, or does not own this form.', 'Create a key in Inlet → Developer and store it as INLET_API_KEY on your server.', origin, isJson);
+    }
+    trusted = true;
+  }
+
+  // The visitor: for a relay, the forwarded address; otherwise the request IP.
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const requestIp = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
+  const forwardedVisitor = (request.headers.get('x-inlet-visitor-ip') || '').trim();
+  const ipAddress = trusted && IP_RE.test(forwardedVisitor) ? forwardedVisitor : requestIp;
+  const fingerprint = request.headers.get('x-client-fingerprint') || 'no_fingerprint';
+
+  // ── Blacklist (on the visitor, never on the relay) ──────────────────────
+  if (await isBlacklisted(ipAddress) || (fingerprint !== 'no_fingerprint' && await isBlacklisted(fingerprint))) {
+    await logFailure(formId, 'BLACKLIST_TRIGGER', `Blocked IP/Fingerprint: ${ipAddress}`);
+    return createErrorResponse(403, 'SENDER_BLACKLISTED', 'Your address has been blocked for 24 hours because of suspicious activity.', 'Try again later, without a VPN or automated tool.', origin, isJson);
+  }
+  const resolvedHost = await resolveHostDomain(ipAddress);
+  if (resolvedHost && await isBlacklisted(resolvedHost)) {
+    return createErrorResponse(403, 'HOST_BLACKLISTED', 'This submission was blocked by security filters (hosting/VPN block).', 'Please disable your VPN or proxy to submit this form.', origin, isJson);
+  }
+
+  // ── CORS (waived for authenticated server submits) ──────────────────────
+  if (origin && !trusted) {
     if (!form.allowed_origins.includes(origin) && !form.allowed_origins.includes('*')) {
       return createErrorResponse(
-        403,
-        'CORS_NOT_ALLOWED',
-        `Origin '${origin}' is not authorized to submit to this form. Please configure it in your form settings.`,
-        `Log into the Inlet dashboard, edit this form, and add "${origin}" to the Allowed Domains list.`,
-        origin,
-        isJson,
-        redirectUrl
+        403, 'CORS_NOT_ALLOWED',
+        `Origin '${origin}' is not authorized to submit to this form.`,
+        `In your Inlet dashboard, open this form's settings and add "${origin}" to its allowed sites.`,
+        origin, isJson
       );
     }
   }
 
-  // 3. Rate Limiting Check — two gates:
-  //    a) in-memory (5/min per IP+fingerprint): free, catches bursts instantly
-  //    b) DB-backed (12/min per IP, auth_attempts table): authoritative across
-  //       serverless instances — without it, a spammer spraying requests over
-  //       many instances multiplies the in-memory limit.
-  const rateLimitKey = `${ipAddress}:${fingerprint}`;
-  if (!checkRateLimit(rateLimitKey)) {
-    // If rate limit is hit, temporarily block & notify
-    await blacklistTarget(ipAddress, 'ip', 'Rate limit exceeded (API Spam)');
-    return createErrorResponse(
-      429,
-      'RATE_LIMIT_EXCEEDED',
-      'Rate limit exceeded. Please wait a minute before making another submission.',
-      'Stop submitting forms rapidly. Try again in a few minutes.',
-      origin,
-      isJson,
-      redirectUrl
-    );
+  // ── Rate limits: burst (per instance) + authoritative (DB, cross-instance) ─
+  if (!checkBurst(`${ipAddress}:${fingerprint}`)) {
+    await blacklistTarget(ipAddress, 'ip', 'Rate limit exceeded (burst)', AUTO_BAN_TTL_MS);
+    return createErrorResponse(429, 'RATE_LIMIT_EXCEEDED', 'Too many submissions. Please wait a minute.', 'Stop submitting forms rapidly. Try again in a few minutes.', origin, isJson);
   }
-  const okAcrossInstances = await dbCheckRateLimit(`submit:${ipAddress}`, 12, 60_000);
-  if (!okAcrossInstances) {
-    await logFailure(formId, 'RATE_LIMIT_GLOBAL', `IP ${ipAddress} exceeded 12 submissions/min across instances`);
-    await blacklistTarget(ipAddress, 'ip', 'Global rate limit exceeded (cross-instance spray)');
-    return createErrorResponse(
-      429,
-      'RATE_LIMIT_EXCEEDED',
-      'Rate limit exceeded. Please wait a minute before making another submission.',
-      'Stop submitting forms rapidly. Try again in a few minutes.',
-      origin,
-      isJson,
-      redirectUrl
-    );
+  if (!(await dbCheckRateLimit(`submit:${ipAddress}`, 12, 60_000))) {
+    await logFailure(formId, 'RATE_LIMIT_GLOBAL', `IP ${ipAddress} exceeded 12 submissions/min`);
+    await blacklistTarget(ipAddress, 'ip', 'Rate limit exceeded (global)', AUTO_BAN_TTL_MS);
+    return createErrorResponse(429, 'RATE_LIMIT_EXCEEDED', 'Too many submissions. Please wait a minute.', 'Stop submitting forms rapidly. Try again in a few minutes.', origin, isJson);
   }
 
-  // Parse Body
+  // ── Body ────────────────────────────────────────────────────────────────
   let payload: Record<string, string> = {};
-  
+  let redirectUrl = referer || '/';
+  if (form.success_url && form.success_url.trim()) redirectUrl = form.success_url;
   try {
     if (isJson) {
-      // Read as text first so we can enforce a hard byte cap even when the
-      // Content-Length header is absent or lies.
       const rawBody = await request.text();
       if (rawBody.length > MAX_BODY_BYTES) throw new Error('BODY_TOO_LARGE');
       payload = JSON.parse(rawBody);
     } else if (contentType.includes('application/x-www-form-urlencoded')) {
-      // Standard HTML form submission — parse URL-encoded body
       const rawBody = await request.text();
       if (rawBody.length > MAX_BODY_BYTES) throw new Error('BODY_TOO_LARGE');
-      const params = new URLSearchParams(rawBody);
-      params.forEach((value, key) => {
-        payload[key] = value;
-      });
+      new URLSearchParams(rawBody).forEach((value, key) => { payload[key] = value; });
     } else {
-      // multipart/form-data or other (bounded up front by Content-Length)
       const formData = await request.formData();
-      formData.forEach((value, key) => {
-        payload[key] = value.toString();
-      });
+      formData.forEach((value, key) => { payload[key] = value.toString(); });
     }
-
-    if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
-      if (Object.keys(payload).length > MAX_FIELDS) throw new Error('TOO_MANY_FIELDS');
-    } else {
-      throw new Error('INVALID_SHAPE');
-    }
-
-    if (payload.redirect_url) {
-      redirectUrl = payload.redirect_url;
-    }
-    // Neutralize open-redirect: the target must be the owner's success_url or an
-    // allowed-origin URL — never an arbitrary attacker-supplied destination.
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('INVALID_SHAPE');
+    if (Object.keys(payload).length > MAX_FIELDS) throw new Error('TOO_MANY_FIELDS');
+    if (payload.redirect_url) redirectUrl = payload.redirect_url;
     redirectUrl = safeRedirect(redirectUrl, request.nextUrl.origin, form.allowed_origins || [], form.success_url, referer);
   } catch (err) {
     const tooLarge = err instanceof Error && err.message === 'BODY_TOO_LARGE';
-    console.error('[SUBMIT] Body parsing error:', err);
     return createErrorResponse(
       tooLarge ? 413 : 400,
       tooLarge ? 'PAYLOAD_TOO_LARGE' : 'INVALID_REQUEST_BODY',
-      tooLarge ? 'Submission body is too large.' : 'Failed to parse submission body. Make sure the content-type and parameters match.',
-      tooLarge ? 'Reduce the size of your submission or file attachments.' : 'Ensure your request body matches your Content-Type header. If using fetch, stringify your JSON body or send a valid FormData object.',
-      origin,
-      isJson,
-      safeRedirect(redirectUrl, request.nextUrl.origin, form.allowed_origins || [], form.success_url, referer)
+      tooLarge ? 'Submission body is too large.' : 'Could not parse the submission body.',
+      tooLarge ? 'Reduce the size of your submission or file attachments.' : 'Send JSON with a Content-Type: application/json header, or a standard form post.',
+      origin, isJson
     );
   }
 
-  console.log(`[SUBMIT] Parsed payload keys: [${Object.keys(payload).join(', ')}]`);
-
-  // 4. Honeypot check: "_gotcha"
-  // If bots fill this invisible input field, trigger active blacklisting immediately
-  if (payload._gotcha !== undefined && payload._gotcha !== '') {
-    await logFailure(formId, 'HONEYPOT_TRIGGER', 'Honeypot field was filled out', payload);
-    // Flag IP, Fingerprint & resolve VPN host asynchronously
-    await handleHoneypotTrigger(ipAddress, fingerprint);
-    
-    // Deceptive silent success response so bots don't realize they are caught
-    const headers: Record<string, string> = {};
-    if (origin) {
-      headers['Access-Control-Allow-Origin'] = origin;
-    }
+  const respondSuccess = () => {
     if (isJson || origin) {
-      return NextResponse.json({ success: true, message: 'Submission logged.' }, { headers });
-    } else {
-      if (redirectUrl.startsWith('file://') || redirectUrl.startsWith('chrome-error://')) {
-        return new NextResponse(
-          `<!DOCTYPE html>
-           <html>
-             <head>
-               <meta charset="utf-8">
-               <title>Soumission réussie</title>
-               <style>
-                 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #F9FAFB; color: #0F172A; }
-                 .card { background: white; padding: 2.5rem; border-radius: 1.5rem; border: 1px solid #F1F5F9; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); text-align: center; max-width: 400px; }
-                 .icon { font-size: 3rem; margin-bottom: 1rem; }
-                 h1 { color: #0F172A; font-size: 1.25rem; font-weight: 700; margin: 0 0 0.5rem 0; }
-                 p { font-size: 0.875rem; color: #64748B; line-height: 1.6; margin: 0; }
-                 .back-btn { display: inline-block; margin-top: 1.5rem; padding: 0.625rem 1.25rem; background: #0F172A; color: white; text-decoration: none; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 600; transition: opacity 0.2s; }
-                 .back-btn:hover { opacity: 0.9; }
-               </style>
-             </head>
-             <body>
-               <div class="card">
-                 <div class="icon">✓</div>
-                 <h1>Message envoyé !</h1>
-                 <p>Votre message a été enregistré avec succès. Le destinataire a été notifié.</p>
-                 <a href="javascript:history.back()" class="back-btn">Retour au formulaire</a>
-               </div>
-             </body>
-           </html>`,
-          {
-            headers: {
-              'Content-Type': 'text/html; charset=utf-8',
-            },
-          }
-        );
-      }
-      return NextResponse.redirect(new URL(`${redirectUrl}?submitted=true`, request.url), 303);
+      return NextResponse.json({ success: true, message: 'Submission logged successfully' }, { headers: origin ? { 'Access-Control-Allow-Origin': origin } : {} });
     }
+    if (redirectUrl.startsWith('file://') || redirectUrl.startsWith('chrome-error://')) return successPage();
+    const url = new URL(redirectUrl, request.url);
+    url.searchParams.set('submitted', 'true');
+    return NextResponse.redirect(url, 303);
+  };
+
+  // ── Honeypot: silent fake success, temporary ban ────────────────────────
+  if (payload._gotcha !== undefined && payload._gotcha !== '') {
+    await logFailure(formId, 'HONEYPOT_TRIGGER', 'Honeypot field was filled out', Object.keys(payload));
+    await handleHoneypotTrigger(ipAddress, fingerprint);
+    return respondSuccess();
   }
 
-  // Clean payload by removing utility fields
-  const cleanPayload = { ...payload };
-  delete cleanPayload._gotcha;
-  delete cleanPayload.redirect_url;
-  delete cleanPayload.pow_challenge;
-  delete cleanPayload.pow_timestamp;
-  delete cleanPayload.pow_nonce;
-
-  // Extract submit language if present, then delete it from clean payload
-  const lang = payload._lang || payload.lang || 'fr';
+  // ── Clean the payload ───────────────────────────────────────────────────
+  const cleanPayload: Record<string, string> = { ...payload };
+  for (const k of ['_gotcha', 'redirect_url', 'pow_challenge', 'pow_timestamp', 'pow_nonce']) delete cleanPayload[k];
+  const client = form.portal_users;
+  const developer = form.clients;
+  const lang = normalizeLang(payload._lang || payload.lang, normalizeLang(client?.lang, 'fr'));
   delete cleanPayload._lang;
   delete cleanPayload.lang;
 
-  // 4b. Keyword Spam Filter Check
-  // IMPORTANT: Only scan actual user-typed text fields, NOT binary data.
-  // Base64 photo blobs (300KB+) statistically guarantee false positives
-  // for short keywords like "seo" due to random character sequences.
-  const SPAM_KEYWORDS = ['seo', 'crypto', 'viagra', 'enlarge', 'casino', 'bitcoin', 'investment'];
-  const textOnlyPayload: Record<string, string> = {};
+  // ── Keyword filter: label, never drop (A1) ──────────────────────────────
+  let suspectReason: string | null = null;
   for (const [key, value] of Object.entries(cleanPayload)) {
-    if (
-      typeof value === 'string' &&
-      !value.startsWith('data:') &&       // Exclude Base64 data URIs
-      value.length < 5000                  // Exclude any abnormally long blob
-    ) {
-      textOnlyPayload[key] = value;
-    }
-  }
-  const payloadString = JSON.stringify(textOnlyPayload).toLowerCase();
-  const isSpam = SPAM_KEYWORDS.some(keyword => payloadString.includes(keyword));
-  
-  if (isSpam) {
-    await logFailure(formId, 'SPAM_KEYWORD', 'Payload contained blacklisted keywords', cleanPayload);
-    // Deceptive silent success response
-    const headers: Record<string, string> = origin ? { 'Access-Control-Allow-Origin': origin } : {};
-    if (isJson || origin) {
-      return NextResponse.json({ success: true, message: 'Submission logged successfully' }, { headers });
-    } else {
-      if (redirectUrl.startsWith('file://') || redirectUrl.startsWith('chrome-error://')) {
-        return new NextResponse('<p>Success</p>', { headers: { 'Content-Type': 'text/html' } });
-      }
-      return NextResponse.redirect(new URL(`${redirectUrl}?submitted=true`, request.url), 303);
-    }
+    if (typeof value !== 'string' || value.startsWith('data:') || value.length >= 5000) continue;
+    const m = SPAM_RE.exec(value);
+    if (m) { suspectReason = `keyword "${m[1].toLowerCase()}" in ${key}`; break; }
   }
 
-  // Process Base64 attachments (upload to Supabase Storage)
-  const sanitizeForFilename = (str: string) => str.replace(/[^a-zA-Z0-9-]/g, '_').toLowerCase().substring(0, 30);
-  
-  const nomKey = Object.keys(cleanPayload).find(k => k.toLowerCase() === 'nom' || k.toLowerCase() === 'name');
-  const marqueKey = Object.keys(cleanPayload).find(k => k.toLowerCase() === 'marque' || k.toLowerCase() === 'brand');
-  const modeleKey = Object.keys(cleanPayload).find(k => k.toLowerCase() === 'modele' || k.toLowerCase() === 'model');
-
-  const nom = nomKey ? sanitizeForFilename(cleanPayload[nomKey]) : 'user';
-  const marque = marqueKey ? sanitizeForFilename(cleanPayload[marqueKey]) : '';
-  const modele = modeleKey ? sanitizeForFilename(cleanPayload[modeleKey]) : '';
-  const baseNameParts = [nom, marque, modele].filter(Boolean);
-  const baseName = baseNameParts.length > 0 ? baseNameParts.join('-') : 'upload';
-
+  // ── Attachments: base64 data URIs → storage objects with random names ───
   for (const [key, value] of Object.entries(cleanPayload)) {
-    if (typeof value === 'string' && value.startsWith('data:')) {
-      const match = value.match(/^data:(.*?);base64,(.*)$/);
-      if (match) {
-        const mimeType = match[1];
-        const base64Data = match[2];
-        
-        let ext = 'bin';
-        if (mimeType.includes('jpeg') || mimeType.includes('jpg')) ext = 'jpg';
-        else if (mimeType.includes('png')) ext = 'png';
-        else if (mimeType.includes('pdf')) ext = 'pdf';
-        else if (mimeType.includes('webp')) ext = 'webp';
-
-        const filename = `${Date.now()}-${baseName}-${sanitizeForFilename(key)}.${ext}`;
-        const buffer = Buffer.from(base64Data, 'base64');
-        
-        try {
-          const { data, error } = await supabase.storage
-            .from('uploads')
-            .upload(filename, buffer, {
-              contentType: mimeType,
-              upsert: true
-            });
-            
-          if (!error && data) {
-            const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(filename);
-            if (urlData && urlData.publicUrl) {
-              cleanPayload[key] = urlData.publicUrl;
-              console.log(`[SUBMIT] Successfully uploaded ${filename}`);
-            }
-          } else {
-            console.error('[SUBMIT] Supabase storage upload error:', error);
-          }
-        } catch (uploadErr) {
-          console.error('[SUBMIT] Buffer upload exception:', uploadErr);
-        }
+    if (typeof value !== 'string' || !value.startsWith('data:')) continue;
+    const match = value.match(/^data:(.*?);base64,(.*)$/);
+    if (!match) continue;
+    const mimeType = match[1];
+    const ext = mimeType.includes('jpeg') || mimeType.includes('jpg') ? 'jpg'
+      : mimeType.includes('png') ? 'png'
+      : mimeType.includes('pdf') ? 'pdf'
+      : mimeType.includes('webp') ? 'webp'
+      : 'bin';
+    const filename = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}.${ext}`;
+    try {
+      const { data, error } = await supabase.storage.from('uploads').upload(filename, Buffer.from(match[2], 'base64'), { contentType: mimeType, upsert: false });
+      if (!error && data) {
+        const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(filename);
+        if (urlData?.publicUrl) cleanPayload[key] = urlData.publicUrl;
+      } else {
+        console.error('[SUBMIT] Storage upload error:', error);
+        cleanPayload[key] = '[attachment could not be stored]';
       }
+    } catch (uploadErr) {
+      console.error('[SUBMIT] Upload exception:', uploadErr);
+      cleanPayload[key] = '[attachment could not be stored]';
     }
   }
 
-  // 5. Proof-of-Work (PoW) verification for AJAX requests
-  // Safe fallback if not AJAX (no CORS headers / normal Form submission)
-  if (isJson) {
+  // ── Proof-of-work for browser JSON submits (waived for server submits) ──
+  if (isJson && !trusted) {
     const powChallenge = payload.pow_challenge;
     const powTimestamp = parseInt(payload.pow_timestamp || '0', 10);
     const powNonce = payload.pow_nonce;
-
     if (!powChallenge || !powTimestamp || !powNonce) {
-      return createErrorResponse(
-        400,
-        'POW_PARAMETERS_MISSING',
-        'Missing Proof-of-Work cryptographic verification parameters.',
-        'Include pow_challenge, pow_timestamp, and pow_nonce in your JSON payload when submitting via AJAX.',
-        origin,
-        isJson,
-        redirectUrl
-      );
+      return createErrorResponse(400, 'POW_PARAMETERS_MISSING', 'Missing proof-of-work parameters.', 'Fetch GET /api/challenge, solve it, and send pow_challenge, pow_timestamp and pow_nonce — or submit from your server with an API key.', origin, isJson);
     }
-
-    // Check challenge replay attack
     if (challengeReplayCache.has(powChallenge)) {
-      return createErrorResponse(
-        400,
-        'POW_REPLAY_DETECTED',
-        'Proof-of-Work challenge has already been processed and cannot be reused.',
-        'Fetch a new challenge from /api/challenge before each submission. Do not cache the challenge.',
-        origin,
-        isJson,
-        redirectUrl
-      );
+      return createErrorResponse(400, 'POW_REPLAY_DETECTED', 'This proof-of-work challenge was already used.', 'Fetch a new challenge before each submission. Never cache one.', origin, isJson);
     }
-
-    const powValid = await verifyChallenge(powChallenge, powTimestamp, powNonce, ipAddress);
-    if (!powValid) {
-      return createErrorResponse(
-        400,
-        'POW_SOLUTION_INVALID',
-        'Proof-of-Work solution verification failed. Challenge might have expired.',
-        'Ensure your client-side proof of work computation matches the difficulty required and submit before the timestamp expires.',
-        origin,
-        isJson,
-        redirectUrl
-      );
+    if (!(await verifyChallenge(powChallenge, powTimestamp, powNonce, requestIp))) {
+      return createErrorResponse(400, 'POW_SOLUTION_INVALID', 'Proof-of-work verification failed (wrong solution or expired challenge).', 'Solve the challenge for the required difficulty and submit within 5 minutes.', origin, isJson);
     }
-
-    // Cache the verified challenge to prevent reuse (evicts after 5 mins)
     challengeReplayCache.add(powChallenge);
     setTimeout(() => challengeReplayCache.delete(powChallenge), 5 * 60 * 1000);
   }
 
-  // 6. Persist Lead in database
+  // ── Store the lead — before anything else can fail ──────────────────────
   const { data: inserted, error: insertError } = await supabase
     .from('submissions')
-    .insert([
-      {
-        form_id: formId,
-        payload: cleanPayload,
-        ip_address: ipAddress,
-        fingerprint,
-      },
-    ])
+    .insert([{
+      form_id: formId,
+      payload: cleanPayload,
+      ip_address: ipAddress,
+      fingerprint,
+      ...(suspectReason ? { spam_status: 'suspect', spam_reason: suspectReason } : {}),
+    }])
     .select('id')
     .single();
 
-  // 6b. AI spam classification — labels the stored row asynchronously
-  // (clean/suspect/spam); never blocks the response, never deletes a lead.
-  if (inserted?.id) {
-    import('@/lib/spamClassifier')
-      .then(({ classifySubmission }) => classifySubmission(inserted.id as string, cleanPayload))
-      .catch(() => {});
-  }
-
-  // 6c. Outbound webhook — signed POST of the stored lead to the form's
-  // endpoint (fire-and-forget, 1 retry, failures logged to /admin/logs).
-  if (form.webhook_url && form.client_id) {
-    import('@/lib/webhooks')
-      .then(({ dispatchLeadWebhook }) =>
-        dispatchLeadWebhook({
-          webhookUrl: form.webhook_url as string,
-          clientId: form.client_id as string,
-          formId,
-          formName: form.name,
-          submissionId: (inserted?.id as string) || null,
-          payload: cleanPayload,
-        })
-      )
-      .catch(() => {});
-  }
-
-  if (insertError) {
+  if (insertError || !inserted) {
     console.error('Error inserting submission:', insertError);
-    return createErrorResponse(
-      500,
-      'DATABASE_INSERT_FAILED',
-      'An internal database error occurred while registering your submission.',
-      'Check your Supabase instance logs. Ensure the submissions table schema is correct.',
-      origin,
-      isJson,
-      redirectUrl
-    );
+    return createErrorResponse(500, 'DATABASE_INSERT_FAILED', 'The submission could not be stored.', 'Try again in a moment. If it persists, the service owner has been alerted through the logs.', origin, isJson);
+  }
+  if (suspectReason) await logFailure(formId, 'SPAM_KEYWORD', `Stored as suspect: ${suspectReason}`, Object.keys(cleanPayload));
+
+  // AI label (only when the operator enabled a paid provider — A4) and webhook: fire-and-forget.
+  import('@/lib/spamClassifier').then(({ classifySubmission }) => classifySubmission(inserted.id as string, cleanPayload)).catch(() => {});
+  if (form.webhook_url) {
+    import('@/lib/webhooks')
+      .then(({ dispatchLeadWebhook }) => dispatchLeadWebhook({
+        webhookUrl: form.webhook_url as string,
+        clientId: form.client_id,
+        formId,
+        formName: form.name,
+        submissionId: inserted.id as string,
+        payload: cleanPayload,
+      }))
+      .catch(() => {});
   }
 
-  // Plan-quota accounting (lib/plans + lib/quota). The lead above is ALWAYS
-  // stored — quotas only pause outgoing email, exactly as /pricing promises.
-  const quota = form.client_id
-    ? await getQuotaState(form.client_id, (form.clients as unknown as { plan?: string })?.plan)
-    : null;
-  let emailBudget = quota ? quota.emailBudgetLeft : Number.POSITIVE_INFINITY;
-  const emailsPaused = quota ? quota.submissionsExhausted || emailBudget <= 0 : false;
-  if (quota && emailsPaused) {
-    logFailure(
-      formId,
-      'QUOTA_EMAIL_PAUSED',
-      `Emails paused for plan '${quota.plan.id}': ${quota.submissionsThisMonth} submissions this month (cap ${quota.plan.submissionsPerMonth}), ${quota.emailsToday} emails today (cap ${quota.plan.emailsPerDay}). Lead stored.`,
-    );
+  // ── Notifications ───────────────────────────────────────────────────────
+  const quota = await getQuotaState(form.client_id, developer?.plan);
+  let emailBudget = quota.emailBudgetLeft;
+  const emailsPaused = quota.submissionsExhausted || emailBudget <= 0;
+  if (emailsPaused) {
+    logFailure(formId, 'QUOTA_EMAIL_PAUSED', `Emails paused for plan '${quota.plan.id}': ${quota.submissionsThisMonth} submissions this month (cap ${quota.plan.submissionsPerMonth}), ${quota.emailsToday} emails today (cap ${quota.plan.emailsPerDay}). Lead stored.`);
   }
 
-  if (form.notify_email && form.clients && !emailsPaused && emailBudget > 0) {
-    const clientObj = form.clients as unknown as { name: string; email: string; logo_url?: string; primary_color?: string; font_family?: string; plan?: string };
-    const clientEmail = clientObj?.email;
-    const clientName = clientObj?.name;
-    const branding = {
-      logo_url: clientObj?.logo_url,
-      primary_color: clientObj?.primary_color,
-      font_family: clientObj?.font_family,
-      // Free/Solo carry a subtle "Powered by Inlet" (growth loop); paid plans
-      // (whiteLabel) are clean.
-      whiteLabel: getPlan(clientObj?.plan).whiteLabel,
-    };
+  const plan = getPlan(developer?.plan);
+  const branding = {
+    logo_url: developer?.logo_url,
+    primary_color: developer?.primary_color,
+    font_family: developer?.font_family,
+    whiteLabel: plan.whiteLabel,
+  };
+  const businessName = client?.name || developer?.name || 'Client';
+  const senderEmailKey = Object.keys(cleanPayload).find((k) => k.toLowerCase() === 'email');
+  const visitorEmail = senderEmailKey ? String(cleanPayload[senderEmailKey]).trim() : '';
+  const validVisitorEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(visitorEmail) ? visitorEmail : null;
 
-    if (clientEmail) {
+  const recipients: { to: string; developerCopy: boolean; openUrl: string }[] = [];
+  if (client && client.notify_leads !== false && client.email && !isSyntheticEmail(client.email)) {
+    recipients.push({ to: client.email, developerCopy: false, openUrl: `${SITE_URL}/portal` });
+  }
+  if (form.notify_email && developer?.email && developer.email.toLowerCase() !== (client?.email || '').toLowerCase()) {
+    recipients.push({ to: developer.email, developerCopy: true, openUrl: `${SITE_URL}/developer/dashboard/forms/${formId}` });
+  }
+
+  if (!emailsPaused) {
+    for (const r of recipients) {
+      if (emailBudget <= 0) break;
       emailBudget -= 1;
-      if (form.client_id) logEmailSend(form.client_id, formId, 'lead');
-      // Asynchronously send SMTP email
-      sendLeadEmail(clientEmail, form.name, cleanPayload, ipAddress, clientName, branding, lang).catch(err => {
-        console.error('SMTP Background error:', err);
-        logFailure(formId, 'SMTP_FAILED', `Failed to send lead email: ${err.message || err}`, cleanPayload);
-      });
+      sendLeadEmail({
+        to: r.to,
+        formName: form.name,
+        payload: cleanPayload,
+        ipAddress,
+        clientName: businessName,
+        branding,
+        lang,
+        suspect: suspectReason,
+        openUrl: r.openUrl,
+        developerCopy: r.developerCopy,
+        replyTo: validVisitorEmail,
+      })
+        .then((res) => {
+          if (res.success) logEmailSend(form.client_id, formId, 'lead');
+          else logFailure(formId, 'SMTP_FAILED', `Lead e-mail to ${r.to} was not sent`);
+        })
+        .catch((err) => logFailure(formId, 'SMTP_FAILED', `Lead e-mail to ${r.to}: ${err?.message || err}`));
     }
   }
 
-  // 7b. Send Auto-Reply confirmation to sender if enabled (and within budget)
-  if (form.auto_reply_enabled && !emailsPaused && emailBudget > 0) {
-    // Check if the payload contains the sender's email (case-insensitive search)
-    const senderEmailKey = Object.keys(cleanPayload).find(k => k.toLowerCase() === 'email');
-    const senderEmail = senderEmailKey ? cleanPayload[senderEmailKey] : undefined;
+  // ── Auto-reply to the visitor (withheld for suspect leads) ─────────────
+  if (form.auto_reply_enabled && !emailsPaused && emailBudget > 0 && !suspectReason && validVisitorEmail) {
+    const canCustomSender = plan.customSender;
+    const customSenderName = canCustomSender ? developer?.sender_name?.trim() || undefined : undefined;
+    const customReplyTo = canCustomSender ? developer?.reply_to_email?.trim() || undefined : undefined;
+    const senderNameKey = Object.keys(cleanPayload).find((k) => k.toLowerCase() === 'nom' || k.toLowerCase() === 'name');
+    const senderName = senderNameKey ? String(cleanPayload[senderNameKey]).trim() : undefined;
 
-    if (senderEmail && typeof senderEmail === 'string' && senderEmail.trim() !== '') {
-      const emailToSubmit = senderEmail.trim();
-      const clientObj = form.clients as unknown as { name: string; email: string; logo_url?: string; primary_color?: string; font_family?: string; plan?: string; sender_name?: string; reply_to_email?: string };
-      const clientName = clientObj ? clientObj.name : 'Notre Entreprise';
-      const branding = clientObj ? {
-        logo_url: clientObj.logo_url,
-        primary_color: clientObj.primary_color,
-        font_family: clientObj.font_family,
-        whiteLabel: getPlan(clientObj.plan).whiteLabel,
-      } : {};
-
-      // Paid "custom sender" identity — only honoured if the client's plan
-      // includes it (free tenants send under the shared Inlet identity).
-      const canCustomSender = getPlan(clientObj?.plan).customSender;
-      const customSenderName = canCustomSender ? clientObj?.sender_name?.trim() || undefined : undefined;
-      const customReplyTo = canCustomSender ? clientObj?.reply_to_email?.trim() || undefined : undefined;
-
-      const senderNameKey = Object.keys(cleanPayload).find(k => k.toLowerCase() === 'nom' || k.toLowerCase() === 'name');
-      const senderName = senderNameKey ? String(cleanPayload[senderNameKey]).trim() : undefined;
-
-      // Apply anti-reply rate limit for auto-replies
-      if (checkAutoReplyRateLimit(emailToSubmit)) {
-        if (form.client_id) logEmailSend(form.client_id, formId, 'auto_reply');
-        sendAutoReplyEmail(
-          emailToSubmit,
-          form.name,
-          clientName,
-          form.auto_reply_subject || undefined,
-          form.auto_reply_message || undefined,
-          lang,
-          branding,
-          senderName,
-          customSenderName,
-          customReplyTo
-        ).catch(err => {
-          console.error('Auto-reply background error:', err);
-          logFailure(formId, 'SMTP_AUTOREPLY_FAILED', `Failed to send auto-reply to ${emailToSubmit}: ${err.message || err}`, cleanPayload);
-        });
-      } else {
-        console.warn(`[AUTOREPLY] Rate limit exceeded for email: ${emailToSubmit}. Skipping auto-reply.`);
-      }
-    } else {
-      console.log('[AUTOREPLY] No valid email field found in payload. Skipping auto-reply.');
+    if (checkAutoReplyRateLimit(validVisitorEmail)) {
+      emailBudget -= 1;
+      sendAutoReplyEmail(
+        validVisitorEmail,
+        form.name,
+        businessName,
+        form.auto_reply_subject || undefined,
+        form.auto_reply_message || undefined,
+        lang,
+        branding,
+        senderName,
+        customSenderName,
+        customReplyTo || (client?.email && !isSyntheticEmail(client.email) ? client.email : undefined)
+      )
+        .then((ok) => {
+          if (ok) logEmailSend(form.client_id, formId, 'auto_reply');
+          else logFailure(formId, 'SMTP_AUTOREPLY_FAILED', 'Auto-reply was not sent');
+        })
+        .catch((err) => logFailure(formId, 'SMTP_AUTOREPLY_FAILED', `Auto-reply: ${err?.message || err}`));
     }
   }
 
-  // 8. Output Response
-  const headers: Record<string, string> = {};
-  if (origin) {
-    headers['Access-Control-Allow-Origin'] = origin;
-  }
-
-  // If the request came via fetch/AJAX (has origin header), always return JSON with CORS headers.
-  // Redirects only work for native browser form POSTs (no origin header).
-  if (isJson || origin) {
-    return NextResponse.json({ success: true, message: 'Submission logged successfully' }, { headers });
-  } else {
-    // Native HTML Form redirect back to Vitrine (no JS fetch involved)
-    if (redirectUrl.startsWith('file://') || redirectUrl.startsWith('chrome-error://')) {
-      return new NextResponse(
-        `<!DOCTYPE html>
-         <html>
-           <head>
-             <meta charset="utf-8">
-             <title>Soumission réussie</title>
-             <style>
-               body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #F9FAFB; color: #0F172A; }
-               .card { background: white; padding: 2.5rem; border-radius: 1.5rem; border: 1px solid #F1F5F9; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); text-align: center; max-width: 400px; }
-               .icon { font-size: 3rem; margin-bottom: 1rem; }
-               h1 { color: #0F172A; font-size: 1.25rem; font-weight: 700; margin: 0 0 0.5rem 0; }
-               p { font-size: 0.875rem; color: #64748B; line-height: 1.6; margin: 0; }
-               .back-btn { display: inline-block; margin-top: 1.5rem; padding: 0.625rem 1.25rem; background: #0F172A; color: white; text-decoration: none; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 600; transition: opacity 0.2s; }
-               .back-btn:hover { opacity: 0.9; }
-             </style>
-           </head>
-           <body>
-             <div class="card">
-               <div class="icon">✓</div>
-               <h1>Message envoyé !</h1>
-               <p>Votre message a été enregistré avec succès. Le destinataire a été notifié.</p>
-               <a href="javascript:history.back()" class="back-btn">Retour au formulaire</a>
-             </div>
-           </body>
-         </html>`,
-        {
-          headers: {
-            'Content-Type': 'text/html; charset=utf-8',
-          },
-        }
-      );
-    }
-    const url = new URL(redirectUrl, request.url);
-    url.searchParams.set('submitted', 'true');
-    return NextResponse.redirect(url, 303);
-  }
+  return respondSuccess();
 }

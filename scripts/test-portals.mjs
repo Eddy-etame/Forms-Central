@@ -11,11 +11,18 @@ import { readFileSync } from 'node:fs';
 import crypto from 'node:crypto';
 
 const BASE = process.argv[2] || 'http://localhost:3005';
-const env = Object.fromEntries(
-  readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
-    .split(/\r?\n/).filter((l) => l && !l.trimStart().startsWith('#') && l.includes('='))
-    .map((l) => { const i = l.indexOf('='); return [l.slice(0, i).trim(), l.slice(i + 1).trim()]; })
-);
+const env = (() => {
+  // .env.local when present (local dev); the process environment always wins (CI, cloud sessions)
+  let fromFile = {};
+  try {
+    fromFile = Object.fromEntries(
+      readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
+        .split(/\r?\n/).filter((l) => l && !l.trimStart().startsWith('#') && l.includes('='))
+        .map((l) => { const i = l.indexOf('='); return [l.slice(0, i).trim(), l.slice(i + 1).trim()]; })
+    );
+  } catch {}
+  return { ...fromFile, ...process.env };
+})();
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
 let pass = 0, fail = 0; const failures = [];

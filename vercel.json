@@ -3,11 +3,5 @@
   "framework": "nextjs",
   "regions": [
     "cdg1"
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/retention",
-      "schedule": "17 3 * * *"
-    }
   ]
 }

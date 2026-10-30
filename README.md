@@ -132,7 +132,7 @@ See `.env.example` — every variable is documented there. The ones people miss:
 | `SMTP_*`, `SMTP_<n>_*` | the sending-account pool (rotation + cooldown); every `FROM` must be a verified sender on its account |
 | `OPERATOR_EMAIL` | receives plan requests (falls back to `ADMIN_2FA_EMAIL`) |
 | `AI_CLASSIFIER_ENABLED` | the AI spam classifier runs only when exactly `true` |
-| `CRON_SECRET` | authorises the daily retention cron (`/api/cron/retention`) |
+| `CRON_SECRET`, `RETENTION_ENABLED`, `RETENTION_APPLY` | the retention job is off unless all three are set; without `RETENTION_APPLY=true` it only reports |
 
 ---
 

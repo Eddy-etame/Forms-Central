@@ -12,13 +12,20 @@ import { createClient } from '@supabase/supabase-js';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const env = Object.fromEntries(
-  readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
-    .split(/\r?\n/).filter((l) => l && !l.trimStart().startsWith('#') && l.includes('='))
-    .map((l) => { const i = l.indexOf('='); return [l.slice(0, i).trim(), l.slice(i + 1).trim()]; })
-);
-const URL_ = process.env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
-const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
+const env = (() => {
+  // .env.local when present; the process environment always wins (CI, cloud sessions)
+  let fromFile = {};
+  try {
+    fromFile = Object.fromEntries(
+      readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
+        .split(/\r?\n/).filter((l) => l && !l.trimStart().startsWith('#') && l.includes('='))
+        .map((l) => { const i = l.indexOf('='); return [l.slice(0, i).trim(), l.slice(i + 1).trim()]; })
+    );
+  } catch {}
+  return { ...fromFile, ...process.env };
+})();
+const URL_ = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
+const KEY = env.SUPABASE_SERVICE_ROLE_KEY;
 if (!URL_ || !KEY) { console.error('Missing NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY'); process.exit(1); }
 const sb = createClient(URL_, KEY, { auth: { persistSession: false } });
 

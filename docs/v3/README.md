@@ -116,8 +116,14 @@ and MCP v2 need its columns).
 4. The client inbox has no per-form notification toggle (only per client).
 5. No e-mail deliverability setup for a custom domain (SPF/DKIM) — Inlet sends
    from the pool's verified senders; fine for now, needed for white-label.
-5b. Data retention is now enforced: `/api/cron/retention` runs daily (Vercel
-   cron, `CRON_SECRET`) and deletes leads + attachments past the plan window.
+5b. **Incident 2026-10-30.** The retention job shipped with a daily schedule
+   and ran its first pass at 03:17 UTC on the production database: the
+   leads older than 30 days of free-plan developers were deleted (25 → 7
+   submissions). That first run should have been a dry run approved by the
+   author. Fixed the same morning: schedule removed, `CRON_SECRET` revoked,
+   the route now requires `RETENTION_ENABLED=true` and only deletes with
+   `RETENTION_APPLY=true` (dry run otherwise). A full backup of the project
+   (tables + attachments) was taken immediately after.
 6. The AI assistant on the marketing site answers from `lib/ai.ts` knowledge;
    it should link to `/docs#…` anchors — small.
 7. Tests do not cover e-mail content (templates render in `emails/`); a

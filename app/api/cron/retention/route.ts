@@ -44,6 +44,14 @@ export async function GET(req: Request) {
   if (!secret || req.headers.get('authorization') !== `Bearer ${secret}`) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
+  // Two explicit switches on top of the secret (2026-10-30 incident: the first
+  // scheduled run purged historical leads before the operator had decided):
+  // RETENTION_ENABLED=true turns the job on at all, and RETENTION_APPLY=true
+  // turns the dry run into real deletes. Anything else only reports.
+  if (process.env.RETENTION_ENABLED !== 'true') {
+    return NextResponse.json({ success: true, skipped: 'RETENTION_ENABLED is not true' });
+  }
+  const dryRun = process.env.RETENTION_APPLY !== 'true';
 
   const { data: developers, error } = await supabase.from('clients').select('id, plan');
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -71,6 +79,11 @@ export async function GET(req: Request) {
       if (!old || old.length === 0) break;
 
       const files = old.flatMap((s) => attachmentPaths(s.payload));
+      if (dryRun) {
+        summary.leads += old.length;
+        summary.files += files.length;
+        break; // report the first batch only; nothing is touched
+      }
       const { error: dErr } = await supabase.from('submissions').delete().in('id', old.map((s) => s.id));
       if (dErr) { summary.errors.push(`${dev.id}: ${dErr.message}`); break; }
       summary.leads += old.length;
@@ -84,6 +97,6 @@ export async function GET(req: Request) {
     }
   }
 
-  console.log('[RETENTION]', JSON.stringify(summary));
-  return NextResponse.json({ success: true, ...summary });
+  console.log('[RETENTION]', dryRun ? 'dry-run' : 'applied', JSON.stringify(summary));
+  return NextResponse.json({ success: true, dryRun, ...summary });
 }

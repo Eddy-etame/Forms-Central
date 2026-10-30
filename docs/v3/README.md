@@ -91,10 +91,19 @@ developers who let agents write their forms).
 **Done and verified by build/typecheck:** the client model end to end
 (migration, services, API, MCP, dashboard, portal, docs, truth pass, scripts).
 
-**Done but not yet verified against a live database** (needs the author's
-Supabase + a dev server): the three test suites (`scripts/test-*.mjs`) were
-rewritten for v3 and must be run once; migration v22 must be applied in the
-SQL editor before the next deploy.
+**Live (2026-10-30):** production runs on the author's own Vercel account at
+https://inlet-eta.vercel.app (project `inlet`, scope `etameeddy01-1772`, 47
+production variables, daily retention cron). Smoke-tested: every public page
+200, redirects 308, every private API 401 without a session, the submit route
+answers `FORM_NOT_FOUND` on an unknown id even without migration v22 (the
+degraded lookup works). The old `inlett.vercel.app` (school account) still
+serves the previous version against the same database until the client sites
+point at the new origin.
+
+**Done but not yet verified against a live database:** the three test suites
+(`scripts/test-*.mjs`) were rewritten for v3 and must be run once; migration
+v22 must be applied in the SQL editor first (the dashboard, the clients API
+and MCP v2 need its columns).
 
 **Known gaps (ranked):**
 

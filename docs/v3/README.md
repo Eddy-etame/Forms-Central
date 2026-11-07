@@ -79,7 +79,7 @@ history: research, verdicts and options. What is below is what we build.
   Claude GitHub App on that account or a manual edit); the notice to the five
   external developers is drafted in `notice-external-developers.md`, not
   sent; one synthetic developer from a July test run remains in the database
-  (`mcptest+…@test.dev`, solo plan, no forms) — a one-row cleanup for the
+  (`mcptest+…@test.dev`, solo plan, one empty form and its default client) — a one-row cleanup for the
   author to approve; lint debt in the admin pages (47 `any`/legacy errors,
   none in the developer surface).
 

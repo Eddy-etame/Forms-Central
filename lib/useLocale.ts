@@ -1,24 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { createContext, useContext } from 'react';
 import type { Locale } from './i18n';
 
-function readLocaleCookie(): Locale {
-  if (typeof document === 'undefined') return 'fr';
-  const m = document.cookie.match(/(?:^|; )inlet-locale=(fr|en)/);
-  return (m?.[1] as Locale) || 'fr';
-}
-
 /**
- * Client-side locale for 'use client' pages that can't call the server
- * getLocale() (admin pages fetch their own data via useEffect, so they're
- * client components top to bottom). Reads the same inlet-locale cookie the
- * marketing/dashboard LanguageToggle already writes — synchronous initial
- * read (useState initializer), so there's no flash of the wrong language.
- * No geo fallback here (client has no request headers); defaults to French,
- * matching the site-wide default.
+ * Locale for 'use client' components. The value comes from the server: the
+ * root layout resolves it once (getLocale: cookie → geo → Accept-Language)
+ * and provides it through LocaleProvider, so the server render and the first
+ * client render always agree. The old version read the cookie in a useState
+ * initializer, which rendered French on the server and English on the client
+ * for every EN visitor — a hydration mismatch on each auth and portal page.
+ *
+ * The client portal nests its own provider with the client's language.
  */
+export const LocaleContext = createContext<Locale>('fr');
+
 export function useLocale(): Locale {
-  const [locale] = useState<Locale>(readLocaleCookie);
-  return locale;
+  return useContext(LocaleContext);
 }

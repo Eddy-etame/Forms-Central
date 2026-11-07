@@ -65,7 +65,7 @@ interface AppDict {
     topForms: string; byShare: string; noData: string;
     leadDatabase: string; searchPlaceholder: string;
     colDate: string; colForm: string; colIdentity: string; colPreview: string;
-    noMatch: string; unknown: string;
+    noMatch: string; unknown: string; close: string;
     detailsTitle: string; receivedVia: string; // {date} {form} placeholders
     downloadFile: string;
     nf: {
@@ -129,7 +129,7 @@ interface AppDict {
     moreDataTitle: string; moreDataBody: string;
     structuredData: string; searchResults: string;
     date: string; more: string; noData: string; file: string; viewDetails: string;
-    fullSubmission: string; submittedAt: string; attachedDoc: string; downloadFile: string;
+    fullSubmission: string; submittedAt: string; attachedDoc: string; downloadFile: string; close: string;
     settings: {
       title: string; subtitle: string; loading: string;
       nameLabel: string; clientLabel: string; originsLabel: string; originsHint: string;
@@ -372,7 +372,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
       noMatch: 'No leads match your search.', unknown: 'Unknown',
       detailsTitle: 'Submission details',
       receivedVia: 'Received {date} via {form}',
-      downloadFile: 'Download file',
+      downloadFile: 'Download file', close: 'Close',
       nf: {
         createTitle: 'Create a form', liveTitle: 'Your form is live', nameLabel: 'Form name',
         nameHint: 'Every form belongs to a client: the business whose site it lives on. Its leads go to that client — the e-mail never appears in your code.',
@@ -447,7 +447,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
       moreDataTitle: 'More data needed', moreDataBody: 'The chart unlocks at 10 submissions.',
       structuredData: 'Structured data', searchResults: 'Search these results…',
       date: 'Date', more: '… ({n} more)', noData: 'No data found.', file: 'File', viewDetails: 'View details →',
-      fullSubmission: 'Full submission', submittedAt: 'Submitted {date}', attachedDoc: 'Attached document', downloadFile: 'Download file',
+      fullSubmission: 'Full submission', submittedAt: 'Submitted {date}', attachedDoc: 'Attached document', downloadFile: 'Download file', close: 'Close',
       settings: {
         title: 'Form settings', subtitle: 'Who receives the leads, which sites may post, what the visitor gets back.', loading: 'Loading settings…',
         nameLabel: 'Form name', clientLabel: 'Client (receives the leads)', originsLabel: 'Allowed sites', originsHint: 'One origin per line, e.g. https://acme.com. Use * to allow any site (not recommended).',
@@ -697,7 +697,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
       noMatch: 'Aucun lead ne correspond à votre recherche.', unknown: 'Inconnu',
       detailsTitle: 'Détails de la soumission',
       receivedVia: 'Reçu le {date} via {form}',
-      downloadFile: 'Télécharger le fichier',
+      downloadFile: 'Télécharger le fichier', close: 'Fermer',
       nf: {
         createTitle: 'Créer un formulaire', liveTitle: 'Votre formulaire est en ligne', nameLabel: 'Nom du formulaire',
         nameHint: 'Chaque formulaire appartient à un client : l’entreprise dont le site l’héberge. Ses leads vont à ce client — l’e-mail n’apparaît jamais dans votre code.',
@@ -772,7 +772,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
       moreDataTitle: 'Plus de données nécessaires', moreDataBody: 'Le graphique se débloque à 10 soumissions.',
       structuredData: 'Données structurées', searchResults: 'Rechercher dans ces résultats…',
       date: 'Date', more: '… ({n} de plus)', noData: 'Aucune donnée trouvée.', file: 'Fichier', viewDetails: 'Voir les détails →',
-      fullSubmission: 'Soumission complète', submittedAt: 'Soumis le {date}', attachedDoc: 'Document joint', downloadFile: 'Télécharger le fichier',
+      fullSubmission: 'Soumission complète', submittedAt: 'Soumis le {date}', attachedDoc: 'Document joint', downloadFile: 'Télécharger le fichier', close: 'Fermer',
       settings: {
         title: 'Réglages du formulaire', subtitle: 'Qui reçoit les leads, quels sites peuvent envoyer, ce que le visiteur reçoit en retour.', loading: 'Chargement des réglages…',
         nameLabel: 'Nom du formulaire', clientLabel: 'Client (reçoit les leads)', originsLabel: 'Sites autorisés', originsHint: 'Une origine par ligne, ex. https://acme.com. Utilisez * pour autoriser tous les sites (déconseillé).',

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import Tracker from "@/components/Tracker";
+import LocaleProvider from '@/components/LocaleProvider';
 import { getLocale } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/seo";
 
@@ -148,7 +149,7 @@ export default async function RootLayout({
             __html: "document.documentElement.classList.add('reveal-ready')",
           }}
         />
-        {children}
+        <LocaleProvider locale={locale}>{children}</LocaleProvider>
         <Tracker />
       </body>
     </html>

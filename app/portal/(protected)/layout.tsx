@@ -6,6 +6,8 @@ import SignOutLink from '@/components/developer/SignOutLink';
 import { getLocale } from '@/lib/i18n';
 import { getAppDict } from '@/lib/appDict';
 import { SITE_URL } from '@/lib/seo';
+import { normalizeLang } from '@/lib/domain';
+import LocaleProvider from '@/components/LocaleProvider';
 
 /**
  * End-client portal shell. White-labeled to the developer's brand
@@ -17,17 +19,21 @@ export default async function PortalProtectedLayout({ children }: { children: Re
   if (!session) redirect('/portal/login');
 
   const [{ data: pu }, { data: parent }, locale] = await Promise.all([
-    supabase.from('portal_users').select('name').eq('id', session.portalUserId).maybeSingle(),
+    supabase.from('portal_users').select('name, lang').eq('id', session.portalUserId).maybeSingle(),
     supabase.from('clients').select('name, logo_url, primary_color, plan').eq('id', session.parentClientId).maybeSingle(),
     getLocale(),
   ]);
-  const t = getAppDict(locale).portal.layout;
+  // The inbox speaks the client's language (chosen by the developer, the same one
+  // their auto-replies use) — not the browser's guess.
+  const portalLocale = normalizeLang(pu?.lang, locale);
+  const t = getAppDict(portalLocale).portal.layout;
 
   const brandName = parent?.name || t.defaultBrandName;
   const accent = parent?.primary_color || '#0F172A';
   const whiteLabel = getPlan(parent?.plan).whiteLabel;
 
   return (
+    <LocaleProvider locale={portalLocale}>
     <div className="min-h-screen bg-slate-50">
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
@@ -59,5 +65,6 @@ export default async function PortalProtectedLayout({ children }: { children: Re
         </footer>
       )}
     </div>
+    </LocaleProvider>
   );
 }

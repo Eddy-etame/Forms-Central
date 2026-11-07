@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useOrigin } from '@/lib/useOrigin';
+import { useLocale } from '@/lib/useLocale';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -55,13 +56,14 @@ const labelCls = 'text-xs font-semibold text-slate-700 dark:text-slate-300';
 
 export default function NewFormButton({ prominent = false, label, m, sn }: { prominent?: boolean; label?: string; m: NfDict; sn: SnDict }) {
   const router = useRouter();
+  const uiLocale = useLocale();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [clients, setClients] = useState<ClientLite[]>([]);
   const [clientId, setClientId] = useState<string>('');
   const [newClient, setNewClient] = useState({ name: '', email: '', invite: true });
   const [siteUrl, setSiteUrl] = useState('');
-  const [lang, setLang] = useState<'fr' | 'en'>('fr');
+  const [lang, setLang] = useState<'fr' | 'en'>(uiLocale);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [paywall, setPaywall] = useState(false);
@@ -80,18 +82,18 @@ export default function NewFormButton({ prominent = false, label, m, sn }: { pro
       const first = list[0];
       if (first) {
         setSiteUrl((cur) => cur || first.website || '');
-        setLang(first.lang === 'en' ? 'en' : 'fr');
+        setLang(first.lang === 'en' || first.lang === 'fr' ? first.lang : uiLocale);
       }
     });
     return () => { cancelled = true; };
-  }, [open]);
+  }, [open, uiLocale]);
 
   function pickClient(id: string) {
     setClientId(id);
     const c = clients.find((x) => x.id === id);
     if (c) {
       setSiteUrl((cur) => cur || c.website || '');
-      setLang(c.lang === 'en' ? 'en' : 'fr');
+      setLang(c.lang === 'en' || c.lang === 'fr' ? c.lang : uiLocale);
     }
   }
 

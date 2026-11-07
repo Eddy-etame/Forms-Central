@@ -382,7 +382,7 @@ export default function GlobalDashboardClient({ stats, forms = [], t, sn }: { st
                 <div>
                   <h3 className="font-bold text-slate-900 text-lg dark:text-white">{t.detailsTitle}</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {t.receivedVia.replace('{date}', new Date(selectedLead.created_at).toLocaleString()).replace('{form}', selectedLead.forms?.name || t.unknown)}
+                    {t.receivedVia.replace('{date}', new Date(selectedLead.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })).replace('{form}', selectedLead.forms?.name || t.unknown)}
                   </p>
                 </div>
                 <button 
@@ -429,12 +429,12 @@ export default function GlobalDashboardClient({ stats, forms = [], t, sn }: { st
                   })}
                 </div>
               </div>
-              <div className="border-t border-slate-100 px-6 py-4 bg-slate-50 flex justify-end shrink-0">
-                <button 
+              <div className="border-t border-slate-100 px-6 py-4 bg-slate-50 flex justify-end shrink-0 dark:border-slate-800 dark:bg-slate-950/60">
+                <button
                   onClick={() => setSelectedLead(null)}
-                  className="rounded-lg bg-white border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                  className="rounded-lg bg-white border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
-                  Close
+                  {t.close}
                 </button>
               </div>
             </motion.div>

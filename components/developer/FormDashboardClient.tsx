@@ -263,7 +263,7 @@ export default function FormDashboardClient({ stats, t, formId, sn }: { stats: S
                 <div>
                   <h3 className="font-bold text-slate-900 dark:text-white text-lg">{t.fullSubmission}</h3>
                   <p className="text-xs text-slate-500">
-                    {t.submittedAt.replace("{date}", new Date(selectedLead.created_at).toLocaleString())}
+                    {t.submittedAt.replace("{date}", new Date(selectedLead.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }))}
                   </p>
                 </div>
                 <button 
@@ -328,9 +328,9 @@ export default function FormDashboardClient({ stats, t, formId, sn }: { stats: S
               <div className="border-t border-slate-100 dark:border-slate-800 px-6 py-4 bg-slate-50 dark:bg-slate-950/60 flex justify-end shrink-0">
                 <button 
                   onClick={() => setSelectedLead(null)}
-                  className="rounded-lg bg-white border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                  className="rounded-lg bg-white border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
-                  Close
+                  {t.close}
                 </button>
               </div>
             </motion.div>

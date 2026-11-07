@@ -92,7 +92,7 @@ developers who let agents write their forms).
 (migration, services, API, MCP, dashboard, portal, docs, truth pass, scripts).
 
 **Live (2026-10-30):** production runs on the author's own Vercel account at
-https://inlet-eta.vercel.app (project `inlet`, scope `etameeddy01-1772`, 47
+https://eam-inlet.vercel.app (project `inlet`, scope `etameeddy01-1772`, 47
 production variables, daily retention cron). Smoke-tested: every public page
 200, redirects 308, every private API 401 without a session, the submit route
 answers `FORM_NOT_FOUND` on an unknown id even without migration v22 (the

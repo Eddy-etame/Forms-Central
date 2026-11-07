@@ -121,7 +121,6 @@ try {
   fail++; failures.push(`crashed: ${e.message}`); console.error('SUITE ERROR:', e);
 } finally {
   if (clientId) await sb.from('clients').delete().eq('id', clientId);
-  await sb.from('auth_attempts').delete().gte('id', 0);
 }
 
 console.log(`\n== RESULT: ${pass} passed, ${fail} failed ==`);

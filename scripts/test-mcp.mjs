@@ -71,7 +71,6 @@ async function cleanup() {
       await sb.from('portal_users').delete().eq('parent_client_id', developerId);
       await sb.from('clients').delete().eq('id', developerId);
     }
-    await sb.from('auth_attempts').delete().gte('id', 0);
   } catch {}
 }
 

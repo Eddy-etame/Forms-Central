@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useOrigin } from '@/lib/useOrigin';
 import Link from 'next/link';
 import { Users, Plus, Trash2, Lock, Link2, Send, Pencil, MailCheck, Globe, CheckCircle2, Circle } from 'lucide-react';
 import { toast, confirmDialog } from '@/components/ui/Toaster';
@@ -34,7 +35,7 @@ export default function ClientsPanel({ t }: { t: ECDict }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [edit, setEdit] = useState({ name: '', email: '', website: '', lang: 'fr' as 'fr' | 'en', notifyLeads: true });
 
-  const portalUrl = typeof window !== 'undefined' ? `${window.location.origin}/portal/login` : '/portal/login';
+  const portalUrl = `${useOrigin()}/portal/login`;
 
   async function load() {
     try {

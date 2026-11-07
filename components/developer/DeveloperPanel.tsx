@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useOrigin } from '@/lib/useOrigin';
 import { KeyRound, Plus, Trash2, Copy, Check, Lock, Bot, Terminal, Webhook, RefreshCw } from 'lucide-react';
 import { toast, confirmDialog } from '@/components/ui/Toaster';
 
@@ -113,7 +114,7 @@ export default function DeveloperPanel({ t }: { t: DevDict }) {
     }
   }
 
-  const mcpUrl = typeof window !== 'undefined' ? `${window.location.origin}/api/mcp` : '/api/mcp';
+  const mcpUrl = `${useOrigin()}/api/mcp`;
   const mcpConfig = `{
   "mcpServers": {
     "inlet": {

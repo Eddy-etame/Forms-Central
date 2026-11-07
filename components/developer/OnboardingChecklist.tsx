@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useOrigin } from '@/lib/useOrigin';
 import { Check, FileText, Code2, Inbox, ArrowRight, Copy } from 'lucide-react';
 import NewFormButton from './NewFormButton';
 import SnippetTabs from './SnippetTabs';
@@ -39,7 +40,7 @@ function StepBadge({ state, n }: { state: 'done' | 'active' | 'todo'; n: number 
 
 export default function OnboardingChecklist({ formsCount, forms, t, nf, sn }: { formsCount: number; forms: Form[]; t: OnbDict; nf: NfDict; sn: SnDict }) {
   const [selected, setSelected] = useState<string>(forms[0]?.id ?? '');
-  const apiUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const apiUrl = useOrigin();
   const formId = selected || 'YOUR_FORM_ID';
 
   const hasForm = formsCount > 0;

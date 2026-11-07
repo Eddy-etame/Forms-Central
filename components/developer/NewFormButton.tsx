@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useOrigin } from '@/lib/useOrigin';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -66,7 +67,7 @@ export default function NewFormButton({ prominent = false, label, m, sn }: { pro
   const [paywall, setPaywall] = useState(false);
   const [created, setCreated] = useState<{ form: Created; originsOpen: boolean; client: { name: string; email: string } } | null>(null);
 
-  const apiUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const apiUrl = useOrigin();
   const isNew = clientId === '__new__';
 
   useEffect(() => {

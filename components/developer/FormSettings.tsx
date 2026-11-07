@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useOrigin } from '@/lib/useOrigin';
 import { useRouter } from 'next/navigation';
 import { Settings2, Code2, Trash2 } from 'lucide-react';
 import { toast, confirmDialog } from '@/components/ui/Toaster';
@@ -34,7 +35,7 @@ export default function FormSettings({ formId, t, sn }: { formId: string; t: Dic
   const [clients, setClients] = useState<ClientLite[]>([]);
   const [draft, setDraft] = useState({ name: '', clientId: '', origins: '', successUrl: '', webhookUrl: '', autoReply: true, subject: '', message: '', notifyDeveloper: true, isActive: true });
   const [saving, setSaving] = useState(false);
-  const apiUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const apiUrl = useOrigin();
 
   useEffect(() => {
     Promise.all([

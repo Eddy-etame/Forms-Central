@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { Sun, Moon } from 'lucide-react';
 
 /**
@@ -22,18 +22,26 @@ export default function ThemeToggle({
   lightLabel?: string;
   darkLabel?: string;
 }) {
-  const [isDark, setIsDark] = useState(true);
-
-  useEffect(() => {
-    setIsDark(document.getElementById(rootId)?.classList.contains('dark') ?? true);
-  }, [rootId]);
+  // The root's `.dark` class is the source of truth (an inline script applies the
+  // stored choice before paint). Reading it through useSyncExternalStore keeps the
+  // first client render in sync with the DOM without a setState inside an effect.
+  const isDark = useSyncExternalStore(
+    (notify) => {
+      const root = document.getElementById(rootId);
+      if (!root) return () => {};
+      const obs = new MutationObserver(notify);
+      obs.observe(root, { attributes: true, attributeFilter: ['class'] });
+      return () => obs.disconnect();
+    },
+    () => document.getElementById(rootId)?.classList.contains('dark') ?? true,
+    () => true,
+  );
 
   const toggle = () => {
     const root = document.getElementById(rootId);
     if (!root) return;
     const next = !root.classList.contains('dark');
     root.classList.toggle('dark', next);
-    setIsDark(next);
     try { localStorage.setItem(storageKey, next ? 'dark' : 'light'); } catch {}
   };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
@@ -12,10 +12,12 @@ type SidebarDict = { general: string; overview: string; developer: string; endCl
  *  other forms below the `lg` breakpoint, where the desktop ClientSidebar and
  *  the ⌘K palette trigger are both hidden. */
 export default function MobileSidebar({ forms, t }: { forms: { id: string; name: string }[]; t: SidebarDict }) {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
-
-  useEffect(() => { setOpen(false); }, [pathname]);
+  // The drawer remembers the path it was opened on, so a navigation closes it
+  // without an effect: `open` is only true while we are still on that path.
+  const [openedAt, setOpenedAt] = useState<string | null>(null);
+  const open = openedAt === pathname;
+  const setOpen = (v: boolean) => setOpenedAt(v ? pathname : null);
 
   return (
     <>

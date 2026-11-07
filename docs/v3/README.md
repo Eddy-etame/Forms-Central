@@ -52,6 +52,37 @@ history: research, verdicts and options. What is below is what we build.
   (no more "self-hosted alternative" in `<meta description>`). Blue stays the
   interactive colour; the dashboard is untouched.
 
+### 2026-11-07 (evening) — the UI proven end to end, and two classes of bug closed
+
+- **`scripts/test-ui.js`** (Playwright) now drives the real pages on
+  production: signup → client + form in the modal → settings → a native lead
+  → dashboard and lead modal → the client's inbox through an invite link →
+  API & MCP page → phone widths. 24 checks, 0 browser errors, every row
+  cleaned up, no e-mail sent. `npm run test:ui`.
+- **Hydration mismatches, as a class.** Five dashboard components rendered
+  `window.location.origin` during render (React #418 on the clients page);
+  `useOrigin()` (useSyncExternalStore) now serves the configured site URL on
+  the server and the browser origin right after. `useLocale()` read the
+  cookie in a `useState` initializer, so the server said French and the
+  browser said English for every EN visitor on the auth and portal pages;
+  the root layout now provides the locale it resolves (`LocaleProvider`) and
+  the client portal nests the portal user's language — the inbox no longer
+  mixes "Vos leads" with "Sign out".
+- Small truths from the run: the auto-reply language of a new form defaults
+  to the developer's UI language (it was always French); the lead modals have
+  a dark footer, a translated Close and a dated header; ThemeToggle and the
+  mobile drawer no longer set state inside effects.
+- **Retention, dry run only (read-only SQL):** 3 free-plan leads are past the
+  30-day window today. The route stays disabled (`RETENTION_ENABLED` unset,
+  no schedule) until the author says so — a dry run first, then apply.
+- Still open: `angoularaphael/boxing-center-portet` (two lines, needs the
+  Claude GitHub App on that account or a manual edit); the notice to the five
+  external developers is drafted in `notice-external-developers.md`, not
+  sent; one synthetic developer from a July test run remains in the database
+  (`mcptest+…@test.dev`, solo plan, no forms) — a one-row cleanup for the
+  author to approve; lint debt in the admin pages (47 `any`/legacy errors,
+  none in the developer surface).
+
 ## 2. The B proposal (what we built beyond the ask)
 
 The author asked for A: developers → clients → forms, no e-mail in the code,

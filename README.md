@@ -149,6 +149,17 @@ node scripts/test-mcp.mjs       http://localhost:3005   # API keys + the 14 MCP 
 node scripts/test-password-reset.mjs http://localhost:3005
 ```
 
+The UI suite drives the real pages with Playwright (headless Chromium):
+signup → client + form in the modal → settings → a lead → dashboard → the
+client's inbox via an invite link → API page → phone widths. It cleans up its
+rows and sends no e-mail. `npm i -D playwright && npx playwright install
+chromium` once, then:
+
+```bash
+node scripts/test-ui.js http://localhost:3005          # or the production URL (default)
+SHOTS_DIR=./shots node scripts/test-ui.js              # plus one screenshot per step
+```
+
 Other scripts:
 
 | Script | Purpose |

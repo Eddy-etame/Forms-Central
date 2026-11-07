@@ -30,7 +30,7 @@ const fraunces = Fraunces({
 // SITE_URL is centralized in lib/seo.ts (env-driven). Swap to a custom domain
 // by setting NEXT_PUBLIC_SITE_URL — every canonical, OG and sitemap URL follows.
 const SITE_NAME = "Inlet";
-const TAGLINE = "One form backend for all your websites";
+const TAGLINE = "Every client’s forms, one inlet";
 const DESCRIPTION =
   "The form backend for developers who build websites for clients. Every form belongs to a client; leads reach the client by e-mail and in a private inbox; one dashboard, an API and an MCP server for AI agents. No SMTP and no e-mail address in your code. An EAM product.";
 

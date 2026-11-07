@@ -15,24 +15,13 @@ export default function OgImage() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          background: 'linear-gradient(135deg, #070D18 0%, #0D1F3C 55%, #13243F 100%)',
+          backgroundColor: '#0B1A33',
+          backgroundImage: 'radial-gradient(circle at 55% 0%, rgba(201,169,110,0.30) 0%, rgba(201,169,110,0) 42%), linear-gradient(135deg, #070D18 0%, #0D1F3C 55%, #13243F 100%)',
           padding: 72,
           fontFamily: 'sans-serif',
           position: 'relative',
         }}
       >
-        {/* gold glow */}
-        <div
-          style={{
-            position: 'absolute',
-            top: -160,
-            left: 360,
-            width: 600,
-            height: 400,
-            background: 'radial-gradient(closest-side, rgba(201,169,110,0.28), transparent)',
-            display: 'flex',
-          }}
-        />
         {/* brand row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <div
@@ -64,7 +53,7 @@ export default function OgImage() {
           <div style={{ display: 'flex', color: '#F5F0E8', fontSize: 72, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2 }}>
             Every form belongs
           </div>
-          <div style={{ display: 'flex', color: '#E8C987', fontSize: 72, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
+          <div style={{ display: 'flex', color: '#E8C987', fontSize: 72, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2, fontStyle: 'italic' }}>
             to a client.
           </div>
         </div>

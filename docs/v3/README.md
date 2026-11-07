@@ -20,7 +20,7 @@ history: research, verdicts and options. What is below is what we build.
 | D6 | **MCP v2 is a first-class surface.** 14 tools; `setup_site` from zero to a live form in one call; compact, minified outputs; lead text marked untrusted. | AI agents are the fastest route to the first paying developers. | shipped |
 | D7 | **Every plan includes API + MCP and clients.** Free: 3 forms, 2 clients. Paid plans buy room and brand. | Free must prove the model on a real site, or nobody reaches the paid tiers. | shipped |
 | D8 | **Paid plans are requested, then activated by hand** (`plan_requests`, operator e-mail) until the company exists and card checkout opens. | No `mailto:` to a personal mailbox (court order A5); no fake checkout. | shipped |
-| D9 | **The product moves to the author's own accounts**: Vercel project `inlet` under the Gmail account (done 2026-10-30, deployed from the CLI, secrets transferred), GitHub mirror `EddyEtame/inlet` (done 2026-10-30: full history, `main` + the v3 branch; `origin` pushes to both accounts), Supabase: the existing project stays until its ownership is confirmed. | The school account is lost; its Google SSO carries the old Vercel access. | Vercel done · GitHub done · Supabase to confirm |
+| D9 | **The product moves to the author's own accounts**: Vercel project `inlet` under the Gmail account (done 2026-10-30, deployed from the CLI, secrets transferred), GitHub mirror `EddyEtame/inlet` (done 2026-10-30: full history, `main` + the v3 branch; `origin` pushes to both accounts), Supabase: the existing project stays until its ownership is confirmed. | The school account is lost; its Google SSO carries the old Vercel access. | Vercel done · GitHub done · Supabase: account found, no move needed |
 | D10 | **A company carries the product within a month.** Prices stay in USD on the site; the EUR price book mirrors them 1:1 when invoicing opens. | Required for invoicing and for the first €1k. | pending |
 
 ### Court orders from the tribunal — status
@@ -100,10 +100,18 @@ degraded lookup works). The old `inlett.vercel.app` (school account) still
 serves the previous version against the same database until the client sites
 point at the new origin.
 
-**Done but not yet verified against a live database:** the three test suites
-(`scripts/test-*.mjs`) were rewritten for v3 and must be run once; migration
-v22 must be applied in the SQL editor first (the dashboard, the clients API
-and MCP v2 need its columns).
+**2026-11-07 — proven live.** The author found the Supabase account again
+(project `Logiciel-formulaire`, `namqxkqygwnmgqcntxwu`, eu-north-1). A
+Management API token saved as a network secret lets the session run SQL
+through `api.supabase.com`; migration v22 was applied that way after a fresh
+backup (0 orphan forms, one default client per developer). The three suites
+then ran against production: **test-submit 15/15, test-portals 31/31,
+test-mcp 24/24**, after two real bugs they caught were fixed — a form for a
+client without a website was refused instead of opened to any origin, and a
+form did not inherit its client's language. Lesson kept in the suites: behind
+Vercel a spoofed `x-forwarded-for` is ignored, so visitor-IP tests go through
+the trusted relay header; the first run had banned the runner's own egress IP
+for 24 h (lifted the same minute).
 
 **Known gaps (ranked):**
 

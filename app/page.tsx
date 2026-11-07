@@ -127,14 +127,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
         <NavBar variant="dark" locale={locale} />
 
         {/* ---------------- Hero — dark-first, the brand's opening frame ---------------- */}
-        <header className="relative overflow-hidden bg-slate-950 pb-28 text-white">
+        <header className="relative overflow-hidden bg-deep pb-28 text-white">
           {/* Texture + aurora */}
           <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
             {/* deep radial base — lifts it off flat navy */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,#1e293b_0%,#0b1120_45%,#020617_100%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,#13243F_0%,#0D1F3C_40%,#070D18_100%)]" />
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:38px_38px] [mask-image:radial-gradient(ellipse_65%_55%_at_50%_0%,#000_40%,transparent_100%)]" />
             <div className="aurora-a absolute -top-28 left-[18%] h-[440px] w-[440px] rounded-full bg-blue-600/30 blur-[130px]" />
-            <div className="aurora-b absolute -top-16 right-[16%] h-[400px] w-[400px] rounded-full bg-cyan-500/20 blur-[130px]" />
+            <div className="aurora-b absolute -top-16 right-[16%] h-[400px] w-[400px] rounded-full bg-gold/15 blur-[130px]" />
             <div className="aurora-a absolute top-44 left-1/2 h-[320px] w-[680px] -translate-x-1/2 rounded-full bg-violet-600/15 blur-[140px]" />
             {/* film grain — the texture layer every reference site uses */}
             <div
@@ -144,11 +144,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
           </div>
 
           {/* Cursor-reactive glow across the whole hero */}
-          <SpotlightCard glow="rgba(56,189,248,0.07)" size={900} className="relative">
+          <SpotlightCard glow="rgba(201,169,110,0.08)" size={900} className="relative">
             <div className="relative mx-auto max-w-4xl px-6 pt-14 pb-9 text-center lg:pt-[4.5rem] fade-up">
               <Kicker center className="mb-6">{t.kicker}</Kicker>
               <h1 className="text-balance text-5xl font-extrabold leading-[0.95] tracking-tight text-white sm:text-[5.25rem]">
-                {t.titleLead} <span className="shimmer-text bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 bg-clip-text font-serif italic text-transparent">{t.titleAccent}</span>
+                {t.titleLead} <span className="shimmer-text bg-gradient-to-r from-gold via-gold-bright to-gold bg-clip-text font-serif italic text-transparent">{t.titleAccent}</span>
               </h1>
               <p className="mx-auto mt-6 max-w-xl text-balance text-lg leading-8 text-slate-300">
                 {t.subtitle}
@@ -173,8 +173,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
               <svg viewBox="0 0 600 56" className="h-full w-full overflow-visible opacity-60" preserveAspectRatio="none">
                 <defs>
                   <linearGradient id="heroStream" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#38bdf8" stopOpacity="0" />
-                    <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.9" />
+                    <stop offset="0%" stopColor="#C9A96E" stopOpacity="0" />
+                    <stop offset="100%" stopColor="#F3DCA6" stopOpacity="0.9" />
                   </linearGradient>
                 </defs>
                 <path d="M120 0 C 150 30, 240 36, 300 52" fill="none" stroke="url(#heroStream)" strokeWidth="1.5" className="flow-dash" />
@@ -185,7 +185,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
 
             {/* Product preview — glowing frame, floats on idle, tilts under the cursor */}
             <div className="animate-float relative">
-              <div aria-hidden className="pointer-events-none absolute left-1/2 top-8 h-56 w-[560px] -translate-x-1/2 rounded-full bg-cyan-500/15 blur-[100px]" />
+              <div aria-hidden className="pointer-events-none absolute left-1/2 top-8 h-56 w-[560px] -translate-x-1/2 rounded-full bg-gold/12 blur-[100px]" />
               <Tilt max={6} className="rounded-3xl">
                 <HeroPreview />
               </Tilt>

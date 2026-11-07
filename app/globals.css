@@ -14,6 +14,15 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  /* EAM palette — the agency behind Inlet. Gold is an accent on dark
+     surfaces, never the interactive colour (blue stays for actions). */
+  --color-deep: #070D18;
+  --color-navy: #0D1F3C;
+  --color-ink: #F5F0E8;
+  --color-gold: #C9A96E;
+  --color-gold-dim: #8C6F3E;
+  --color-gold-bright: #F3DCA6;
   
   --animate-border-beam: border-beam calc(var(--duration)*1s) infinite linear;
   --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;

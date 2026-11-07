@@ -1,6 +1,6 @@
-# Inlet
+# Inlet · by EAM
 
-**The form backend for developers who build websites for clients.**
+**The form backend for developers who build websites for clients.** An EAM product.
 
 A developer creates *clients*; every *form* belongs to a client; each *lead*
 reaches the client by e-mail and in a private inbox. The developer keeps one

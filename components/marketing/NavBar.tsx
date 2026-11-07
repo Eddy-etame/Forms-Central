@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { verifyJWT } from "@/lib/jwt";
 import { getLocale, type Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/dictionaries";
-import { LogoBadge } from "@/components/Logo";
+import { LogoBadge, ByEam } from "@/components/Logo";
 import { Magnetic } from "@/components/marketing/Interactive";
 import { MobileMenu } from "@/components/marketing/MobileMenu";
 import { LanguageToggle } from "@/components/marketing/LanguageToggle";
@@ -37,6 +37,9 @@ export async function NavBar({ variant = 'light', locale: localeProp }: { varian
         <Link href="/" className="group flex items-center gap-2.5">
           <LogoBadge className="h-8 w-8 rounded-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6" />
           <span className={`font-semibold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>Inlet</span>
+          <span className={`hidden items-center gap-1.5 pl-2 text-[10px] uppercase tracking-[0.22em] sm:inline-flex ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+            by <span className="font-serif normal-case text-[12px] tracking-normal">EAM</span>
+          </span>
         </Link>
         <div className={`hidden items-center gap-8 text-sm md:flex ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
           <Link href="/#features" className={`link-underline transition-colors ${dark ? 'hover:text-white' : 'hover:text-slate-900'}`}>{t.features}</Link>
@@ -102,10 +105,10 @@ export async function SiteFooter({ locale: localeProp }: { locale?: Locale } = {
           <Link href="/pricing" className="link-underline hover:text-slate-900 transition-colors">{t.pricing}</Link>
           <Link href="/developer/login" className="link-underline hover:text-slate-900 transition-colors">{t.signIn}</Link>
         </nav>
-        <p>
-          &copy; {new Date().getFullYear()} Inlet
-          <span className="ml-2 text-slate-300">&middot;</span>
-          <span className="ml-2 text-xs text-slate-400">by King_E</span>
+        <p className="flex items-center gap-2">
+          <span>&copy; {new Date().getFullYear()} Inlet</span>
+          <span className="text-slate-300">&middot;</span>
+          <ByEam />
         </p>
       </div>
     </footer>

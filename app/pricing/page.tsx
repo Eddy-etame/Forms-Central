@@ -143,17 +143,17 @@ function PlanCard({
 
   if (highlight) {
     return (
-      <div className="relative rounded-3xl bg-gradient-to-b from-blue-500 to-violet-600 p-px shadow-2xl shadow-blue-500/20 transition-transform duration-300 hover:-translate-y-1 xl:-my-2">
+      <div className="relative rounded-3xl bg-gradient-to-b from-gold to-gold-dim p-px shadow-2xl shadow-gold/20 transition-transform duration-300 hover:-translate-y-1 xl:-my-2">
         {/* Badge lives on the OUTER wrapper (no overflow-hidden) so it isn't
             clipped by the card's rounded, clipped inner container. */}
-        <div className="absolute -top-2.5 left-7 z-10 inline-flex items-center rounded-md bg-cyan-400 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-cyan-500/30">
+        <div className="absolute -top-2.5 left-7 z-10 inline-flex items-center rounded-md bg-gold-bright px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-deep shadow-lg shadow-gold/30">
           {mostPopularLabel}
         </div>
         <SpotlightCard
-          glow="rgba(59,130,246,0.18)"
-          className="flex h-full flex-col overflow-hidden rounded-[23px] bg-slate-950 p-7 text-white"
+          glow="rgba(201,169,110,0.16)"
+          className="flex h-full flex-col overflow-hidden rounded-[23px] bg-deep p-7 text-white"
         >
-          <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-48 w-64 -translate-x-1/2 rounded-full bg-blue-500/25 blur-[90px]" />
+          <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-48 w-64 -translate-x-1/2 rounded-full bg-gold/20 blur-[90px]" />
           {content}
         </SpotlightCard>
       </div>

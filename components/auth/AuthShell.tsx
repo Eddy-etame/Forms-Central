@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { LogoBadge } from '@/components/Logo';
+import { LogoBadge, ByEam } from '@/components/Logo';
 import { ShieldCheck, Zap, Lock, Sparkles } from 'lucide-react';
 import { useLocale } from '@/lib/useLocale';
 import { getAppDict } from '@/lib/appDict';
@@ -20,10 +20,10 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* Left — branded panel (desktop) */}
-      <aside className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-slate-950 p-12 text-white lg:flex">
+      <aside className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-deep p-12 text-white lg:flex">
         <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div className="aurora-a absolute -top-24 -left-16 h-96 w-96 rounded-full bg-blue-500/25 blur-[120px]" />
-          <div className="aurora-b absolute bottom-0 right-0 h-96 w-96 rounded-full bg-violet-500/20 blur-[120px]" />
+          <div className="aurora-a absolute -top-24 -left-16 h-96 w-96 rounded-full bg-navy blur-[120px]" />
+          <div className="aurora-b absolute bottom-0 right-0 h-96 w-96 rounded-full bg-gold/15 blur-[120px]" />
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(ellipse_80%_60%_at_30%_20%,#000_40%,transparent_100%)]" />
         </div>
 
@@ -34,16 +34,16 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
 
         <div className="relative max-w-md">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300">
-            <Sparkles className="h-3.5 w-3.5 text-blue-400" /> {t.badgeText}
+            <Sparkles className="h-3.5 w-3.5 text-gold" /> {t.badgeText}
           </div>
           <h2 className="text-3xl font-bold leading-tight tracking-tight text-balance">
-            {t.headlineA} <span className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">{t.headlineHighlight}</span>
+            {t.headlineA} <span className="bg-gradient-to-r from-gold to-gold-bright bg-clip-text font-serif italic text-transparent">{t.headlineHighlight}</span>
           </h2>
           <ul className="mt-8 space-y-5">
             {POINTS.map((p) => (
               <li key={p.title} className="flex items-start gap-3.5">
                 <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/5 ring-1 ring-inset ring-white/10">
-                  <p.icon className="h-4.5 w-4.5 text-blue-400" />
+                  <p.icon className="h-4.5 w-4.5 text-gold" />
                 </span>
                 <div>
                   <p className="text-sm font-semibold">{p.title}</p>
@@ -54,7 +54,10 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           </ul>
         </div>
 
-        <p className="relative text-xs text-slate-500">{t.footerTagline}</p>
+        <div className="relative flex items-center justify-between gap-4 text-xs text-slate-500">
+          <p>{t.footerTagline}</p>
+          <ByEam tone="dark" />
+        </div>
       </aside>
 
       {/* Right — form */}

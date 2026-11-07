@@ -26,6 +26,8 @@ wanted, a copy to the developer), and sends the visitor a branded auto-reply.
 The website holds two public values — FORM_API_URL and FORM_ID — and never an
 e-mail address, an SMTP credential or an API key.
 
+Inlet is built and operated by EAM, a digital agency (https://eam-agency.vercel.app).
+
 ## The model: developer → clients → forms → leads
 - A DEVELOPER (freelancer, agency, studio) signs up. Only developers sign up.
 - The developer creates CLIENTS: the businesses they build sites for. A client

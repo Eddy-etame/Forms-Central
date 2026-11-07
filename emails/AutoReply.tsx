@@ -86,7 +86,7 @@ export const AutoReplyEmail = ({
             {showInletBadge && (
               <Text style={{ color: '#9aa5b1', fontSize: '11px', textAlign: 'center', marginTop: '6px' }}>
                 {isEn ? 'Powered by ' : 'Propulsé par '}
-                <Link href={`${SITE_URL}/?ref=autoreply`} style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 600 }}>Inlet</Link>
+                <Link href={`${SITE_URL}/?ref=autoreply`} style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 600 }}>Inlet</Link>{' · '}<span style={{ fontFamily: 'Georgia, serif' }}>by EAM</span>
                 {isEn ? ' — forms, delivered.' : ' — vos formulaires, livrés.'}
               </Text>
             )}

@@ -39,6 +39,19 @@ history: research, verdicts and options. What is below is what we build.
 
 ---
 
+### 2026-11-07 — EAM infusion and the move of the client sites
+
+- Production renamed **`eam-inlet.vercel.app`** (project `eam-inlet`;
+  `inlet-eta` 308-redirects). 13 client-site repositories now post there
+  (pushed to `main`); the only one left is `angoularaphael/boxing-center-portet`
+  (two lines in `src/pages.ts`) because the Claude GitHub App is not installed
+  on that account. External developers' sites keep the old deployment.
+- EAM identity, light touch: Fraunces for the serif accents, EAM navy + gold
+  on the dark surfaces (hero, featured pricing card, auth panel), "Inlet · by
+  EAM" lockups (nav, footer, auth, e-mails, OG image), truthful root metadata
+  (no more "self-hosted alternative" in `<meta description>`). Blue stays the
+  interactive colour; the dashboard is untouched.
+
 ## 2. The B proposal (what we built beyond the ask)
 
 The author asked for A: developers → clients → forms, no e-mail in the code,

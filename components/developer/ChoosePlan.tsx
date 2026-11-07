@@ -97,17 +97,17 @@ export default function ChoosePlan({ locale }: { locale: Locale; accountEmail?: 
               <div
                 className={`relative flex h-full flex-col rounded-3xl p-7 ${
                   isHi
-                    ? 'bg-slate-950 text-white shadow-2xl shadow-blue-500/25'
+                    ? 'bg-deep text-white shadow-2xl shadow-gold/20'
                     : 'border border-slate-200 bg-white shadow-sm'
                 }`}
               >
                 {isHi && (
-                  <div aria-hidden className="pointer-events-none absolute -top-px left-1/2 h-24 w-56 -translate-x-1/2 rounded-full bg-blue-500/25 blur-[70px]" />
+                  <div aria-hidden className="pointer-events-none absolute -top-px left-1/2 h-24 w-56 -translate-x-1/2 rounded-full bg-gold/20 blur-[70px]" />
                 )}
                 <div className="relative flex items-center justify-between">
                   <h2 className={`text-lg font-bold ${isHi ? 'text-white' : 'text-slate-900'}`}>{p.name}</h2>
                   {isHi && (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-cyan-400 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-slate-950">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-gold-bright px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-deep">
                       <Sparkles className="h-3 w-3" /> {t.recommended}
                     </span>
                   )}
@@ -120,7 +120,7 @@ export default function ChoosePlan({ locale }: { locale: Locale; accountEmail?: 
                 <ul className={`relative mt-5 flex-1 space-y-2.5 text-sm ${isHi ? 'text-slate-200' : 'text-slate-700'}`}>
                   {p.features.map((f) => (
                     <li key={f} className="flex items-start gap-2.5">
-                      <Check className={`mt-0.5 h-4 w-4 shrink-0 ${isHi ? 'text-cyan-400' : 'text-emerald-600'}`} />
+                      <Check className={`mt-0.5 h-4 w-4 shrink-0 ${isHi ? 'text-gold-bright' : 'text-emerald-600'}`} />
                       {f}
                     </li>
                   ))}
@@ -140,7 +140,7 @@ export default function ChoosePlan({ locale }: { locale: Locale; accountEmail?: 
               </div>
             );
             return isHi ? (
-              <div key={p.id} className="rounded-3xl bg-gradient-to-b from-blue-500 to-violet-600 p-px md:-my-2">{card}</div>
+              <div key={p.id} className="rounded-3xl bg-gradient-to-b from-gold to-gold-dim p-px md:-my-2">{card}</div>
             ) : (
               <div key={p.id}>{card}</div>
             );

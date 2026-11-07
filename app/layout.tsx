@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import Tracker from "@/components/Tracker";
 import { getLocale } from "@/lib/i18n";
@@ -17,12 +17,22 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+// Display serif shared with EAM (the agency that builds and operates Inlet):
+// used for the italic accents and the display headings, never for UI text.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  display: "swap",
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+});
+
 // SITE_URL is centralized in lib/seo.ts (env-driven). Swap to a custom domain
 // by setting NEXT_PUBLIC_SITE_URL — every canonical, OG and sitemap URL follows.
 const SITE_NAME = "Inlet";
 const TAGLINE = "One form backend for all your websites";
 const DESCRIPTION =
-  "The self-hosted form backend that centralizes submissions from all your sites into one dashboard — no SMTP, no per-site setup. White-labeled auto-reply emails, AI + proof-of-work spam blocking, CSV exports. A privacy-first alternative to Formspree, Jotform and Basin.";
+  "The form backend for developers who build websites for clients. Every form belongs to a client; leads reach the client by e-mail and in a private inbox; one dashboard, an API and an MCP server for AI agents. No SMTP and no e-mail address in your code. An EAM product.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -127,7 +137,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {/* Arm scroll-reveal before paint so hidden→shown transitions run for JS

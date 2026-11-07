@@ -50,3 +50,43 @@ export function LogoLockup({
     </Link>
   );
 }
+
+/**
+ * EAM crest — the agency that builds and operates Inlet. The PNG is used as a
+ * mask filled with currentColor, so the same asset reads on navy or paper.
+ */
+export function EamCrest({ className = 'h-3.5 w-3.5' }: { className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`inline-block shrink-0 bg-current ${className}`}
+      style={{
+        WebkitMaskImage: 'url(/brand/eam-crest.png)',
+        maskImage: 'url(/brand/eam-crest.png)',
+        WebkitMaskRepeat: 'no-repeat',
+        maskRepeat: 'no-repeat',
+        WebkitMaskPosition: 'center',
+        maskPosition: 'center',
+        WebkitMaskSize: 'contain',
+        maskSize: 'contain',
+      }}
+    />
+  );
+}
+
+/** "by EAM" — the maker's line next to the Inlet wordmark. */
+export function ByEam({ className = '', tone = 'light' }: { className?: string; tone?: 'light' | 'dark' }) {
+  const ink = tone === 'dark' ? 'text-slate-400 hover:text-gold-bright' : 'text-slate-400 hover:text-gold-dim';
+  return (
+    <a
+      href="https://eam-agency.vercel.app"
+      target="_blank"
+      rel="noopener"
+      className={`inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.22em] transition-colors ${ink} ${className}`}
+    >
+      <span>by</span>
+      <EamCrest className="h-3.5 w-3.5" />
+      <span className="font-serif normal-case text-[13px] tracking-normal">EAM</span>
+    </a>
+  );
+}

@@ -164,7 +164,7 @@ export const LeadNotificationEmail = ({
             {showInletBadge && (
               <Text style={{ color: '#8898aa', fontSize: '12px', textAlign: 'center' }}>
                 {isEn ? 'Powered by ' : 'Propulsé par '}
-                <Link href={`${SITE_URL}/?ref=notify`} style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 600 }}>Inlet</Link>
+                <Link href={`${SITE_URL}/?ref=notify`} style={{ color: '#2563EB', textDecoration: 'none', fontWeight: 600 }}>Inlet</Link>{' · '}<span style={{ fontFamily: 'Georgia, serif' }}>by EAM</span>
                 {isEn ? ' — every lead captured, answered and proven.' : ' — chaque demande reçue, traitée et prouvée.'}
               </Text>
             )}

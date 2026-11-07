@@ -18,7 +18,7 @@ export function Kicker({
   className?: string;
 }) {
   const ink = tone === "dark" ? "text-slate-400" : "text-slate-500";
-  const rule = tone === "dark" ? "via-cyan-400/50" : "via-blue-500/40";
+  const rule = tone === "dark" ? "via-gold/60" : "via-blue-500/40";
   return (
     <div
       className={`flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.25em] ${ink} ${

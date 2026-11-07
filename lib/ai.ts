@@ -19,7 +19,8 @@ const KNOWLEDGE = `
 INLET — PRODUCT KNOWLEDGE (authoritative, 2026-10-29)
 
 WHAT IT IS
-Inlet is a form backend for developers who build websites for clients. A
+Inlet is a form backend for developers who build websites for clients. It is
+built and operated by EAM, a digital agency (eam-agency.vercel.app). A
 website POSTs its form fields to a form URL; Inlet stores the lead, e-mails the
 client that owns the form (and optionally a copy to the developer), and sends
 the visitor a branded auto-reply. The website holds two public values

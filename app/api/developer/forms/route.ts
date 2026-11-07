@@ -43,7 +43,7 @@ export async function POST(req: Request) {
   const name = String(body.name ?? '').trim();
   const clientId = String(body.clientId ?? '');
   const siteUrl = String(body.siteUrl ?? '').trim();
-  const lang = normalizeLang(body.lang, 'fr');
+  const lang = body.lang === undefined || body.lang === null || body.lang === '' ? undefined : normalizeLang(body.lang, 'fr');
   const notifyDeveloper = body.notifyDeveloper === undefined ? true : !!body.notifyDeveloper;
 
   const result = await createFormForDeveloper({
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
       { status: result.status }
     );
   }
-  return NextResponse.json({ success: true, form: result.form, originsOpen: result.originsOpen, lang });
+  return NextResponse.json({ success: true, form: result.form, originsOpen: result.originsOpen, lang: result.lang });
 }
 
 /** Legacy: the Developer page saves webhook URLs here. */

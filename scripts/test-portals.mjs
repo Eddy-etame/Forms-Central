@@ -157,12 +157,12 @@ try {
     const b = await res.json();
     const formNames = (b.forms ?? []).map((f) => f.name);
     const leadNames = (b.leads ?? []).map((l) => l.payload?.name);
-    check('client sees its own form and lead', formNames.includes('Acme site') && leadNames.includes('Lead on Acme'));
+    check('client sees its own form and lead', formNames.includes('Acme site') && leadNames.includes('Lead on Acme'), `status ${res.status} body ${JSON.stringify(b).slice(0, 200)}`);
     check('ISOLATION: client does NOT see the other client\'s form', !formNames.includes('Beta site') && !leadNames.includes('Lead on Beta'), `saw ${JSON.stringify(formNames)}`);
     const leadId = (b.leads ?? []).find((l) => l.payload?.name === 'Lead on Acme')?.id;
     const dl = await fetch(`${BASE}/api/download?sid=${leadId}&field=name`, { headers: { cookie: portalCookie } });
     check('download endpoint requires a file field (400, not 404/500) for the owner', dl.status === 400, `got ${dl.status}`);
-    const dlNoAuth = await fetch(`${BASE}/api/download?sid=${leadId}&field=name`);
+    const dlNoAuth = await fetch(`${BASE}/api/download?sid=${leadId || '00000000-0000-4000-8000-000000000000'}&field=name`);
     check('download endpoint rejects anonymous callers (401)', dlNoAuth.status === 401, `got ${dlNoAuth.status}`);
   }
   {

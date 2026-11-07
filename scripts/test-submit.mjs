@@ -197,12 +197,14 @@ try {
     check('keyword hit -> success to the visitor, STORED and flagged suspect', (res.status === 303 || res.status === 200) && after === before + 1 && row?.spam_status === 'suspect' && !!row?.spam_reason, `status ${res.status}, ${before}->${after}, status=${row?.spam_status}`);
   }
 
-  // 9. Honeypot -> deceptive success, NOT stored, IP banned TEMPORARILY (LAST — bans TEST_IP)
+  // 9. Honeypot -> deceptive success, NOT stored, visitor IP banned TEMPORARILY (LAST — bans TEST_IP).
+  //    Behind Vercel a spoofed x-forwarded-for is ignored, so the visitor IP is pinned through the
+  //    trusted relay header — otherwise the ban would land on the test runner's own address.
   {
     const before = await countSubmissions(formId);
     const res = await fetch(`${BASE}/api/submit/${formId}`, {
       method: 'POST', redirect: 'manual',
-      headers: { ...baseHeaders(), 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { ...baseHeaders(), 'Content-Type': 'application/x-www-form-urlencoded', Authorization: `Bearer ${rawKey}`, 'X-Inlet-Visitor-IP': TEST_IP },
       body: new URLSearchParams({ name: 'Bot', email: 'bot@x.com', _gotcha: 'i-am-a-bot' }).toString(),
     });
     const after = await countSubmissions(formId);

@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { normalizeLang } from './domain';
 import type { Plan } from './plans';
 import { deriveOrigins, normalizeOrigins } from './snippets';
 import type { Lang } from './domain';
@@ -34,33 +35,41 @@ export interface CreateFormInput {
 
 export async function createFormForDeveloper(
   i: CreateFormInput
-): Promise<{ form: FormRecord; originsOpen: boolean } | ServiceError> {
+): Promise<{ form: FormRecord; originsOpen: boolean; lang: 'fr' | 'en' } | ServiceError> {
   const name = i.name.trim();
   if (name.length < 2 || name.length > 60) return { error: 'Form name must be 2–60 characters.', status: 400 };
   if (!i.clientId) return { error: 'Every form belongs to a client. Pick one or create it first.', status: 400, code: 'CLIENT_REQUIRED' };
 
   const { data: client } = await supabase
     .from('portal_users')
-    .select('id, website')
+    .select('id, website, lang')
     .eq('id', i.clientId)
     .eq('parent_client_id', i.developerId)
     .maybeSingle();
   if (!client) return { error: 'Client not found.', status: 404 };
 
-  let origins: string[] | null = null;
-  if (i.origins && i.origins.length) origins = normalizeOrigins(i.origins);
-  else if (i.siteUrl && i.siteUrl.trim()) origins = deriveOrigins(i.siteUrl);
-  else if (client.website) origins = deriveOrigins(client.website);
-  if (origins === null) return { error: 'One of the origins is not a valid URL.', status: 400 };
+  // Explicit origins > the site URL > the client's website > open (*).
+  // null means "invalid input"; an empty list means "nothing to derive from".
+  let origins: string[] | null = [];
+  if (i.origins && i.origins.length) {
+    origins = normalizeOrigins(i.origins);
+    if (origins === null) return { error: 'One of the origins is not a valid URL.', status: 400, code: 'INVALID_ORIGIN' };
+  } else if (i.siteUrl && i.siteUrl.trim()) {
+    origins = deriveOrigins(i.siteUrl);
+    if (origins.length === 0) return { error: 'The site URL is not a valid URL (expected https://example.com).', status: 400, code: 'INVALID_SITE_URL' };
+  } else if (client.website) {
+    origins = deriveOrigins(client.website);
+  }
   const originsOpen = origins.length === 0;
   if (originsOpen) origins = ['*'];
+  const lang = i.lang ?? normalizeLang((client as { lang?: string | null }).lang, 'fr');
 
   const { count } = await supabase.from('forms').select('id', { count: 'exact', head: true }).eq('client_id', i.developerId);
   if (i.plan.formLimit !== null && (count ?? 0) >= i.plan.formLimit) {
     return { error: `The ${i.plan.name} plan includes ${i.plan.formLimit} forms. Upgrade for more.`, status: 402, paywall: true };
   }
 
-  const ar = defaultAutoReply(i.lang ?? 'fr');
+  const ar = defaultAutoReply(lang);
   const { data: form, error } = await supabase
     .from('forms')
     .insert({
@@ -80,7 +89,7 @@ export async function createFormForDeveloper(
     console.error('createFormForDeveloper:', error);
     return { error: 'Could not create the form. Please try again.', status: 500 };
   }
-  return { form: form as unknown as FormRecord, originsOpen };
+  return { form: form as unknown as FormRecord, originsOpen, lang };
 }
 
 /** Find a developer's form by exact name under a client (idempotent setup). */

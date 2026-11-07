@@ -31,8 +31,8 @@ const dst = createClient(NEW_URL, NEW_KEY, { auth: { persistSession: false } });
 // Parents before children (foreign keys).
 const ORDER = [
   'clients', 'portal_users', 'forms', 'api_keys', 'submissions', 'email_log', 'failures_log',
-  'blacklist', 'ai_usage', 'auth_attempts', 'security_events', 'device_sessions',
-  'webhook_deliveries', 'plan_requests',
+  'blacklist', 'ai_messages', 'auth_attempts', 'security_events', 'email_otps', 'client_sessions',
+  'refresh_tokens', 'pageviews', 'plan_requests',
 ];
 const oldStorage = `${OLD_URL.replace(/\/$/, '')}/storage/v1/object/`;
 const newStorage = `${NEW_URL.replace(/\/$/, '')}/storage/v1/object/`;

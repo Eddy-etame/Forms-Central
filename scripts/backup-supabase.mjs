@@ -31,9 +31,9 @@ const sb = createClient(URL_, KEY, { auth: { persistSession: false } });
 
 // Order does not matter for a backup; it does for a restore (see migrate-supabase.mjs).
 export const TABLES = [
-  'clients', 'portal_users', 'forms', 'submissions', 'email_log', 'api_keys', 'blacklist',
-  'failures_log', 'ai_usage', 'auth_attempts', 'security_events', 'device_sessions',
-  'webhook_deliveries', 'plan_requests',
+  'clients', 'portal_users', 'forms', 'api_keys', 'submissions', 'email_log', 'failures_log',
+  'blacklist', 'ai_messages', 'auth_attempts', 'security_events', 'email_otps', 'client_sessions',
+  'refresh_tokens', 'pageviews', 'plan_requests',
 ];
 
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');

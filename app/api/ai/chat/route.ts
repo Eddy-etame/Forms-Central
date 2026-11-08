@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { verifyJWT } from '@/lib/jwt';
 import { askAI, type ChatMessage } from '@/lib/ai';
 import { getPlan, type Plan } from '@/lib/plans';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -64,6 +65,10 @@ export async function POST(req: Request) {
 
     // ---- Quota / paywall (server-enforced, plan-aware via lib/plans) ----
     if (caller.kind === 'anon') {
+      // The cookie allowance alone is defeated by discarding the cookie; cap the address too.
+      if (!(await checkRateLimit(`ai-anon:${ip || 'unknown'}`, 5, 60 * 60_000))) {
+        return NextResponse.json({ error: 'Too many requests from this network. Create an account to keep chatting.', paywall: true, upgradeUrl: '/developer/signup' }, { status: 429 });
+      }
       const { count } = await supabase
         .from('ai_messages')
         .select('id', { count: 'exact', head: true })

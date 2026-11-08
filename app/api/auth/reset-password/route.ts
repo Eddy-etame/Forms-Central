@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { MAX_PASSWORD_LENGTH } from '@/lib/domain';
 import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { hashPassword } from '@/lib/passwords';
@@ -18,6 +19,9 @@ export async function POST(req: Request) {
   const rawToken = String(token ?? '');
   const newPassword = String(password ?? '');
   if (!rawToken) return NextResponse.json({ success: false, error: 'Missing reset token.' }, { status: 400 });
+  if (newPassword.length > MAX_PASSWORD_LENGTH) {
+    return NextResponse.json({ success: false, error: `Password is too long (${MAX_PASSWORD_LENGTH} characters max).` }, { status: 400 });
+  }
   if (newPassword.length < 8) {
     return NextResponse.json({ success: false, error: 'Password must be at least 8 characters.' }, { status: 400 });
   }

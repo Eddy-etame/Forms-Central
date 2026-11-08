@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { MAX_PASSWORD_LENGTH } from '@/lib/domain';
 import { supabase } from '@/lib/supabase';
 import { signJWT } from '@/lib/jwt';
 import { verifyPassword, needsRehash, hashPassword } from '@/lib/passwords';
@@ -16,6 +17,9 @@ export async function POST(req: Request) {
         { success: false, error: 'Email et mot de passe requis.' },
         { status: 400 }
       );
+    }
+    if (typeof password !== 'string' || password.length > MAX_PASSWORD_LENGTH) {
+      return NextResponse.json({ success: false, error: 'Email ou mot de passe incorrect.' }, { status: 401 });
     }
 
     // Brute-force guard: 5 attempts/min per IP+email, 20/min per IP.

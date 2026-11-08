@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { getDeveloperContext } from '@/lib/developerAuth';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 import { getLocale } from '@/lib/i18n';
-import { EMAIL_RE, normalizeLang } from '@/lib/domain';
+import { EMAIL_RE, normalizeLang, normalizeWebsite } from '@/lib/domain';
 import { createClientForDeveloper } from '@/lib/clients';
 import { isServiceError } from '@/lib/forms';
 
@@ -108,7 +108,11 @@ export async function PATCH(req: Request) {
     if (!EMAIL_RE.test(email)) return NextResponse.json({ success: false, error: 'Invalid e-mail.' }, { status: 400 });
     patch.email = email;
   }
-  if (body.website !== undefined) patch.website = String(body.website).trim().slice(0, 200) || null;
+  if (body.website !== undefined) {
+    const website = normalizeWebsite(body.website);
+    if (website === null) return NextResponse.json({ success: false, error: 'The website must be a valid address (e.g. https://acme.com).', code: 'INVALID_WEBSITE' }, { status: 400 });
+    patch.website = website || null;
+  }
   if (body.lang !== undefined) patch.lang = normalizeLang(body.lang, 'fr');
   if (body.notifyLeads !== undefined) patch.notify_leads = !!body.notifyLeads;
   if (Object.keys(patch).length === 0) return NextResponse.json({ success: false, error: 'Nothing to update.' }, { status: 400 });

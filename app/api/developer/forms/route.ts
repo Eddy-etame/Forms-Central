@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getDeveloperContext } from '@/lib/developerAuth';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
-import { normalizeLang } from '@/lib/domain';
+import { isPublicHttpsUrl, normalizeLang } from '@/lib/domain';
 import { FORM_SELECT, createFormForDeveloper, isServiceError } from '@/lib/forms';
 
 /**
@@ -74,8 +74,8 @@ export async function PATCH(req: Request) {
   const formId = String(body.formId ?? '');
   const webhookUrl = String(body.webhookUrl ?? '').trim();
   if (!formId) return NextResponse.json({ success: false, error: 'formId required.' }, { status: 400 });
-  if (webhookUrl && !/^https:\/\/.+/i.test(webhookUrl)) {
-    return NextResponse.json({ success: false, error: 'Webhook URL must start with https://' }, { status: 400 });
+  if (webhookUrl && !isPublicHttpsUrl(webhookUrl)) {
+    return NextResponse.json({ success: false, error: 'Webhook URL must be a public https:// address.' }, { status: 400 });
   }
 
   const { data: form } = await supabase.from('forms').select('id').eq('id', formId).eq('client_id', dev.developerId).maybeSingle();

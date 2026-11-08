@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { MAX_PASSWORD_LENGTH } from '@/lib/domain';
 import { cookies } from 'next/headers';
 import { supabase } from '@/lib/supabase';
 import { verifyPassword, needsRehash, hashPassword } from '@/lib/passwords';
@@ -12,6 +13,9 @@ export async function POST(req: Request) {
   const cleanPassword = String(password ?? '');
   if (!cleanEmail || !cleanPassword) {
     return NextResponse.json({ success: false, error: 'Email and password required.' }, { status: 400 });
+  }
+  if (cleanPassword.length > MAX_PASSWORD_LENGTH) {
+    return NextResponse.json({ success: false, error: 'Incorrect email or password.' }, { status: 401 });
   }
 
   const ip = clientIp(req.headers);

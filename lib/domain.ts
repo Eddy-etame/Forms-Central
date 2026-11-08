@@ -84,6 +84,45 @@ export function normalizeLang(v: unknown, fallback: Lang = 'fr'): Lang {
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** Passwords are hashed with scrypt; a megabyte of input is a CPU bill, not a password. */
+export const MAX_PASSWORD_LENGTH = 128;
+
+/**
+ * A public https URL the server may POST to (webhooks): no credentials in the
+ * URL, no loopback / private / link-local / carrier-grade NAT hosts. Hostnames
+ * are judged literally (no DNS lookup), which keeps the check synchronous.
+ */
+export function isPublicHttpsUrl(v: string): boolean {
+  let u: URL;
+  try { u = new URL(v); } catch { return false; }
+  if (u.protocol !== 'https:' || u.username || u.password) return false;
+  const h = u.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  if (!h || h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local') || h.endsWith('.internal') || h === '0.0.0.0') return false;
+  if (/^(\d{1,3}\.){3}\d{1,3}$/.test(h)) {
+    const [a, b] = h.split('.').map(Number);
+    if (a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127)) return false;
+  }
+  if (h === '::1' || h.startsWith('fc') || h.startsWith('fd') || h.startsWith('fe80') || h.startsWith('::ffff:')) return false;
+  return true;
+}
+
+/**
+ * A client's website, normalised to its origin ("acme.com" → "https://acme.com").
+ * Returns '' for an empty input and null when it is not a usable address.
+ */
+export function normalizeWebsite(v: unknown): string | null {
+  const raw = String(v ?? '').trim();
+  if (!raw) return '';
+  try {
+    const u = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+    if (!u.hostname.includes('.') && u.hostname !== 'localhost') return null;
+    return u.origin;
+  } catch {
+    return null;
+  }
+}
+
 /** Addresses that must never be e-mailed (synthetic rows from the v22 backfill). */
 export function isSyntheticEmail(email: string | null | undefined): boolean {
   return !email || /@clients\.invalid$/i.test(email);

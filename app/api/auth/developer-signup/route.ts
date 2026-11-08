@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { MAX_PASSWORD_LENGTH } from '@/lib/domain';
 import { supabase } from '@/lib/supabase';
 import { signJWT } from '@/lib/jwt';
 import { hashPassword } from '@/lib/passwords';
@@ -38,6 +39,9 @@ export async function POST(req: Request) {
         { success: false, error: 'Invalid email address.' },
         { status: 400 }
       );
+    }
+    if (cleanPassword.length > MAX_PASSWORD_LENGTH) {
+      return NextResponse.json({ success: false, error: `Password is too long (${MAX_PASSWORD_LENGTH} characters max).` }, { status: 400 });
     }
     if (cleanPassword.length < 8) {
       return NextResponse.json(

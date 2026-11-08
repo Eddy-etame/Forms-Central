@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import type { Plan } from './plans';
-import { EMAIL_RE, isSyntheticEmail, type Lang } from './domain';
+import { EMAIL_RE, isSyntheticEmail, normalizeWebsite, type Lang } from './domain';
 import { issueClientInvite } from './invites';
 import { sendClientInviteEmail } from './email';
 import type { ServiceError } from './forms';
@@ -60,6 +60,9 @@ export async function createClientForDeveloper(
     .maybeSingle();
   if (existing) return { client: shapeClient(existing as Record<string, unknown>), invited: false, existing: true };
 
+  const website = normalizeWebsite(i.website);
+  if (website === null) return { error: 'The website must be a valid address (e.g. https://acme.com).', status: 400, code: 'INVALID_WEBSITE' };
+
   if (i.plan.clientLimit !== null) {
     const { count } = await supabase.from('portal_users').select('id', { count: 'exact', head: true }).eq('parent_client_id', i.developerId);
     if ((count ?? 0) >= i.plan.clientLimit) {
@@ -73,7 +76,7 @@ export async function createClientForDeveloper(
       parent_client_id: i.developerId,
       name,
       email,
-      website: i.website?.trim().slice(0, 200) || null,
+      website: website || null,
       lang: i.lang ?? 'fr',
       notify_leads: i.notifyLeads ?? true,
       encrypted_password: null,

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { MAX_PASSWORD_LENGTH } from '@/lib/domain';
 import { cookies } from 'next/headers';
 import { supabase } from '@/lib/supabase';
 import { hashPassword } from '@/lib/passwords';
@@ -21,6 +22,7 @@ export async function POST(req: Request) {
   const pwd = String(password ?? '');
   if (!raw) return NextResponse.json({ success: false, error: 'Missing link token.' }, { status: 400 });
   if (pwd.length < 8) return NextResponse.json({ success: false, error: 'Password must be at least 8 characters.' }, { status: 400 });
+  if (pwd.length > MAX_PASSWORD_LENGTH) return NextResponse.json({ success: false, error: `Password is too long (${MAX_PASSWORD_LENGTH} characters max).` }, { status: 400 });
 
   const { data: user } = await supabase
     .from('portal_users')

@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { getDeveloperContext } from '@/lib/developerAuth';
 import { normalizeOrigins } from '@/lib/snippets';
 import { FORM_SELECT } from '@/lib/forms';
+import { isPublicHttpsUrl } from '@/lib/domain';
 
 /**
  * One form: read, change its settings, delete it. Developer-scoped.
@@ -48,7 +49,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (body.origins !== undefined) {
     const origins = normalizeOrigins(body.origins);
     if (origins === null) return NextResponse.json({ success: false, error: 'One of the origins is not a valid URL.' }, { status: 400 });
-    patch.allowed_origins = origins.length ? origins : ['*'];
+    // Never open a form to every site by accident: an empty list is a mistake, `*` is a decision.
+    if (origins.length === 0) return NextResponse.json({ success: false, error: 'List at least one site, or * to allow any site.', code: 'ORIGINS_REQUIRED' }, { status: 400 });
+    patch.allowed_origins = origins;
   }
   if (body.isActive !== undefined) patch.is_active = !!body.isActive;
   if (body.notifyDeveloper !== undefined) patch.notify_email = !!body.notifyDeveloper;
@@ -65,7 +68,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
   if (body.webhookUrl !== undefined) {
     const w = String(body.webhookUrl).trim();
-    if (w && !/^https:\/\/.+/i.test(w)) return NextResponse.json({ success: false, error: 'Webhook URL must start with https://' }, { status: 400 });
+    if (w && !isPublicHttpsUrl(w)) return NextResponse.json({ success: false, error: 'Webhook URL must be a public https:// address.' }, { status: 400 });
     patch.webhook_url = w || null;
   }
   if (body.clientId !== undefined) {

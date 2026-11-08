@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { isPublicHttpsUrl } from './domain';
 import { supabase } from './supabase';
 
 /**
@@ -59,8 +60,8 @@ export async function dispatchLeadWebhook(args: {
 }): Promise<void> {
   const { webhookUrl, clientId, formId, formName, submissionId, payload } = args;
   try {
-    // Only https endpoints (no plaintext, no internal schemes).
-    if (!/^https:\/\//i.test(webhookUrl)) return;
+    // Only public https endpoints: no plaintext, no loopback or private hosts.
+    if (!isPublicHttpsUrl(webhookUrl)) return;
 
     const secret = await getOrCreateSecret(clientId);
     if (!secret) return;

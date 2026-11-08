@@ -120,6 +120,32 @@ try {
     check('form settings PATCH (origins, auto-reply, success url)', res.status === 200 && (b.form?.allowed_origins ?? []).includes('https://staging.acme.example') && b.form?.success_url === 'https://acme.example/merci', `got ${res.status}`);
   }
   {
+    // Hardening (2026-11-08): an empty origin list is refused instead of silently becoming `*`
+    const res = await fetch(`${BASE}/api/developer/forms/${formId}`, { method: 'PATCH', headers: j(devCookie), body: JSON.stringify({ origins: [] }) });
+    const b = await res.json().catch(() => ({}));
+    check('form settings PATCH: empty origins → 400 ORIGINS_REQUIRED', res.status === 400 && b.code === 'ORIGINS_REQUIRED', `got ${res.status} ${b.code ?? ''}`);
+  }
+  {
+    // webhooks only to public https hosts (loopback / private ranges refused)
+    const bad = ['https://127.0.0.1/hook', 'https://10.0.0.8/hook', 'https://192.168.1.2/hook', 'https://169.254.169.254/latest', 'https://localhost/hook', 'https://user:pw@hooks.example/x', 'http://hooks.example/x'];
+    const results = await Promise.all(bad.map((webhookUrl) => fetch(`${BASE}/api/developer/forms/${formId}`, { method: 'PATCH', headers: j(devCookie), body: JSON.stringify({ webhookUrl }) }).then((r) => r.status)));
+    check('form settings PATCH: private / credentialed / plaintext webhook URLs → 400', results.every((st) => st === 400), `got ${results.join(',')}`);
+    const good = await fetch(`${BASE}/api/developer/forms/${formId}`, { method: 'PATCH', headers: j(devCookie), body: JSON.stringify({ webhookUrl: 'https://hooks.example.com/inlet' }) });
+    check('form settings PATCH: public https webhook accepted', good.status === 200, `got ${good.status}`);
+  }
+  {
+    // a client's website is normalised to its origin; garbage is refused
+    const bad = await fetch(`${BASE}/api/developer/clients`, { method: 'PATCH', headers: j(devCookie), body: JSON.stringify({ id: betaId, website: 'not a website' }) });
+    const bb = await bad.json().catch(() => ({}));
+    check('client PATCH: invalid website → 400 INVALID_WEBSITE', bad.status === 400 && bb.code === 'INVALID_WEBSITE', `got ${bad.status} ${bb.code ?? ''}`);
+    const ok = await fetch(`${BASE}/api/developer/clients`, { method: 'PATCH', headers: j(devCookie), body: JSON.stringify({ id: betaId, website: 'beta.example/fr/contact' }) });
+    const ob = await ok.json().catch(() => ({}));
+    check('client PATCH: "beta.example/fr/contact" → https://beta.example', ok.status === 200 && ob.client?.website === 'https://beta.example', `got ${ok.status} ${ob.client?.website ?? ''}`);
+    const created = await post('/api/developer/clients', { name: 'Delta', email: `delta+${Date.now()}@test.dev`, website: 'ht!tp://', invite: false }, devCookie);
+    const cb = await created.json().catch(() => ({}));
+    check('client POST: invalid website → 400 INVALID_WEBSITE', created.status === 400 && cb.code === 'INVALID_WEBSITE', `got ${created.status} ${cb.code ?? ''}`);
+  }
+  {
     const res = await fetch(`${BASE}/api/developer/clients`, { method: 'DELETE', headers: j(devCookie), body: JSON.stringify({ id: acmeId }) });
     const b = await res.json();
     check('deleting a client that still has forms -> 409 CLIENT_HAS_FORMS', res.status === 409 && b.code === 'CLIENT_HAS_FORMS', `got ${res.status}`);

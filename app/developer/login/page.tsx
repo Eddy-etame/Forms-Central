@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { AuthShell } from '@/components/auth/AuthShell';
@@ -20,16 +20,19 @@ export default function ClientLoginPage() {
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [code, setCode] = useState('');
 
-  // Surface redirect reasons (?error=google, ?evicted=1).
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('error') === 'google') {
-      setError(t.errGoogleFailed);
-    } else if (params.get('evicted') === '1') {
-      setError(t.errEvicted);
-    }
-  }, []);
+  // Surface redirect reasons (?error=google, ?evicted=1) without a setState in
+  // an effect: the server renders no message, the browser reads the URL right
+  // after hydration, and the first submit dismisses it.
+  const redirectReason = useSyncExternalStore(
+    () => () => {},
+    () => {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('error') === 'google' ? 'google' : params.get('evicted') === '1' ? 'evicted' : '';
+    },
+    () => '',
+  );
+  const [dismissed, setDismissed] = useState(false);
+  const shownError = error || (dismissed ? '' : redirectReason === 'google' ? t.errGoogleFailed : redirectReason === 'evicted' ? t.errEvicted : '');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +40,7 @@ export default function ClientLoginPage() {
 
     setLoading(true);
     setError('');
+    setDismissed(true);
 
     try {
       const res = await fetch('/api/auth/developer-login', {
@@ -107,9 +111,9 @@ export default function ClientLoginPage() {
             </div>
 
             <form className="mt-8 space-y-4" onSubmit={handleVerify}>
-              {error && (
+              {shownError && (
                 <div role="alert" className="rounded-lg bg-red-50 border border-red-100 p-3 text-xs text-red-600 font-medium">
-                  {error}
+                  {shownError}
                 </div>
               )}
               <div className="space-y-1.5">
@@ -157,9 +161,9 @@ export default function ClientLoginPage() {
         </div>
 
         <form className="mt-4 space-y-4" onSubmit={handleLogin}>
-          {error && (
+          {shownError && (
             <div role="alert" className="rounded-lg bg-red-50 border border-red-100 p-3 text-xs text-red-600 font-medium">
-              {error}
+              {shownError}
             </div>
           )}
 

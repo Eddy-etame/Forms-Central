@@ -17,7 +17,7 @@ import { getLocale } from './i18n';
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://eam-inlet.vercel.app').replace(/\/+$/, '');
 export const SITE_NAME = 'Inlet';
 
-export type SeoKey = 'home' | 'pricing' | 'docs';
+export type SeoKey = 'home' | 'pricing' | 'docs' | 'privacy' | 'terms';
 
 const SEO: Record<Locale, Record<SeoKey, { title: string; description: string; keywords: string[] }>> = {
   en: {
@@ -36,6 +36,16 @@ const SEO: Record<Locale, Record<SeoKey, { title: string; description: string; k
       description: 'Integrate Inlet in minutes: two public values, one snippet per framework, proof-of-work anti-spam, signed webhooks and an MCP server for AI agents.',
       keywords: ['form backend integration', 'HTML form backend tutorial', 'form API docs', 'form MCP server', 'MCP form backend', 'AI form backend integration', 'form webhook', 'signed form webhook', 'contact form without server', 'let AI build your forms'],
     },
+    privacy: {
+      title: 'Privacy policy — how Inlet handles data',
+      description: 'What Inlet collects from developers, clients and form visitors, why, where it is hosted, how long it is kept, and how to exercise your rights.',
+      keywords: ['form backend privacy policy', 'GDPR form backend', 'form data processor'],
+    },
+    terms: {
+      title: 'Terms of service',
+      description: 'The agreement between developers and the operator of Inlet: accounts, acceptable use, plans and payment, your data, liability.',
+      keywords: ['form backend terms of service'],
+    },
   },
   fr: {
     home: {
@@ -53,10 +63,20 @@ const SEO: Record<Locale, Record<SeoKey, { title: string; description: string; k
       description: 'Intégrez Inlet en minutes : deux valeurs publiques, un extrait par framework, anti-spam par preuve de travail, webhooks signés, serveur MCP pour agents IA.',
       keywords: ['intégration backend de formulaire', 'tutoriel formulaire HTML', 'documentation API formulaire', 'webhook formulaire', 'formulaire de contact sans serveur'],
     },
+    privacy: {
+      title: 'Politique de confidentialité — les données chez Inlet',
+      description: 'Ce qu’Inlet collecte auprès des développeurs, des clients et des visiteurs des formulaires, pourquoi, où c’est hébergé, combien de temps, et vos droits.',
+      keywords: ['politique de confidentialité backend de formulaire', 'RGPD formulaire', 'sous-traitant formulaire'],
+    },
+    terms: {
+      title: 'Conditions d’utilisation',
+      description: 'L’accord entre les développeurs et l’opérateur d’Inlet : comptes, usage acceptable, forfaits et paiement, vos données, responsabilité.',
+      keywords: ['conditions d’utilisation backend de formulaire'],
+    },
   },
 };
 
-const PATHS: Record<SeoKey, string> = { home: '/', pricing: '/pricing', docs: '/docs' };
+const PATHS: Record<SeoKey, string> = { home: '/', pricing: '/pricing', docs: '/docs', privacy: '/legal/privacy', terms: '/legal/terms' };
 
 /** Resolve locale for a page: explicit ?lang wins, else geo/cookie/default. */
 export async function resolveLocale(lang?: string): Promise<Locale> {

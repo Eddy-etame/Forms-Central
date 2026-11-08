@@ -8,12 +8,14 @@ const ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.S
   { path: "/pricing", priority: 0.9, changeFrequency: "weekly" },
   { path: "/docs", priority: 0.9, changeFrequency: "weekly" },
   { path: "/developer/signup", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/legal/privacy", priority: 0.3, changeFrequency: "yearly" },
+  { path: "/legal/terms", priority: 0.3, changeFrequency: "yearly" },
 ];
 
 // Pages served in both languages — declare the fr/en alternates so Google
 // indexes each language version (Inlet ranks for "form backend" AND
 // "backend de formulaire").
-const BILINGUAL = new Set(["/", "/pricing", "/docs"]);
+const BILINGUAL = new Set(["/", "/pricing", "/docs", "/legal/privacy", "/legal/terms"]);
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

@@ -486,6 +486,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
               <a href="#compare" className="link-underline hover:text-slate-900 transition-colors">{L.footer.compare}</a>
               <a href="#faq" className="link-underline hover:text-slate-900 transition-colors">{L.footer.faq}</a>
               <Link href="/developer/login" className="link-underline hover:text-slate-900 transition-colors">{L.footer.signIn}</Link>
+              <Link href="/legal/privacy" className="link-underline hover:text-slate-900 transition-colors">{L.footer.privacy}</Link>
+              <Link href="/legal/terms" className="link-underline hover:text-slate-900 transition-colors">{L.footer.terms}</Link>
             </nav>
             <p>&copy; {new Date().getFullYear()} {SITE_NAME}</p>
           </div>

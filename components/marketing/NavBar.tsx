@@ -104,6 +104,8 @@ export async function SiteFooter({ locale: localeProp }: { locale?: Locale } = {
           <Link href="/docs" className="link-underline hover:text-slate-900 transition-colors">{t.docs}</Link>
           <Link href="/pricing" className="link-underline hover:text-slate-900 transition-colors">{t.pricing}</Link>
           <Link href="/developer/login" className="link-underline hover:text-slate-900 transition-colors">{t.signIn}</Link>
+          <Link href="/legal/privacy" className="link-underline hover:text-slate-900 transition-colors">{t.privacy}</Link>
+          <Link href="/legal/terms" className="link-underline hover:text-slate-900 transition-colors">{t.terms}</Link>
         </nav>
         <p className="flex items-center gap-2">
           <span>&copy; {new Date().getFullYear()} Inlet</span>

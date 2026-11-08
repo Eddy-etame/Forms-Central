@@ -18,7 +18,7 @@ interface MarketingDict {
     faqQ1: string; faqA1: string; faqQ2: string; faqA2: string; faqQ3: string; faqA3: string; faqQ4: string; faqA4: string;
     includedAria: string; notIncludedAria: string;
   };
-  siteFooter: { features: string; docs: string; pricing: string; signIn: string };
+  siteFooter: { features: string; docs: string; pricing: string; signIn: string; privacy: string; terms: string };
   comparePage: {
     breadcrumbHome: string; breadcrumbCompare: string; kicker: string;
     fairNoteLabel: string; colCapability: string; verdictTitle: string;
@@ -40,7 +40,7 @@ interface MarketingDict {
     testimonials: { kicker: string; title: string; subtitle: string; items: { quote: string; name: string; role: string }[] };
     faq: { kicker: string; title: string; items: { q: string; a: string }[] };
     cta: { title: string; subtitle: string; primary: string; secondary: string };
-    footer: { features: string; how: string; pricing: string; compare: string; faq: string; signIn: string };
+    footer: { features: string; how: string; pricing: string; compare: string; faq: string; signIn: string; privacy: string; terms: string };
     demo: {
       kicker: string; titleLead: string; titleAccent: string; subtitle: string;
       formLabel: string; phName: string; phMessage: string; send: string; tryBot: string;
@@ -166,7 +166,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         ],
       },
       cta: { title: 'Ship forms today. Own them forever.', subtitle: 'One backend for every site you build — no SMTP, no lock-in, your data.', primary: 'Get started free', secondary: 'Read the docs' },
-      footer: { features: 'Features', how: 'How it works', pricing: 'Pricing', compare: 'Compare', faq: 'FAQ', signIn: 'Sign in' },
+      footer: { features: 'Features', how: 'How it works', pricing: 'Pricing', compare: 'Compare', faq: 'FAQ', signIn: 'Sign in', privacy: 'Privacy', terms: 'Terms' },
       demo: {
         kicker: 'Playable demo',
         titleLead: "Don't read about it.",
@@ -192,7 +192,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         footnote: 'Interactive simulation of the live pipeline — nothing you type here is sent or stored.',
       },
     },
-    siteFooter: { features: 'Features', docs: 'Docs', pricing: 'Pricing', signIn: 'Sign in' },
+    siteFooter: { features: 'Features', docs: 'Docs', pricing: 'Pricing', signIn: 'Sign in', privacy: 'Privacy', terms: 'Terms' },
     comparePage: {
       breadcrumbHome: 'Home', breadcrumbCompare: 'Compare', kicker: 'Comparison',
       fairNoteLabel: 'Fair note:', colCapability: 'Capability', verdictTitle: 'The verdict',
@@ -385,7 +385,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         ],
       },
       cta: { title: 'Lancez vos formulaires aujourd’hui. Gardez-les pour toujours.', subtitle: 'Un seul backend pour tous vos sites — sans SMTP, sans verrouillage, vos données.', primary: 'Commencer gratuitement', secondary: 'Lire la documentation' },
-      footer: { features: 'Fonctionnalités', how: 'Comment ça marche', pricing: 'Tarifs', compare: 'Comparatif', faq: 'FAQ', signIn: 'Connexion' },
+      footer: { features: 'Fonctionnalités', how: 'Comment ça marche', pricing: 'Tarifs', compare: 'Comparatif', faq: 'FAQ', signIn: 'Connexion', privacy: 'Confidentialité', terms: 'Conditions' },
       demo: {
         kicker: 'Démo interactive',
         titleLead: 'Ne lisez pas à son sujet.',
@@ -411,7 +411,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         footnote: 'Simulation interactive du pipeline en direct — rien de ce que vous tapez ici n’est envoyé ou stocké.',
       },
     },
-    siteFooter: { features: 'Fonctionnalités', docs: 'Docs', pricing: 'Tarifs', signIn: 'Connexion' },
+    siteFooter: { features: 'Fonctionnalités', docs: 'Docs', pricing: 'Tarifs', signIn: 'Connexion', privacy: 'Confidentialité', terms: 'Conditions' },
     comparePage: {
       breadcrumbHome: 'Accueil', breadcrumbCompare: 'Comparer', kicker: 'Comparatif',
       fairNoteLabel: 'Remarque honnête :', colCapability: 'Fonctionnalité', verdictTitle: 'Le verdict',

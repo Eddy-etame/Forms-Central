@@ -83,6 +83,50 @@ history: research, verdicts and options. What is below is what we build.
   author to approve; lint debt in the admin pages (47 `any`/legacy errors,
   none in the developer surface).
 
+### 2026-11-08 — API hardening, metadata that follows the URL, legal pages
+
+- **Authorization audit** of every developer, portal, public and MCP route:
+  ownership scoping is correct everywhere (forms, clients, keys, download,
+  MCP tools scoped to the key's developer). Fixed on the way: webhook URLs
+  must be public https hosts (validators and the sender), a client's website
+  is normalised to its origin (`INVALID_WEBSITE`), an empty origin list is
+  refused (`ORIGINS_REQUIRED`) instead of silently becoming `*`, passwords
+  are capped at 128 characters before scrypt, the anonymous assistant is
+  capped per address (5 per hour) on top of the cookie allowance.
+  `safeRedirect` admits the referer origin: acceptable, noted. test-portals
+  grew to 37 checks; submit 15, MCP 24, UI 24 — all green on production.
+- **Metadata**: titles and descriptions rewritten to the client model, under
+  160 characters, 'self-hosted' gone; pricing and docs had lost the OG image
+  (a child `openGraph` replaces the root's), restored; `?lang=en|fr` is now
+  relayed by `proxy.ts` as a request header that `getLocale()` honours first,
+  so `<html lang>`, the nav and every client component follow the URL and
+  the choice persists in the locale cookie; the eight auth and portal entry
+  pages have their own titles and `noindex` (signup stays indexable with a
+  canonical and description); the root canonical they all inherited is
+  gone; the sitemap lists the canonical language URLs (11 entries).
+- **Truth**: the anti-spam copy matches `lib/dnsLookup.ts` — honeypot,
+  proof-of-work, keyword flagging, bans by IP, fingerprint and reverse-DNS
+  host after a honeypot hit; no more "NLP filter" or "VPN block". The
+  three-step section speaks the client model.
+- **Legal**: `/legal/privacy` and `/legal/terms`, EN/FR, linked from both
+  footers. Controller EAM; contact from `LEGAL_CONTACT_EMAIL`, else
+  `OPERATOR_EMAIL`. Facts behind the text: first-party cookies only
+  (`client_access_token`, `portal_access_token`, `access_token` +
+  `refresh_token`, `inlet-locale`, `ie_sid`, `ke_anon`, `g_oauth_state`); the
+  tracker stores a salted IP hash; AI providers Gemini then Groq; lead content
+  reaches a model only with the classifier on (off); retention is the plan
+  window and deletion "may" happen (the job is disabled). The `uploads`
+  bucket is public-by-URL with unguessable names — candidate hardening:
+  private bucket + signed URLs, which also touches the notification e-mails.
+- **Lighthouse** (mobile, simulated throttling, home): performance 87 (LCP
+  3.2 s, TBT 290 ms), accessibility 94 → the two findings (11px contrast,
+  stray h3) fixed in the hero mock, best practices 100, SEO 100. The pricing
+  and docs runs failed to paint under headless Chromium (tooling), not
+  re-tried.
+- Still open after today: card checkout; the private uploads bucket; the
+  Quick-actions pill covering the last line of dashboard content; the admin
+  pages' lint debt; LCP on the hero.
+
 ## 2. The B proposal (what we built beyond the ask)
 
 The author asked for A: developers → clients → forms, no e-mail in the code,

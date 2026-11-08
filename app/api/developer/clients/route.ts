@@ -79,7 +79,7 @@ export async function POST(req: Request) {
   });
   if (isServiceError(result)) {
     return NextResponse.json(
-      { success: false, error: result.error, ...(result.paywall ? { paywall: true, upgradeUrl: '/pricing' } : {}) },
+      { success: false, error: result.error, ...(result.code ? { code: result.code } : {}), ...(result.paywall ? { paywall: true, upgradeUrl: '/pricing' } : {}) },
       { status: result.status }
     );
   }

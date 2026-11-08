@@ -17,7 +17,7 @@ const LEADS = [
 function Stat({ label, value, hint, tone }: { label: string; value: string; hint: string; tone: string }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-3.5">
-      <p className="text-[11px] font-medium text-slate-400">{label}</p>
+      <p className="text-[11px] font-medium text-slate-500">{label}</p>
       <p className="mt-1 text-2xl font-bold tracking-tight text-slate-900">{value}</p>
       <p className={`mt-1 text-[11px] font-medium ${tone}`}>{hint}</p>
     </div>
@@ -35,7 +35,7 @@ export default function HeroPreview() {
             <span className="h-3 w-3 rounded-full bg-rose-400/70" />
             <span className="h-3 w-3 rounded-full bg-amber-400/70" />
             <span className="h-3 w-3 rounded-full bg-emerald-400/70" />
-            <div className="mx-auto inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1 text-[11px] font-medium text-slate-400">
+            <div className="mx-auto inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1 text-[11px] font-medium text-slate-500">
               <LogoMark className="h-3 w-3 text-slate-500" /> inlet — dashboard
             </div>
           </div>
@@ -55,8 +55,8 @@ export default function HeroPreview() {
             <div className="min-w-0 flex-1 bg-slate-50/40 p-4 sm:p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Overview</h3>
-                  <p className="text-[11px] text-slate-400">Every site&apos;s leads, in one place</p>
+                  <p className="text-sm font-bold text-slate-900">Overview</p>
+                  <p className="text-[11px] text-slate-500">Every site&apos;s leads, in one place</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="hidden items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 sm:inline-flex"><Download className="h-3.5 w-3.5" /> Export</span>
@@ -105,7 +105,7 @@ export default function HeroPreview() {
                     <div key={l.email} className="flex items-center gap-3 px-3.5 py-2.5">
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-xs font-semibold text-slate-800">{l.name}</p>
-                        <p className="truncate text-[11px] text-slate-400">{l.email}</p>
+                        <p className="truncate text-[11px] text-slate-500">{l.email}</p>
                       </div>
                       <span className="hidden rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 sm:inline">{l.form}</span>
                       <span className="w-14 text-right text-[10px] text-slate-400">{l.when}</span>

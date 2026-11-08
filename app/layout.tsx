@@ -59,8 +59,6 @@ export const metadata: Metadata = {
     "Basin alternative",
     "Getform alternative",
     "Web3Forms alternative",
-    "self-hosted forms",
-    "self-hosted form backend",
     "contact form backend",
     "form without backend",
     "form without SMTP",
@@ -78,9 +76,6 @@ export const metadata: Metadata = {
   creator: SITE_NAME,
   publisher: SITE_NAME,
   category: "technology",
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,

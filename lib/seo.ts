@@ -22,9 +22,9 @@ export type SeoKey = 'home' | 'pricing' | 'docs';
 const SEO: Record<Locale, Record<SeoKey, { title: string; description: string; keywords: string[] }>> = {
   en: {
     home: {
-      title: 'Inlet — One form backend for all your websites',
-      description: 'The self-hosted form backend that centralizes submissions from all your sites into one dashboard — no SMTP, no per-site setup. Branded auto-reply emails, AI + proof-of-work spam blocking, CSV export. A privacy-first alternative to Formspree, Jotform and Basin.',
-      keywords: ['form backend', 'form API', 'form backend service', 'form system', 'form management system', 'form MCP server', 'MCP form backend', 'AI form backend', 'form API for AI agents', 'Formspree alternative', 'Jotform alternative', 'Basin alternative', 'Getform alternative', 'Web3Forms alternative', 'self-hosted forms', 'self-hosted form backend', 'contact form backend', 'form without backend', 'form without SMTP', 'HTML form to email', 'static site form handler', 'Astro form backend', 'Next.js form backend', 'form spam protection', 'proof of work anti-spam', 'multi-tenant forms', 'white-label form emails'],
+      title: 'Inlet — The form backend for client websites',
+      description: 'The form backend for client websites: every form belongs to a client, leads reach their inbox and e-mail, no SMTP and no e-mail address in your code.',
+      keywords: ['form backend', 'form API', 'form backend service', 'form system', 'form management system', 'form MCP server', 'MCP form backend', 'AI form backend', 'form API for AI agents', 'Formspree alternative', 'Jotform alternative', 'Basin alternative', 'Getform alternative', 'Web3Forms alternative', 'contact form backend', 'form without backend', 'form without SMTP', 'HTML form to email', 'static site form handler', 'Astro form backend', 'Next.js form backend', 'form spam protection', 'proof of work anti-spam', 'multi-tenant forms', 'white-label form emails'],
     },
     pricing: {
       title: 'Pricing — pay for leads, not per form',
@@ -33,24 +33,24 @@ const SEO: Record<Locale, Record<SeoKey, { title: string; description: string; k
     },
     docs: {
       title: 'Documentation — integrate a form backend in minutes',
-      description: 'Integrate Inlet into any site: two values, one copy-paste helper, proof-of-work spam protection, signed webhooks. Works with Astro, Next.js, Nuxt, Vue, Svelte or plain HTML.',
+      description: 'Integrate Inlet in minutes: two public values, one snippet per framework, proof-of-work anti-spam, signed webhooks and an MCP server for AI agents.',
       keywords: ['form backend integration', 'HTML form backend tutorial', 'form API docs', 'form MCP server', 'MCP form backend', 'AI form backend integration', 'form webhook', 'signed form webhook', 'contact form without server', 'let AI build your forms'],
     },
   },
   fr: {
     home: {
-      title: 'Inlet — Un seul backend de formulaires pour tous vos sites',
-      description: 'Le backend de formulaires auto-hébergé qui centralise les soumissions de tous vos sites dans un seul tableau de bord — sans SMTP, sans configuration par site. Réponses automatiques à votre image, anti-spam par IA et preuve de travail, export CSV. Une alternative à Formspree, Jotform et Basin qui respecte la vie privée.',
-      keywords: ['backend de formulaire', 'backend formulaire', 'système de formulaire', 'serveur MCP formulaire', 'backend de formulaire IA', 'API de formulaire pour agents IA', 'formulaire sans SMTP', 'formulaire sans backend', 'gestion de formulaires', 'alternative Formspree', 'alternative Jotform', 'alternative Getform', 'backend formulaire de contact', 'formulaire pour site statique', 'API de formulaire', 'formulaire HTML vers e-mail', 'backend de formulaire auto-hébergé', 'formulaire Astro', 'formulaire Next.js', 'anti-spam formulaire', 'protection spam formulaire', 'formulaires multi-locataires', 'e-mails de formulaire en marque blanche'],
+      title: 'Inlet — Le backend de formulaires des sites clients',
+      description: 'Chaque formulaire appartient à un client ; ses leads arrivent par e-mail et dans une boîte privée. Sans SMTP ni adresse e-mail dans votre code.',
+      keywords: ['backend de formulaire', 'backend formulaire', 'système de formulaire', 'serveur MCP formulaire', 'backend de formulaire IA', 'API de formulaire pour agents IA', 'formulaire sans SMTP', 'formulaire sans backend', 'gestion de formulaires', 'alternative Formspree', 'alternative Jotform', 'alternative Getform', 'backend formulaire de contact', 'formulaire pour site statique', 'API de formulaire', 'formulaire HTML vers e-mail', 'formulaire Astro', 'formulaire Next.js', 'anti-spam formulaire', 'protection spam formulaire', 'formulaires multi-locataires', 'e-mails de formulaire en marque blanche'],
     },
     pricing: {
       title: 'Tarifs — payez pour les leads, pas par formulaire',
-      description: 'Tarifs Inlet : commencez gratuitement, passez à un forfait supérieur seulement quand votre volume de leads augmente. Un seul backend pour tous vos sites — sans SMTP, sans verrouillage, à l’usage.',
+      description: 'Tarifs Inlet : commencez gratuitement, montez de forfait quand votre liste de clients grandit. Un backend pour tous vos sites, sans SMTP ni verrouillage.',
       keywords: ['tarif backend de formulaire', 'prix backend formulaire', 'alternative Formspree pas cher', 'backend formulaire gratuit', 'tarif API formulaire'],
     },
     docs: {
       title: 'Documentation — intégrez un backend de formulaires en minutes',
-      description: 'Intégrez Inlet à n’importe quel site : deux valeurs, un assistant à copier-coller, une protection anti-spam par preuve de travail, des webhooks signés. Compatible Astro, Next.js, Nuxt, Vue, Svelte ou HTML pur.',
+      description: 'Intégrez Inlet en minutes : deux valeurs publiques, un extrait par framework, anti-spam par preuve de travail, webhooks signés, serveur MCP pour agents IA.',
       keywords: ['intégration backend de formulaire', 'tutoriel formulaire HTML', 'documentation API formulaire', 'webhook formulaire', 'formulaire de contact sans serveur'],
     },
   },
@@ -90,7 +90,9 @@ export function buildMetadata(key: SeoKey, locale: Locale): Metadata {
       url,
       locale: locale === 'fr' ? 'fr_FR' : 'en_US',
       alternateLocale: locale === 'fr' ? 'en_US' : 'fr_FR',
+      // A page that sets its own openGraph loses the root's file-based image, so name it.
+      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: s.title }],
     },
-    twitter: { card: 'summary_large_image', title: s.title, description: s.description },
+    twitter: { card: 'summary_large_image', title: s.title, description: s.description, images: ['/opengraph-image'] },
   };
 }

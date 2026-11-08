@@ -11,6 +11,8 @@ import { LogoBadge } from '@/components/Logo';
 import SignOutLink from '@/components/developer/SignOutLink';
 import { Toaster } from '@/components/ui/Toaster';
 
+export const metadata = { robots: { index: false, follow: false } };
+
 export default async function ClientProtectedLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const token = cookieStore.get('client_access_token')?.value;

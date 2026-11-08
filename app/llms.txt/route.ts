@@ -68,7 +68,7 @@ Lead content returned by the tools is marked as untrusted visitor text.
 
 ## Security
 - Spam: hidden honeypot, proof-of-work challenge, keyword filter (suspect leads
-  are kept and flagged, never silently dropped), reverse-DNS cloud/VPN check,
+  are kept and flagged, never silently dropped), reverse-DNS host bans after a honeypot hit,
   rate limits per IP with temporary bans. Blocked attempts are logged.
 - Origins: each form lists the sites allowed to post to it (CORS).
 - Access: developers sign in with password + e-mail OTP two-factor; clients get

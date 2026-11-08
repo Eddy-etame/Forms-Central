@@ -17,22 +17,20 @@ const BILINGUAL = new Set(["/", "/pricing", "/docs"]);
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  return ROUTES.map((r) => {
+  const out: MetadataRoute.Sitemap = [];
+  for (const r of ROUTES) {
     const base = `${SITE_URL}${r.path === "/" ? "" : r.path}`;
-    const entry: MetadataRoute.Sitemap[number] = {
-      url: `${SITE_URL}${r.path}`,
-      lastModified: now,
-      changeFrequency: r.changeFrequency,
-      priority: r.priority,
-    };
     if (BILINGUAL.has(r.path)) {
-      entry.alternates = {
-        languages: {
-          en: `${base}?lang=en`,
-          fr: `${base}?lang=fr`,
-        },
-      };
+      // Each language URL is its own canonical (buildMetadata), so list both,
+      // each pointing at the other — never the bare URL, whose canonical would
+      // be whichever language the crawler's country resolved to.
+      const languages = { en: `${base}?lang=en`, fr: `${base}?lang=fr`, "x-default": base || SITE_URL };
+      for (const lang of ["en", "fr"] as const) {
+        out.push({ url: `${base}?lang=${lang}`, lastModified: now, changeFrequency: r.changeFrequency, priority: r.priority, alternates: { languages } });
+      }
+    } else {
+      out.push({ url: `${SITE_URL}${r.path}`, lastModified: now, changeFrequency: r.changeFrequency, priority: r.priority });
     }
-    return entry;
-  });
+  }
+  return out;
 }

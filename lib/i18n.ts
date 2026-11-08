@@ -3,6 +3,8 @@ import { cookies, headers } from 'next/headers';
 export type Locale = 'fr' | 'en';
 export const LOCALES: Locale[] = ['fr', 'en'];
 export const LOCALE_COOKIE = 'inlet-locale';
+/** Set by proxy.ts from ?lang=; never trusted from the outside (the proxy strips it). */
+export const LANG_HEADER = 'x-inlet-lang';
 
 /**
  * Locale policy (per owner direction):
@@ -28,6 +30,11 @@ export function localeFromCountry(country?: string | null): Locale {
  *   4. French default
  */
 export async function getLocale(): Promise<Locale> {
+  // 0. ?lang=en|fr on the URL, relayed by proxy.ts as a request header so the
+  //    root layout (<html lang>), the nav and every client component follow it.
+  const hinted = (await headers()).get(LANG_HEADER);
+  if (hinted === 'fr' || hinted === 'en') return hinted;
+
   const cookieLocale = (await cookies()).get(LOCALE_COOKIE)?.value;
   if (cookieLocale === 'fr' || cookieLocale === 'en') return cookieLocale;
 

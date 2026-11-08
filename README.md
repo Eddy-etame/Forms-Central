@@ -47,7 +47,7 @@ created by their developer and receive a set-password link.
   through a single-use set-password link (7 days) or "forgot password".
 - **Submit pipeline** `POST /api/submit/:formId` — origins (CORS), honeypot,
   proof-of-work for JavaScript posts, keyword flagging (suspect leads are
-  **kept** and flagged, never dropped), reverse-DNS cloud check, per-IP rate
+  **kept** and flagged, never dropped), reverse-DNS host bans after a honeypot hit, per-IP rate
   limits with 24 h bans, attachments to Storage, e-mail to the client (+
   developer copy), branded auto-reply, signed webhook. API-key relays
   (`Authorization: Bearer kef_…` + `X-Inlet-Visitor-IP`) skip CORS and PoW.

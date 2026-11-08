@@ -2,6 +2,8 @@ import AdminShell from '@/components/admin/AdminShell';
 import { getLocale } from '@/lib/i18n';
 import { getAppDict } from '@/lib/appDict';
 
+export const metadata = { robots: { index: false, follow: false } };
+
 export default async function AdminLayout({
   children,
 }: {

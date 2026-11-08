@@ -4,8 +4,10 @@ import { verifyJWT } from '@/lib/jwt';
 import { isBlacklisted } from '@/lib/blacklist';
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const LOCALE_COOKIE = 'inlet-locale'; // mirrors lib/i18n (which imports next/headers and cannot run here)
+const LANG_HEADER = 'x-inlet-lang';
 
-// Suspicious scraper user agents keywords
+// Suspicious scraper user agents keywords (admin area only)
 const BOT_USER_AGENTS = [
   'curl', 'wget', 'python', 'scrapy', 'headless', 'puppeteer', 'playwright',
   'selenium', 'httpclient', 'libwww', 'axios', 'postman', 'insomnia',
@@ -23,69 +25,43 @@ function hidden404(request: NextRequest) {
   return NextResponse.rewrite(new URL('/__no-such-route__', request.url));
 }
 
-export async function proxy(request: NextRequest) {
+function isPrefetch(request: NextRequest) {
+  return (
+    request.headers.get('x-middleware-prefetch') === '1' ||
+    request.headers.get('next-router-prefetch') === '1' ||
+    request.headers.get('purpose') === 'prefetch'
+  );
+}
+
+/** /admin and the refresh endpoint: scraper block, IP blacklist, session guard. */
+async function guardAdmin(request: NextRequest) {
   const url = request.nextUrl.clone();
 
-  // 1. Scraper Block by User-Agent
   const userAgent = (request.headers.get('user-agent') || '').toLowerCase();
-  const isSuspiciousAgent = BOT_USER_AGENTS.some(bot => userAgent.includes(bot));
+  if (BOT_USER_AGENTS.some((bot) => userAgent.includes(bot))) return hidden404(request);
 
-  if (isSuspiciousAgent) {
-    return hidden404(request);
-  }
-
-  // 2. IP Blacklist check at routing level
   const forwardedFor = request.headers.get('x-forwarded-for');
   const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
+  if (await isBlacklisted(ipAddress)) return hidden404(request);
 
-  if (await isBlacklisted(ipAddress)) {
-    return hidden404(request);
-  }
-
-  // 3. Admin Area Guard (/admin/*)
   if (url.pathname.startsWith('/admin')) {
-    if (!JWT_SECRET) {
-      // Configuration error — obfuscate identically
-      return hidden404(request);
-    }
+    if (!JWT_SECRET) return hidden404(request);
 
     const accessToken = request.cookies.get('access_token')?.value;
-
     if (!accessToken) {
-      // Check if it's a client-side prefetch request. Return 204 to prevent red console errors.
-      const isPrefetch =
-        request.headers.get('x-middleware-prefetch') === '1' ||
-        request.headers.get('next-router-prefetch') === '1' ||
-        request.headers.get('purpose') === 'prefetch';
-
-      if (isPrefetch) {
-        return new NextResponse(null, { status: 204 });
-      }
-
-      // If refresh token exists, redirect to login page (login will refresh it or verify password)
-      const refreshToken = request.cookies.get('refresh_token')?.value;
-      if (refreshToken) {
+      if (isPrefetch(request)) return new NextResponse(null, { status: 204 });
+      // A refresh token means a real session that expired: send it to the login page.
+      if (request.cookies.get('refresh_token')?.value) {
         url.pathname = '/login';
         return NextResponse.redirect(url);
       }
-
-      // No session: serve the identical branded 404 every missing route gets
       return hidden404(request);
     }
 
     // Verify JWT access token (HMAC verify via WebCrypto — constant-time)
     const payload = await verifyJWT(accessToken, JWT_SECRET);
     if (!payload || payload.sub !== 'admin') {
-      // Check if prefetch to prevent console errors
-      const isPrefetch =
-        request.headers.get('x-middleware-prefetch') === '1' ||
-        request.headers.get('next-router-prefetch') === '1' ||
-        request.headers.get('purpose') === 'prefetch';
-
-      if (isPrefetch) {
-        return new NextResponse(null, { status: 204 });
-      }
-
+      if (isPrefetch(request)) return new NextResponse(null, { status: 204 });
       // Invalid/expired token: DO NOT clear cookies here — Set-Cookie on a
       // "404" would reveal the route is special. The dead token just expires.
       return hidden404(request);
@@ -95,6 +71,35 @@ export async function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
+/**
+ * Pages: relay `?lang=en|fr` to the server as a request header so getLocale()
+ * — and with it <html lang>, the nav and every client component — follows the
+ * URL, not only the cookie or the visitor's country. The choice is also stored
+ * in the locale cookie, exactly as the FR/EN toggle does, so the next click
+ * stays in that language. The header is never accepted from the outside.
+ */
+function withLanguageHint(request: NextRequest) {
+  const lang = request.nextUrl.searchParams.get('lang');
+  const headers = new Headers(request.headers);
+  headers.delete(LANG_HEADER);
+  if (lang !== 'en' && lang !== 'fr') {
+    return request.headers.has(LANG_HEADER) ? NextResponse.next({ request: { headers } }) : NextResponse.next();
+  }
+  headers.set(LANG_HEADER, lang);
+  const res = NextResponse.next({ request: { headers } });
+  if (request.cookies.get(LOCALE_COOKIE)?.value !== lang) {
+    res.cookies.set(LOCALE_COOKIE, lang, { path: '/', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax' });
+  }
+  return res;
+}
+
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api/auth/refresh')) return guardAdmin(request);
+  return withLanguageHint(request);
+}
+
 export const config = {
-  matcher: ['/admin/:path*', '/api/auth/refresh'],
+  // Admin + refresh (guarded) and every page route (language hint); static files and the API stay out.
+  matcher: ['/admin/:path*', '/api/auth/refresh', '/((?!api/|_next/|.*\\..*).*)'],
 };

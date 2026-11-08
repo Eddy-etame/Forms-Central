@@ -9,6 +9,8 @@ import { SITE_URL } from '@/lib/seo';
 import { normalizeLang } from '@/lib/domain';
 import LocaleProvider from '@/components/LocaleProvider';
 
+export const metadata = { robots: { index: false, follow: false } };
+
 /**
  * End-client portal shell. White-labeled to the developer's brand
  * (name, logo, accent color). The Inlet byline only appears when the

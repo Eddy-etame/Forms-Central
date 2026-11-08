@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { isPublicHttpsUrl } from './domain';
+import { withSignedAttachments } from './storage';
 import { supabase } from './supabase';
 
 /**
@@ -70,7 +71,7 @@ export async function dispatchLeadWebhook(args: {
     const body = JSON.stringify({
       event: 'submission.created',
       form: { id: formId, name: formName },
-      submission: { id: submissionId, payload, created_at: new Date().toISOString() },
+      submission: { id: submissionId, payload: await withSignedAttachments(payload), created_at: new Date().toISOString() },
     });
     const headers = {
       'Content-Type': 'application/json',

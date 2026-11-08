@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getPlan } from '@/lib/plans';
+import { attachmentPath } from '@/lib/storage';
 
 /**
  * Data retention — makes the pricing table true.
@@ -18,21 +19,13 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const BATCH = 500;
-const SUPABASE_HOST = (() => {
-  try { return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co').host; } catch { return ''; }
-})();
-
-/** Storage object paths referenced by a payload (only this project's `uploads` bucket). */
+/** Storage object paths referenced by a payload (only this project's `uploads` bucket, any URL form). */
 function attachmentPaths(payload: unknown): string[] {
   const out: string[] = [];
   const walk = (v: unknown) => {
-    if (typeof v === 'string') {
-      try {
-        const u = new URL(v);
-        const m = u.host === SUPABASE_HOST && u.pathname.match(/^\/storage\/v1\/object\/public\/uploads\/(.+)$/);
-        if (m) out.push(decodeURIComponent(m[1]));
-      } catch { /* not a URL */ }
-    } else if (Array.isArray(v)) v.forEach(walk);
+    const path = attachmentPath(v);
+    if (path) out.push(path);
+    else if (Array.isArray(v)) v.forEach(walk);
     else if (v && typeof v === 'object') Object.values(v as Record<string, unknown>).forEach(walk);
   };
   walk(payload);

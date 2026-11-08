@@ -4,26 +4,19 @@ import { supabase } from '@/lib/supabase';
 import { verifyJWT } from '@/lib/jwt';
 import { getDeveloperSession } from '@/lib/developerAuth';
 import { getPortalSession } from '@/lib/portalAuth';
+import { attachmentPath, downloadAttachment } from '@/lib/storage';
 
 /**
- * Attachment download — closes the open proxy (court order A3).
+ * Attachment download — the only way to read a lead's file.
  *
  * The caller names a lead and a field, never a URL:
  *   GET /api/download?sid=<submission id>&field=<payload key>
  *
- * We then (1) require a session, (2) check that the session may read that
- * lead — the developer who owns the form, the client the form is assigned to,
- * or the operator — and (3) only fetch from this project's own storage host.
- * An arbitrary URL can no longer be pulled through the server.
+ * We (1) require a session, (2) check that the session may read that lead —
+ * the developer who owns the form, the client the form is assigned to, or
+ * the operator — and (3) read the object from the private bucket with the
+ * service role. Nothing else can be pulled through this route.
  */
-
-const STORAGE_HOST = (() => {
-  try {
-    return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co').host;
-  } catch {
-    return '';
-  }
-})();
 
 async function isOperator(): Promise<boolean> {
   const secret = process.env.JWT_SECRET;
@@ -60,33 +53,24 @@ export async function GET(request: Request) {
   if (!allowed) return new NextResponse('Not found', { status: 404 });
 
   const value = (sub.payload as Record<string, unknown>)?.[field];
-  if (typeof value !== 'string') return new NextResponse('Not found', { status: 404 });
-
-  let target: URL;
-  try {
-    target = new URL(value);
-  } catch {
-    return new NextResponse('Not a file', { status: 400 });
-  }
-  if (target.protocol !== 'https:' || target.host !== STORAGE_HOST || !target.pathname.startsWith('/storage/v1/object/')) {
-    return new NextResponse('Not a file', { status: 400 });
-  }
+  const path = attachmentPath(value);
+  if (!path) return new NextResponse(typeof value === 'string' ? 'Not a file' : 'Not found', { status: typeof value === 'string' ? 400 : 404 });
 
   try {
-    const upstream = await fetch(target.toString());
-    if (!upstream.ok) return new NextResponse('File not found', { status: 404 });
-    const contentType = upstream.headers.get('content-type') || 'application/octet-stream';
-    const filename = decodeURIComponent(target.pathname.split('/').pop() || 'file').replace(/[^\w.\-]+/g, '_');
-    return new NextResponse(upstream.body, {
+    const blob = await downloadAttachment(path);
+    if (!blob) return new NextResponse('File not found', { status: 404 });
+    const filename = (path.split('/').pop() || 'file').replace(/[^\w.\-]+/g, '_');
+    return new NextResponse(blob.stream(), {
       headers: {
-        'Content-Type': contentType,
+        'Content-Type': blob.type || 'application/octet-stream',
+        'Content-Length': String(blob.size),
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Cache-Control': 'private, no-store',
         'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch (error) {
-    console.error('Download proxy error:', error);
+    console.error('Download error:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }

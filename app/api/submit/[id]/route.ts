@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { isBlacklisted, blacklistTarget, AUTO_BAN_TTL_MS } from '@/lib/blacklist';
 import { handleHoneypotTrigger, resolveHostDomain } from '@/lib/dnsLookup';
+import { attachmentUrl, UPLOADS_BUCKET } from '@/lib/storage';
 import { verifyChallenge } from '@/lib/pow';
 import { sendLeadEmail, sendAutoReplyEmail } from '@/lib/email';
 import { getQuotaState, logEmailSend } from '@/lib/quota';
@@ -351,10 +352,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       : 'bin';
     const filename = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}.${ext}`;
     try {
-      const { data, error } = await supabase.storage.from('uploads').upload(filename, Buffer.from(match[2], 'base64'), { contentType: mimeType, upsert: false });
+      const { data, error } = await supabase.storage.from(UPLOADS_BUCKET).upload(filename, Buffer.from(match[2], 'base64'), { contentType: mimeType, upsert: false });
       if (!error && data) {
-        const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(filename);
-        if (urlData?.publicUrl) cleanPayload[key] = urlData.publicUrl;
+        // The bucket is private: the payload keeps the object's reference, readers go through /api/download.
+        cleanPayload[key] = attachmentUrl(filename);
       } else {
         console.error('[SUBMIT] Storage upload error:', error);
         cleanPayload[key] = '[attachment could not be stored]';

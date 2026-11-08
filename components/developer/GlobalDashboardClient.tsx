@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { isAttachmentValue, downloadHref } from '@/lib/attachments';
 import { BarChart3, TrendingUp, Users, FileText, CalendarDays, Download, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -41,7 +42,7 @@ export default function GlobalDashboardClient({ stats, forms = [], t, sn }: { st
       const formName = lead.forms?.name || 'Unknown';
       
       const payloadData = Array.from(allKeys).map(key => {
-        const val = lead.payload[key];
+        const val = isAttachmentValue(lead.payload[key]) ? `${window.location.origin}${downloadHref(lead.id, key)}` : lead.payload[key];
         if (typeof val === 'string') {
           return `"${val.replace(/"/g, '""')}"`;
         }

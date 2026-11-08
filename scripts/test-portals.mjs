@@ -37,11 +37,12 @@ const post = (path, body, cookie) => fetch(`${BASE}${path}`, { method: 'POST', h
 const DEV_EMAIL = `portaldev+${Date.now()}@test.dev`;
 const EC_EMAIL = `acme+${Date.now()}@test.dev`;
 const EC2_EMAIL = `beta+${Date.now()}@test.dev`;
-let developerId = null, devCookie = '', formId = null, form2Id = null, acmeId = null, betaId = null, portalCookie = '';
+let developerId = null, devCookie = '', formId = null, form2Id = null, acmeId = null, betaId = null, portalCookie = '', fileObjectPath = null;
 const otherDevs = [];
 
 async function cleanup() {
   try {
+    if (fileObjectPath) await sb.storage.from('uploads').remove([fileObjectPath]);
     for (const id of [developerId, ...otherDevs].filter(Boolean)) {
       const { data: forms } = await sb.from('forms').select('id').eq('client_id', id);
       for (const f of forms ?? []) await sb.from('submissions').delete().eq('form_id', f.id);
@@ -194,6 +195,32 @@ try {
   {
     const res = await fetch(`${BASE}/api/portal/leads`);
     check('portal leads rejects no session (401)', res.status === 401, `got ${res.status}`);
+  }
+  {
+    // Attachments (2026-11-08): the bucket is private. A file arrives as a data URI, is stored
+    // under a random name, and is readable only through /api/download by the lead's owners.
+    const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    const body = new URLSearchParams({ name: 'File Lead', email: 'file@x.com', photo: `data:image/png;base64,${PNG.toString('base64')}` }).toString();
+    const res = await fetch(`${BASE}/api/submit/${formId}`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: 'https://acme.example', Referer: 'https://acme.example/contact' }, body });
+    check('submit accepts a lead with a data-URI file (200)', res.status === 200, `got ${res.status}`);
+    await new Promise((r) => setTimeout(r, 800));
+    const { data: rows } = await sb.from('submissions').select('id, payload').eq('form_id', formId).order('created_at', { ascending: false }).limit(1);
+    const fileLead = rows?.[0];
+    const ref = String(fileLead?.payload?.photo ?? '');
+    const m = ref.match(/\/storage\/v1\/object\/authenticated\/uploads\/(.+)$/);
+    check('payload holds the authenticated reference, not a public link', !!m, ref.slice(0, 90));
+    if (m) {
+      fileObjectPath = decodeURIComponent(m[1]);
+      const pub = await fetch(`${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/uploads/${m[1]}`);
+      check('the object is NOT readable through the public storage URL', pub.status !== 200, `got ${pub.status}`);
+      const dlDev = await fetch(`${BASE}/api/download?sid=${fileLead.id}&field=photo`, { headers: { cookie: devCookie } });
+      const bytes = dlDev.ok ? Buffer.from(await dlDev.arrayBuffer()) : Buffer.alloc(0);
+      check('the developer downloads it through /api/download (200, image/png, same bytes)', dlDev.status === 200 && (dlDev.headers.get('content-type') || '').includes('image/png') && bytes.equals(PNG), `got ${dlDev.status} ${dlDev.headers.get('content-type')} ${bytes.length}b`);
+      const dlPortal = await fetch(`${BASE}/api/download?sid=${fileLead.id}&field=photo`, { headers: { cookie: portalCookie } });
+      check('the client downloads it too (200)', dlPortal.status === 200, `got ${dlPortal.status}`);
+      const dlAnon = await fetch(`${BASE}/api/download?sid=${fileLead.id}&field=photo`);
+      check('anonymous download is refused (401)', dlAnon.status === 401, `got ${dlAnon.status}`);
+    }
   }
   {
     const res = await post('/api/portal/forgot-password', { email: `nobody+${Date.now()}@test.dev` });

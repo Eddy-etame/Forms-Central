@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { isAttachmentValue, downloadHref } from '@/lib/attachments';
 import { Search, X, Inbox, Download } from 'lucide-react';
 import { useLocale } from '@/lib/useLocale';
 import { getAppDict } from '@/lib/appDict';
@@ -51,7 +52,7 @@ export default function PortalLeads() {
     const rows = filtered.map((l) => {
       const base = [new Date(l.created_at).toLocaleString('en-GB'), formName(l.form_id)];
       const vals = [...keys].map((k) => {
-        const v = l.payload[k];
+        const v = isAttachmentValue(l.payload[k]) ? `${window.location.origin}${downloadHref(l.id, k)}` : l.payload[k];
         return typeof v === 'string' ? `"${v.replace(/"/g, '""')}"` : (v ?? '');
       });
       return [...base.map((b) => `"${b}"`), ...vals].join(',');

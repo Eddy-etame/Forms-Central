@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { isAttachmentValue, downloadHref } from '@/lib/attachments';
 import { BarChart3, TrendingUp, Download, Search, X, FileText, Paperclip } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -38,7 +39,7 @@ export default function FormDashboardClient({ stats, t, formId, sn }: { stats: S
       const date = new Date(lead.created_at).toLocaleString('en-GB');
       
       const payloadData = Array.from(allKeys).map(key => {
-        const val = lead.payload[key];
+        const val = isAttachmentValue(lead.payload[key]) ? `${window.location.origin}${downloadHref(lead.id, key)}` : lead.payload[key];
         if (typeof val === 'string') {
           return `"${val.replace(/"/g, '""')}"`;
         }

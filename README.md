@@ -176,43 +176,32 @@ Before pushing: `npm run lint && npx tsc --noEmit && npm run build`.
 
 ## Deployment (Vercel)
 
-Production is the Vercel project **`inlet`** in the author's personal scope
-(`etameeddy01-1772`, Hobby). It was created and is deployed from the CLI;
-`vercel.json` pins the Paris region (`cdg1`) and the daily retention cron.
+Production is the Vercel project **`eam-inlet`** in the author's personal
+scope (`etameeddy01-1772`), served at https://eam-inlet.vercel.app with the
+former `inlet-eta.vercel.app` redirecting (308). Deploys are made from the
+CLI, from a clean checkout of `main`:
 
 ```bash
 npx vercel login                                   # device flow, any machine
-npx vercel link --yes --project inlet --scope etameeddy01-1772
+npx vercel link --yes --project eam-inlet --scope etameeddy01-1772
 npx vercel env ls                                  # every name of .env.example is set in production
 npx vercel deploy --prod --yes                     # build + release
 ```
 
-Rules:
-1. Add a new variable with `printf '%s' "$VALUE" | npx vercel env add NAME production`
-   — never through a pasted value in a chat or a commit.
-2. Run the pending migrations in the Supabase SQL editor **before** the deploy
-   that needs them (v22 is required by this version: forms without a client no
-   longer exist; the submit route degrades gracefully, the dashboard does not).
-3. After a deploy: submit one test lead on a real form, open `/admin` → e-mail
-   health, and `curl -s https://<prod>/llms.txt | head -3`.
+**Why not the Git integration (2026-11-08).** Linking the project to GitHub
+was tried: `Eddy-etame/Forms-Central` is refused (the Vercel account's GitHub
+identity has no access to it) and linking the mirror `EddyEtame/inlet` works
+but then every deployment — Git-triggered *and* CLI — is blocked with
+`TEAM_ACCESS_REQUIRED`, because the commit author (GitHub `Eddy-etame`) is not
+the account's GitHub user (`EddyEtame`) and a Hobby account has no other
+members. The link was removed. To get push-to-deploy, one of: connect Vercel's
+GitHub integration to the `Eddy-etame` account and link `Forms-Central`;
+author commits under an e-mail verified on the `EddyEtame` GitHub account;
+or a Pro team with both identities as members.
 
-### Git: two remotes, one push
-
-The code lives on two GitHub accounts and every push must land on both
-(`Eddy-etame/Forms-Central` and `EddyEtame/inlet`). One `origin` with two
-push URLs does exactly that:
-
-```bash
-git remote set-url --add --push origin https://github.com/Eddy-etame/Forms-Central.git
-git remote set-url --add --push origin https://github.com/EddyEtame/inlet.git
-git push origin main          # goes to both
-```
-
-Moving the data to another Supabase project (another account, another
-region): run `scripts/backup-supabase.mjs`, create the new project, run the
-migrations, then `scripts/migrate-supabase.mjs`. Rotate every key afterwards.
-
----
+The daily retention job (`vercel.json` → `/api/cron/retention`) runs only with
+`CRON_SECRET`, `RETENTION_ENABLED=true` and `RETENTION_APPLY=true` set in
+production; without them it answers 401 or reports a dry run.
 
 ## Security rules (non-negotiable)
 

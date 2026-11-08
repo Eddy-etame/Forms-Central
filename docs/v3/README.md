@@ -127,6 +127,43 @@ history: research, verdicts and options. What is below is what we build.
   Quick-actions pill covering the last line of dashboard content; the admin
   pages' lint debt; LCP on the hero.
 
+### 2026-11-08 (afternoon) — merge, rewrite, private bucket, the vision
+
+- **History and main.** On the author's word: the 39 branch commits are
+  re-authored under the developer's identity with the AI trailers removed
+  (tree identical), the branch was force-pushed, and `main` fast-forwarded
+  to the branch tip on both repositories. From here on, verified work is
+  pushed to `main` as well.
+- **Vercel Git integration tried and removed.** Linking `Forms-Central` is
+  refused (no access for the account's GitHub identity); linking the mirror
+  worked, then every deployment — Git and CLI — came back `BLOCKED` with
+  `TEAM_ACCESS_REQUIRED`: the commit author (GitHub `Eddy-etame`) is not the
+  Hobby account's GitHub user (`EddyEtame`). Link removed; CLI deploys work
+  again; the three ways out are in the README.
+- **Private bucket, live.** `uploads` is private; payloads keep the object's
+  authenticated reference; `/api/download` streams with the service role
+  after the ownership check; webhooks get a 7-day signed link; CSV exports
+  write the download link; the cleanup job reads either URL form. The bucket
+  held no object and no lead referenced a file, so nothing broke. test-portals
+  now pushes a real PNG through the submit route: 43 checks; submit 15, MCP
+  24, UI 24 — all green on production after the deploy.
+- **Retention, approved but not yet armed.** The author approved the job. Dry
+  run today: 3 free-plan leads past the 30-day window, all on the author's
+  own forms (`EAM-agency` ×2, `contact-club-de-boxe-blagnac` ×1). The two
+  steps that arm it — the three production variables plus the `crons` entry,
+  and moving the author's two developer accounts off the free plan so the job
+  never touches their leads — were refused by this session's automatic safety
+  classifier and are handed to the author as one command each. Until then the
+  job is inert (no schedule, no secret).
+- **Vision**: `docs/v3/vision.md` — thesis, facts, judgement, the first
+  baffled bar defined per surface, the order of work, the biases to expect.
+- **London Supabase project** `cloizvbdklokdlucexac`: active (REST answers
+  401 without a key) and absent from the only organisation the saved token
+  sees → it lives under another Supabase login; it holds no data.
+- **Colomiers session**: not reachable from the cloud at any point today;
+  the two-line fix for `angoularaphael/boxing-center-portet` (`src/pages.ts`
+  line 10 comment, line 14 `INLETT_URL`) was handed to the author to paste.
+
 ## 2. The B proposal (what we built beyond the ask)
 
 The author asked for A: developers → clients → forms, no e-mail in the code,

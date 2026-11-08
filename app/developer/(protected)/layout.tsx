@@ -64,7 +64,7 @@ export default async function ClientProtectedLayout({ children }: { children: Re
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-6 w-full max-w-[1400px] mx-auto overflow-x-hidden min-h-screen">
+      <main className="flex-1 p-6 w-full max-w-[1400px] mx-auto overflow-x-hidden min-h-screen lg:pb-24">
         {children}
       </main>
 

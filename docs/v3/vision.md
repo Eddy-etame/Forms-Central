@@ -90,7 +90,7 @@ checked by a stranger in ten minutes:
 | E-mails | Notification and auto-reply look like the client's own, render in Gmail/Outlook/Apple Mail, never land in spam. | Branded; deliverability unproven at volume. |
 | API + MCP | An AI assistant can set up a site, read leads and verify webhooks without reading docs. | 14 tools, proven; needs the showcase. |
 | Security | Nothing leaks across tenants; every secret is hashed, rotated or scoped. | Audited; private bucket done. |
-| Operations | Backups durable and automatic; retention reports before it deletes; health visible. | Backups manual; dry-run report missing. |
+| Operations | Backups durable and automatic; retention reports before it deletes; health visible; no notification can fail silently. | Backups manual; dry-run report missing; delivery tracked per lead and retried daily since 2026-11-24. |
 | Business | A card pays for a plan the same minute; invoices exist; the free plan converts. | Manual activation. |
 | Trust | Legal pages, a status of what is and is not promised, a real contact. | Pages live; contact is a personal mailbox. |
 
@@ -135,6 +135,13 @@ checked by a stranger in ten minutes:
   deliberate, but untested with a real client.
 - **Retention windows** on the free plan are a pricing lever and a trust risk at
   once; the first developer who loses a lead will not read the pricing table.
+
+- **Green suites, broken product** (learned 2026-11-24): for seventeen days
+  every suite passed while no lead notification left the building, because
+  the suites switched notifications off and the failure log was written the
+  same unreliable way as the e-mails. A test that never exercises the promise
+  the product makes is a bias, not a safety net. Each promise on the landing
+  page now needs one check that would fail if the promise broke.
 
 ## 7. What I do not know
 

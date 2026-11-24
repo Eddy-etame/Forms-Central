@@ -164,6 +164,84 @@ history: research, verdicts and options. What is below is what we build.
   the two-line fix for `angoularaphael/boxing-center-portet` (`src/pages.ts`
   line 10 comment, line 14 `INLETT_URL`) was handed to the author to paste.
 
+### 2026-11-24 — INCIDENT: no lead notification left this deployment for 17 days
+
+**What happened.** From the day the client sites were pointed at this
+deployment (2026-11-07) until 2026-11-24, every lead was stored and no
+notification e-mail was sent. Four real leads were affected: three on
+`contact-club-de-boxe-blagnac` (9, 10 and 18 November) and one on `boutique de
+boxe` (17 November). No lead was lost; nobody was told about them.
+
+**Root cause.** The submit route started its e-mails, webhook and log rows as
+bare promises and answered the visitor. The host suspends the function once
+the response is out, so the work was dropped — and the failure log, written
+the same way, stayed empty. The old deployment had the same code and got away
+with it. The same pattern sat on the plan-request e-mail and on both
+password-reset e-mails.
+
+**Why nobody saw it.** (1) The log that should have shown the failure was
+itself fire-and-forget. (2) No suite exercised the mail path: the test clients
+had notifications switched off. (3) The e-mail log could not say *which* lead
+had been notified, so no screen could show a gap. Found by reading
+`failures_log` and `email_log` against `submissions` while preparing another
+feature — not by a monitor. That is the real finding.
+
+**Fix (deployed and proven on production the same day).**
+- `lib/background.ts` wraps `next/server` `after()`: the task starts at once
+  and the invocation stays alive until it settles. Every post-response task
+  goes through it (lead e-mails, auto-replies, webhooks, spam label, quota and
+  failure logs, security events, key and session timestamps, plan-request and
+  password-reset e-mails). Log rows are part of the task they describe.
+- SMTP attempts time out (8 s connect and greeting, 15 s socket).
+- Reserved addresses (`.invalid`, `.test`, `.example`, `example.com`…) are
+  never mailed: the sending account's login is verified instead and the
+  e-mail is logged as usual. The suites moved to `.invalid` addresses and now
+  assert, on every run, that a lead produces a logged client notification and
+  a logged auto-reply.
+- **Migration v23**: each lead carries `notified_at` / `notify_attempts`
+  (backfilled from the e-mail log; exactly the four leads above were left
+  unmarked). A lead that stays unmarked is flagged in the developer dashboard
+  (banner, per-lead chip, lead detail) with a one-click resend, retried after
+  the developer's next lead, and by a daily sweep (`/api/cron/redeliver`,
+  06:23 UTC; `CRON_SECRET` is now set in production — retention stays off, it
+  needs two more variables and has no schedule). A re-sent notification is
+  prefixed `[Delayed]` / `[En retard]` and opens with the lead's real date;
+  auto-replies are never re-sent. `get_form_health` (MCP) reports
+  `not_notified`.
+- Suites on production after the fix: submit 19, portals 49, MCP 24, UI 27,
+  zero browser errors.
+
+**The four leads.** Not re-sent by hand: they go out with the next daily sweep
+(or the next lead on those accounts, or one click on the dashboard banner),
+marked as delayed.
+
+**Second finding, same investigation.** The failure log holds 103 login
+refusals (`535 Authentication failed`) for sending accounts 2 to 6, from July
+to 29 October, all written by the old deployment. Only account 1 delivers.
+The pool is one account with five dead spares: re-key or remove 2–6.
+
+**Also on 2026-11-24.**
+- The auto-reply subject is answered in the visitor's language when the
+  stored subject is one of the product's defaults; a written subject is never
+  touched (a French visitor of a form holding the operator-area default got
+  an English subject over a French body).
+- Docs (public and agent): posting from a server without a key — the origin
+  list does not apply, the challenge is IP-bound, a filled honeypot must be
+  dropped locally or the server's IP is banned for 24 h, rate limits count
+  the server as one visitor. `MISSING_ORIGIN` is a 400 on a CORS preflight,
+  not a 403 on a post.
+- `angoularaphael/boxing-center-portet` now posts to the new origin (done by
+  the author): every site of the author is moved. Only the five external
+  developers still use the old origin.
+- A second session of the author asked for a contact form for the new
+  portfolio. Facts: the owning account is on the free plan with 3/3 forms;
+  the operator's form action has no plan limit. The insert was refused by
+  this session's safety check (the request did not come from the author
+  directly) and replies to another session are not permitted from the cloud:
+  it waits for the author's word. Planned settings: same account and client
+  as `EAM-agency`, allowed site `http://localhost:3000` (a server-side post
+  carries no Origin header, so the list does not gate it), auto-reply off.
+
 ## 2. The B proposal (what we built beyond the ask)
 
 The author asked for A: developers → clients → forms, no e-mail in the code,

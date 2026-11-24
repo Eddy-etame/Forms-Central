@@ -51,6 +51,14 @@ created by their developer and receive a set-password link.
   limits with 24 h bans, attachments to Storage, e-mail to the client (+
   developer copy), branded auto-reply, signed webhook. API-key relays
   (`Authorization: Bearer kef_…` + `X-Inlet-Visitor-IP`) skip CORS and PoW.
+  Everything after the stored lead runs through `lib/background.ts`
+  (`after()`), never as a bare promise: the host suspends the function once
+  the response is out.
+- **Delivery state** — each lead records when its notification was accepted
+  by the mail server (`submissions.notified_at`). A lead that stays unmarked
+  is flagged in the dashboard with a one-click resend, retried after the
+  developer's next lead and by a daily sweep (`/api/cron/redeliver`); the
+  late e-mail is prefixed `[Delayed]` and carries the lead's real date.
 - **MCP server** `POST /api/mcp` (Streamable HTTP) — 14 tools; `setup_site`
   goes from zero to a live form in one call. See `app/api/[transport]/route.ts`.
 - **Operator admin** `/admin` — developers, forms, e-mail health, security
@@ -132,7 +140,8 @@ See `.env.example` — every variable is documented there. The ones people miss:
 | `SMTP_*`, `SMTP_<n>_*` | the sending-account pool (rotation + cooldown); every `FROM` must be a verified sender on its account |
 | `OPERATOR_EMAIL` | receives plan requests (falls back to `ADMIN_2FA_EMAIL`) |
 | `AI_CLASSIFIER_ENABLED` | the AI spam classifier runs only when exactly `true` |
-| `CRON_SECRET`, `RETENTION_ENABLED`, `RETENTION_APPLY` | the retention job is off unless all three are set; without `RETENTION_APPLY=true` it only reports |
+| `CRON_SECRET` | bearer the scheduler sends to `/api/cron/*`; the daily redelivery sweep needs it |
+| `RETENTION_ENABLED`, `RETENTION_APPLY` | the retention job is off unless both are `true` (on top of `CRON_SECRET`); without `RETENTION_APPLY=true` it only reports |
 
 ---
 
@@ -199,9 +208,10 @@ GitHub integration to the `Eddy-etame` account and link `Forms-Central`;
 author commits under an e-mail verified on the `EddyEtame` GitHub account;
 or a Pro team with both identities as members.
 
-The daily retention job (`vercel.json` → `/api/cron/retention`) runs only with
-`CRON_SECRET`, `RETENTION_ENABLED=true` and `RETENTION_APPLY=true` set in
-production; without them it answers 401 or reports a dry run.
+Scheduled jobs (`vercel.json` → `crons`, authenticated with `CRON_SECRET`):
+`/api/cron/redeliver` runs daily and sends the notifications that never left.
+`/api/cron/retention` is not scheduled; it also needs `RETENTION_ENABLED=true`
+and `RETENTION_APPLY=true`, and reports a dry run otherwise.
 
 ## Security rules (non-negotiable)
 
@@ -217,7 +227,12 @@ production; without them it answers 401 or reports a dry run.
    ownership checks; the storage URL never reaches a browser.
 6. **Every send is logged; a failed send is a failure**, never reported as
    delivered. Sending accounts (`SMTP_*`, `SMTP_<n>_*`) rotate with a cooldown
-   on failure; the daily e-mail budget is charged after success.
+   on failure; the daily e-mail budget is charged after success. Work that
+   outlives the response (e-mails, webhooks, log rows) goes through
+   `background()` — a bare promise is dropped by the host. Reserved test
+   addresses (`.invalid`, `.test`, `example.com`…) are never mailed: the
+   account's login is verified instead, which is how the suites exercise
+   the real path.
 7. **The AI classifier is off by default** (`AI_CLASSIFIER_ENABLED`); when on,
    it only labels leads that have no label yet and treats content as untrusted.
 8. **Service role stays on the server.** Public clients never see it; RLS is

@@ -67,7 +67,7 @@ interface AppDict {
     colDate: string; colForm: string; colIdentity: string; colPreview: string;
     noMatch: string; unknown: string; close: string;
     detailsTitle: string; receivedVia: string; // {date} {form} placeholders
-    delivery: { banner: string; bannerOne: string; bannerHint: string; sendNow: string; sending: string; chip: string; chipHint: string; sent: string; partial: string; failed: string; paused: string; nothing: string; modalLine: string; modalSend: string };
+    delivery: { banner: string; bannerOne: string; bannerHint: string; sendNow: string; sendNowOne: string; sending: string; chip: string; chipHint: string; sent: string; sentOne: string; partial: string; failed: string; paused: string; nothing: string; modalLine: string; modalSend: string };
     downloadFile: string;
     nf: {
       createTitle: string; liveTitle: string; nameHint: string; nameLabel: string; namePlaceholder: string;
@@ -374,10 +374,10 @@ export const appDictionaries: Record<Locale, AppDict> = {
       delivery: {
         banner: '{n} leads were stored, but their notification e-mail did not go out.',
         bannerOne: '1 lead was stored, but its notification e-mail did not go out.',
-        bannerHint: 'Nothing is lost: they are in the table below. Each notification sent now says it is late and gives the lead’s real date.',
-        sendNow: 'Send them now', sending: 'Sending…',
+        bannerHint: 'Nothing is lost: every lead is in the table below. A notification sent now says it is late and gives the lead’s real date.',
+        sendNow: 'Send them now', sendNowOne: 'Send it now', sending: 'Sending…',
         chip: 'Not notified', chipHint: 'This lead’s notification e-mail was not delivered.',
-        sent: '{n} notification(s) sent.', partial: '{n} sent, {f} could not be sent. Try again in a moment.',
+        sent: '{n} notifications sent.', sentOne: '1 notification sent.', partial: '{n} sent, {f} could not be sent. Try again in a moment.',
         failed: 'The notifications could not be sent. Try again in a moment.',
         paused: 'Your plan’s e-mail quota is used up for now. The notifications go out when it resets.',
         nothing: 'Nothing left to send.',
@@ -711,10 +711,10 @@ export const appDictionaries: Record<Locale, AppDict> = {
       delivery: {
         banner: '{n} leads ont été enregistrés, mais leur e-mail de notification n’est pas parti.',
         bannerOne: '1 lead a été enregistré, mais son e-mail de notification n’est pas parti.',
-        bannerHint: 'Rien n’est perdu : ils sont dans le tableau ci-dessous. Chaque notification envoyée maintenant précise qu’elle est en retard et donne la vraie date du lead.',
-        sendNow: 'Les envoyer maintenant', sending: 'Envoi…',
+        bannerHint: 'Rien n’est perdu : chaque lead est dans le tableau ci-dessous. Une notification envoyée maintenant précise qu’elle est en retard et donne la vraie date du lead.',
+        sendNow: 'Les envoyer maintenant', sendNowOne: 'L’envoyer maintenant', sending: 'Envoi…',
         chip: 'Non notifié', chipHint: 'L’e-mail de notification de ce lead n’a pas été délivré.',
-        sent: '{n} notification(s) envoyée(s).', partial: '{n} envoyée(s), {f} en échec. Réessayez dans un instant.',
+        sent: '{n} notifications envoyées.', sentOne: '1 notification envoyée.', partial: '{n} envoyée(s), {f} en échec. Réessayez dans un instant.',
         failed: 'Les notifications n’ont pas pu être envoyées. Réessayez dans un instant.',
         paused: 'Le quota d’e-mails de votre forfait est épuisé pour l’instant. Les notifications partiront à sa remise à zéro.',
         nothing: 'Plus rien à envoyer.',

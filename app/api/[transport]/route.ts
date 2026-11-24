@@ -6,6 +6,7 @@ import { SITE_URL } from '@/lib/seo';
 import { createClientForDeveloper, CLIENT_SELECT, shapeClient, inviteClient } from '@/lib/clients';
 import { createFormForDeveloper, findFormByName, isServiceError, FORM_SELECT } from '@/lib/forms';
 import { buildSnippet, helperSnippet, deriveOrigins, normalizeOrigins, SNIPPET_TARGETS, type SnippetTarget } from '@/lib/snippets';
+import { pendingNotificationIds } from '@/lib/delivery';
 
 /**
  * Inlet MCP server v2 (Streamable HTTP, stateless).
@@ -338,7 +339,7 @@ function buildHandler(auth: ApiKeyAuth) {
         'get_form_health',
         {
           title: 'Form health',
-          description: 'Is the form live and wired? Origins, last lead, leads in the last 7 days, e-mail activity today, failures, auto-reply and webhook state. ~60 tokens.',
+          description: 'Is the form live and wired? Origins, last lead, leads in the last 7 days, e-mail activity today, leads whose notification has not been delivered yet, failures, auto-reply and webhook state. ~70 tokens.',
           inputSchema: { form_id: z.string().uuid() },
           annotations: RO,
         },
@@ -354,6 +355,7 @@ function buildHandler(auth: ApiKeyAuth) {
             supabase.from('failures_log').select('id', { count: 'exact', head: true }).eq('form_id', form_id).gte('created_at', weekAgo),
           ]);
           const f = form as unknown as Record<string, unknown>;
+          const notNotified = (await pendingNotificationIds(dev, [form_id])).size;
           return ok({
             active: f.is_active,
             origins: f.allowed_origins,
@@ -362,6 +364,7 @@ function buildHandler(auth: ApiKeyAuth) {
             last_lead_at: last?.[0]?.created_at ?? null,
             leads_7d: week ?? 0,
             emails_today: mails ?? 0,
+            not_notified: notNotified, // stored, somebody should have been told, the e-mail has not gone out (retried automatically)
             failures_7d: failures ?? 0,
             auto_reply: f.auto_reply_enabled,
             webhook: !!f.webhook_url,

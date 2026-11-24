@@ -138,6 +138,24 @@ let devId = null, formId = null, clientId = null;
     step('lead modal header date reads dd Mon yyyy, hh:mm', /\d{2} [A-Z][a-z]{2} \d{4}, \d{2}:\d{2}/.test(await text(page)));
     await page.keyboard.press('Escape').catch(() => {});
 
+    // 5b. a lead whose notification never left is flagged, and one click re-sends it (v23).
+    //     The client's address is a reserved .invalid one: the mail layer verifies the sending
+    //     account instead of sending, so nobody is e-mailed.
+    const fresh = await sb(`submissions?form_id=eq.${formId}&select=id,notified_at`);
+    step('the fresh lead was marked as notified', Array.isArray(fresh.body) && fresh.body.length === 1 && !!fresh.body[0].notified_at, JSON.stringify(fresh.body));
+    await sb('submissions', { method: 'POST', body: JSON.stringify({ form_id: formId, payload: { name: 'Missed Lead', email: 'missed@selftest.invalid', message: 'Nobody was told about me' }, ip_address: '127.0.0.1', fingerprint: 'ui', created_at: new Date(Date.now() - 10 * 60_000).toISOString() }) });
+    await page.goto(`${B}/developer/dashboard`, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(800);
+    await shot(page, '08b-delivery-notice');
+    const notice = page.getByRole('status').filter({ hasText: /notification e-mail did not go out|e-mail de notification n’est pas parti/i });
+    step('dashboard flags the lead that was never notified', (await notice.count()) === 1 && (await page.getByText(/^not notified$|^non notifié$/i).count()) >= 1);
+    await notice.getByRole('button').click();
+    await page.getByText(/1 notification sent|1 notification envoyée/i).first().waitFor({ timeout: 45000 }).catch(() => {});
+    await page.waitForTimeout(1500);
+    await shot(page, '08c-after-resend');
+    const after = await sb(`submissions?form_id=eq.${formId}&notified_at=is.null&select=id`);
+    step('one click re-sends it: the lead is marked delivered and the notice is gone', Array.isArray(after.body) && after.body.length === 0 && (await notice.count()) === 0, JSON.stringify(after.body));
+
     // 6. the client sets a password from an invite link and opens their inbox
     const raw = crypto.randomBytes(32).toString('base64url');
     const hash = crypto.createHash('sha256').update(raw).digest('hex');

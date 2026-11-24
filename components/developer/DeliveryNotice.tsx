@@ -24,7 +24,7 @@ export function useRedeliver(d: DeliveryDict) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) toast.error(data.error || d.failed);
-      else if (data.sent > 0 && data.failed === 0) toast.success(d.sent.replace('{n}', String(data.sent)));
+      else if (data.sent > 0 && data.failed === 0) toast.success(data.sent === 1 ? d.sentOne : d.sent.replace('{n}', String(data.sent)));
       else if (data.sent > 0) toast.info(d.partial.replace('{n}', String(data.sent)).replace('{f}', String(data.failed)));
       else if (data.paused > 0) toast.error(d.paused);
       else if (data.failed > 0) toast.error(d.failed);
@@ -64,7 +64,7 @@ export default function DeliveryNotice({ count, d }: { count: number; d: Deliver
         disabled={busy}
         className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-amber-700 disabled:opacity-60 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
       >
-        <Send className="h-4 w-4" aria-hidden /> {busy ? d.sending : d.sendNow}
+        <Send className="h-4 w-4" aria-hidden /> {busy ? d.sending : count === 1 ? d.sendNowOne : d.sendNow}
       </button>
     </div>
   );

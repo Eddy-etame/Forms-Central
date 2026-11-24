@@ -29,6 +29,7 @@ re-running one is safe.
 | 21 | `migration_v20_portal_security.sql` | portal hardening |
 | 22 | `migration_v21_apikey_function.sql` | `verify_api_key()` |
 | 23 | `migration_v22_platform.sql` | **the client model**: every form belongs to a client (`portal_user_id NOT NULL`, orphan forms backfilled onto a default client per developer), client website / lang / notify_leads, set-password invites, temporary bans (`blacklist.expires_at`), `plan_requests` |
+| 24 | `migration_v23_delivery_and_handling.sql` | **delivery state**: `submissions.notified_at` / `notify_attempts` (backfilled from the e-mail log) so a lead whose notification never left is flagged and retried; `handled_at` / `handled_by` for the inbox |
 
 Also create a **public Storage bucket named `uploads`** (attachments).
 

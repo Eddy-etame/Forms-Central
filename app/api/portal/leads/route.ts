@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getPortalSession } from '@/lib/portalAuth';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
+import { getPlan } from '@/lib/plans';
+import { retentionMode } from '@/lib/retention';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +42,15 @@ export async function GET() {
     ({ data: leads, error } = await read('id, form_id, payload, created_at'));
   }
 
-  return NextResponse.json({ success: true, forms, leads: leads ?? [], handledSupported });
+  // When retention is deleting, the client is told how long a request stays in this inbox.
+  let keptDays: number | null = null;
+  if (retentionMode() === 'apply') {
+    const { data: owner } = await supabase.from('portal_users').select('clients(plan)').eq('id', session.portalUserId).maybeSingle();
+    const dev = (owner as { clients?: { plan?: string | null } | { plan?: string | null }[] | null } | null)?.clients;
+    keptDays = getPlan((Array.isArray(dev) ? dev[0]?.plan : dev?.plan) ?? null).retentionDays;
+  }
+
+  return NextResponse.json({ success: true, forms, leads: leads ?? [], handledSupported, keptDays });
 }
 
 export async function PATCH(req: Request) {

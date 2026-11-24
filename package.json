@@ -19,8 +19,9 @@
     "test:crypto": "node --experimental-strip-types scripts/test-crypto.ts",
     "test:spam": "node --experimental-strip-types scripts/test-spam-core.ts",
     "test:autoreply": "node --experimental-strip-types scripts/test-autoreply.ts",
+    "test:retention": "node --experimental-strip-types scripts/test-retention.ts",
     "test:csv": "node --experimental-strip-types scripts/test-csv.ts",
-    "test:unit": "npm run test:mail && npm run test:security && npm run test:otp && npm run test:crypto && npm run test:spam && npm run test:autoreply && npm run test:csv"
+    "test:unit": "npm run test:mail && npm run test:security && npm run test:otp && npm run test:crypto && npm run test:spam && npm run test:autoreply && npm run test:retention && npm run test:csv"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",

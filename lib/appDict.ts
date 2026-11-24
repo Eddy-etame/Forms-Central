@@ -67,6 +67,7 @@ interface AppDict {
     colDate: string; colForm: string; colIdentity: string; colPreview: string;
     noMatch: string; unknown: string; close: string;
     detailsTitle: string; receivedVia: string; // {date} {form} placeholders
+    retention: { banner: string; bannerOne: string; today: string; todayOne: string; hint: string; hintAll: string; exportAll: string; plans: string; days: string; year: string };
     delivery: { banner: string; bannerOne: string; bannerHint: string; sendNow: string; sendNowOne: string; sending: string; chip: string; chipHint: string; sent: string; sentOne: string; partial: string; failed: string; paused: string; nothing: string; modalLine: string; modalSend: string };
     downloadFile: string;
     nf: {
@@ -294,7 +295,7 @@ interface AppDict {
       weekLabel: string; weekCount: string; weekCountOne: string;
       tabTodo: string; tabDone: string; tabAll: string; waitingFor: string; handledOn: string;
       reply: string; call: string; markHandled: string; reopen: string; replySubject: string; replyGreeting: string;
-      emptyTodo: string; emptyDone: string; errSave: string;
+      emptyTodo: string; emptyDone: string; errSave: string; keptNote: string; keptDays: string; keptYear: string;
       unitMin: string; unitHour: string; unitDay: string; unitDays: string; justNow: string;
       colStatus: string; statusTodo: string; statusDone: string;
     };
@@ -379,6 +380,13 @@ export const appDictionaries: Record<Locale, AppDict> = {
       leadDatabase: 'Lead database', searchPlaceholder: 'Search name, email…',
       colDate: 'Date', colForm: 'Form', colIdentity: 'Primary identity', colPreview: 'Preview',
       noMatch: 'No leads match your search.', unknown: 'Unknown',
+      retention: {
+        banner: '{n} leads will be deleted on {date}', bannerOne: '1 lead will be deleted on {date}',
+        today: '{n} leads are deleted today', todayOne: '1 lead is deleted today',
+        hint: 'Your {plan} plan keeps each lead for {window}. {total} of your leads are on the deletion calendar we e-mailed you; each one goes the day it reaches that age.',
+        hintAll: 'Your {plan} plan keeps each lead for {window}. This is the deletion we announced by e-mail.',
+        exportAll: 'Export everything', plans: 'Keep leads longer', days: '{n} days', year: 'one year',
+      },
       delivery: {
         banner: '{n} leads were stored, but their notification e-mail did not go out.',
         bannerOne: '1 lead was stored, but its notification e-mail did not go out.',
@@ -641,7 +649,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
         weekLabel: 'Last 7 days', weekCount: '{n} received', weekCountOne: '1 received',
         tabTodo: 'To handle', tabDone: 'Handled', tabAll: 'All', waitingFor: 'waiting {age}', handledOn: 'handled {date}',
         reply: 'Reply by e-mail', call: 'Call', markHandled: 'Mark as handled', reopen: 'Reopen', replySubject: 'About your message', replyGreeting: 'Hello {name},',
-        emptyTodo: 'Nothing is waiting. Well done.', emptyDone: 'Nothing handled yet.', errSave: 'Could not save. Try again.',
+        emptyTodo: 'Nothing is waiting. Well done.', emptyDone: 'Nothing handled yet.', keptNote: 'Requests stay here for {window}. The export button saves a copy of all of them.', keptDays: '{n} days', keptYear: 'one year', errSave: 'Could not save. Try again.',
         unitMin: 'min', unitHour: 'h', unitDay: 'day', unitDays: 'days', justNow: 'less than a minute',
         colStatus: 'Status', statusTodo: 'To handle', statusDone: 'Handled',
       },
@@ -724,6 +732,13 @@ export const appDictionaries: Record<Locale, AppDict> = {
       leadDatabase: 'Base de leads', searchPlaceholder: 'Rechercher un nom, un e-mail…',
       colDate: 'Date', colForm: 'Formulaire', colIdentity: 'Identité principale', colPreview: 'Aperçu',
       noMatch: 'Aucun lead ne correspond à votre recherche.', unknown: 'Inconnu',
+      retention: {
+        banner: '{n} leads seront supprimés le {date}', bannerOne: '1 lead sera supprimé le {date}',
+        today: '{n} leads sont supprimés aujourd’hui', todayOne: '1 lead est supprimé aujourd’hui',
+        hint: 'Votre forfait {plan} conserve chaque lead pendant {window}. {total} de vos leads figurent au calendrier de suppression envoyé par e-mail ; chacun part le jour où il atteint cet âge.',
+        hintAll: 'Votre forfait {plan} conserve chaque lead pendant {window}. C’est la suppression annoncée par e-mail.',
+        exportAll: 'Tout exporter', plans: 'Conserver plus longtemps', days: '{n} jours', year: 'un an',
+      },
       delivery: {
         banner: '{n} leads ont été enregistrés, mais leur e-mail de notification n’est pas parti.',
         bannerOne: '1 lead a été enregistré, mais son e-mail de notification n’est pas parti.',
@@ -986,7 +1001,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
         weekLabel: '7 derniers jours', weekCount: '{n} reçues', weekCountOne: '1 reçue',
         tabTodo: 'À traiter', tabDone: 'Traitées', tabAll: 'Toutes', waitingFor: 'en attente depuis {age}', handledOn: 'traitée le {date}',
         reply: 'Répondre par e-mail', call: 'Appeler', markHandled: 'Marquer comme traitée', reopen: 'Rouvrir', replySubject: 'Suite à votre message', replyGreeting: 'Bonjour {name},',
-        emptyTodo: 'Rien n’attend. Bravo.', emptyDone: 'Aucune demande traitée pour l’instant.', errSave: 'Enregistrement impossible. Réessayez.',
+        emptyTodo: 'Rien n’attend. Bravo.', emptyDone: 'Aucune demande traitée pour l’instant.', keptNote: 'Les demandes restent ici pendant {window}. Le bouton d’export en garde une copie complète.', keptDays: '{n} jours', keptYear: 'un an', errSave: 'Enregistrement impossible. Réessayez.',
         unitMin: 'min', unitHour: 'h', unitDay: 'jour', unitDays: 'jours', justNow: 'moins d’une minute',
         colStatus: 'Statut', statusTodo: 'À traiter', statusDone: 'Traitée',
       },

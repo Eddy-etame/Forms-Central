@@ -402,3 +402,168 @@ export async function sendPasswordResetEmail(toEmail: string, resetUrl: string, 
   });
   return result.success;
 }
+
+/* ─────────────────────────── retention ─────────────────────────── */
+
+const esc = (s: string) => s.replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c] as string));
+
+/** A UTC date as people write it: "9 December 2026" / "9 décembre 2026". */
+export function longDate(iso: string, lang: 'fr' | 'en'): string {
+  return new Date(iso).toLocaleDateString(lang === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+}
+
+/** "lead" is the word in both languages of the product. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const leadsWord = (n: number, _lang?: 'fr' | 'en') => `${n} lead${n === 1 ? '' : 's'}`;
+const windowWords = (days: number, lang: 'fr' | 'en') =>
+  days === 365 ? (lang === 'en' ? 'one year' : 'un an') : lang === 'en' ? `${days} days` : `${days} jours`;
+
+function systemShell(title: string, inner: string): string {
+  return `
+  <div style="background:#f6f7f9;padding:32px 0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
+    <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;">
+      <div style="background:#0f172a;padding:20px 28px;color:#fff;font-weight:700;font-size:16px;">Inlet</div>
+      <div style="padding:28px;color:#0f172a;font-size:14px;line-height:1.65;">
+        <h1 style="margin:0 0 14px;font-size:20px;line-height:1.3;">${title}</h1>
+        ${inner}
+      </div>
+    </div>
+  </div>`;
+}
+
+export interface RetentionNoticeEmail {
+  to: string;
+  developerName: string;
+  planName: string;
+  windowDays: number;
+  leadCount: number;
+  calendar: { date: string; count: number }[];
+  byForm: { name: string; count: number }[];
+  dashboardUrl: string;
+  plansUrl: string;
+  lang: 'fr' | 'en';
+}
+
+/**
+ * The notice that must precede any deletion for age. It is the developer's
+ * whole deletion calendar on the day it is sent — what goes, when, and the two
+ * ways to keep it. Returns false when nothing was handed to a mail server.
+ */
+export async function sendRetentionNoticeEmail(o: RetentionNoticeEmail): Promise<boolean> {
+  const en = o.lang === 'en';
+  const first = o.calendar[0];
+  const last = o.calendar[o.calendar.length - 1];
+  const shown = o.calendar.slice(0, 6);
+  const more = o.calendar.length - shown.length;
+  const firstDate = longDate(`${first.date}T00:00:00Z`, o.lang);
+  const win = windowWords(o.windowDays, o.lang);
+
+  const subject = en
+    ? `Inlet — ${leadsWord(first.count, 'en')} will be deleted on ${firstDate}`
+    : `Inlet — ${leadsWord(first.count, 'fr')} ${first.count === 1 ? 'sera supprimé' : 'seront supprimés'} le ${firstDate}`;
+
+  const intro = en
+    ? `Your ${o.planName} plan keeps each lead for ${win}. You hold ${leadsWord(o.leadCount, 'en')} today. This is their deletion calendar; nothing leaves before the first date.`
+    : `Votre forfait ${o.planName} conserve chaque lead pendant ${win}. Vous avez ${leadsWord(o.leadCount, 'fr')} aujourd’hui. Voici leur calendrier de suppression ; rien ne part avant la première date.`;
+  const moreLine = more > 0
+    ? (en
+        ? `…then ${more} more date${more === 1 ? '' : 's'}, the last on ${longDate(`${last.date}T00:00:00Z`, 'en')}.`
+        : `…puis ${more} autre${more === 1 ? '' : 's'} date${more === 1 ? '' : 's'}, la dernière le ${longDate(`${last.date}T00:00:00Z`, 'fr')}.`)
+    : '';
+  const forms = o.byForm.slice(0, 5).map((f) => `${f.name} (${f.count})`).join(', ') + (o.byForm.length > 5 ? '…' : '');
+  const keepTitle = en ? 'To keep them' : 'Pour les garder';
+  const keep1 = en
+    ? 'Export everything as CSV from your dashboard. It is included in every plan.'
+    : 'Exportez tout en CSV depuis votre tableau de bord. C’est inclus dans tous les forfaits.';
+  const keep2 = en
+    ? 'Or ask for a plan that keeps leads longer: one year on Solo, no limit on Pro and Max. While your request is open, nothing is deleted.'
+    : 'Ou demandez un forfait qui conserve plus longtemps : un an en Solo, sans limite en Pro et Max. Tant que votre demande est ouverte, rien n’est supprimé.';
+  const untouched = en
+    ? 'Not affected: the e-mails your clients received for each lead.'
+    : 'Non concernés : les e-mails que vos clients ont reçus pour chaque lead.';
+  const rule = en
+    ? 'You always get this notice at least 7 days before anything it announces is deleted. Leads that arrive from now on will be announced the same way.'
+    : 'Vous recevez toujours cet avis au moins 7 jours avant toute suppression qu’il annonce. Les leads qui arrivent à partir de maintenant seront annoncés de la même façon.';
+  const hello = en ? `Hello ${o.developerName},` : `Bonjour ${o.developerName},`;
+  const byFormLabel = en ? 'By form' : 'Par formulaire';
+  const exportLabel = en ? 'Open the dashboard' : 'Ouvrir le tableau de bord';
+  const plansLabel = en ? 'See the plans' : 'Voir les forfaits';
+
+  const text = [
+    hello, '', intro, '',
+    ...shown.map((c) => `  ${longDate(`${c.date}T00:00:00Z`, o.lang)} — ${leadsWord(c.count, o.lang)}`),
+    ...(moreLine ? [`  ${moreLine}`] : []),
+    '', `${byFormLabel}: ${forms}`, '',
+    keepTitle,
+    `- ${keep1} ${o.dashboardUrl}`,
+    `- ${keep2} ${o.plansUrl}`,
+    '', untouched, '', rule,
+  ].join('\n');
+
+  const html = systemShell(
+    esc(en ? `${leadsWord(first.count, 'en')} will be deleted on ${firstDate}` : `${leadsWord(first.count, 'fr')} ${first.count === 1 ? 'sera supprimé' : 'seront supprimés'} le ${firstDate}`),
+    `<p style="margin:0 0 6px;">${esc(hello)}</p>
+     <p style="margin:0 0 16px;color:#334155;">${esc(intro)}</p>
+     <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:0 0 6px;">
+       ${shown.map((c, i) => `<tr>
+         <td style="padding:8px 0;border-top:1px solid #e2e8f0;${i === 0 ? 'font-weight:700;' : ''}">${esc(longDate(`${c.date}T00:00:00Z`, o.lang))}</td>
+         <td style="padding:8px 0;border-top:1px solid #e2e8f0;text-align:right;${i === 0 ? 'font-weight:700;' : 'color:#475569;'}">${esc(leadsWord(c.count, o.lang))}</td>
+       </tr>`).join('')}
+     </table>
+     ${moreLine ? `<p style="margin:0 0 6px;color:#64748b;font-size:13px;">${esc(moreLine)}</p>` : ''}
+     <p style="margin:10px 0 20px;color:#64748b;font-size:13px;">${esc(byFormLabel)} : ${esc(forms)}</p>
+     <p style="margin:0 0 8px;font-weight:700;">${esc(keepTitle)}</p>
+     <p style="margin:0 0 10px;color:#334155;">${esc(keep1)}</p>
+     <p style="margin:0 0 18px;"><a href="${esc(o.dashboardUrl)}" style="display:inline-block;background:#0f172a;color:#fff;text-decoration:none;padding:11px 20px;border-radius:10px;font-weight:600;font-size:14px;">${esc(exportLabel)}</a></p>
+     <p style="margin:0 0 10px;color:#334155;">${esc(keep2)}</p>
+     <p style="margin:0 0 22px;"><a href="${esc(o.plansUrl)}" style="color:#0f172a;font-weight:600;">${esc(plansLabel)}</a></p>
+     <p style="margin:0 0 8px;color:#64748b;font-size:13px;">${esc(untouched)}</p>
+     <p style="margin:0;color:#64748b;font-size:13px;">${esc(rule)}</p>`
+  );
+
+  const result = await sendWithFallback({ from: getSenderAddress('Inlet'), to: o.to, subject, text, html });
+  return result.success;
+}
+
+/** Last call, two days before a backlog announced earlier is deleted. */
+export async function sendRetentionReminderEmail(o: {
+  to: string; developerName: string; planName: string; windowDays: number; count: number;
+  deleteAfter: string; noticeSentAt: string; dashboardUrl: string; plansUrl: string; lang: 'fr' | 'en';
+}): Promise<boolean> {
+  const en = o.lang === 'en';
+  const date = longDate(o.deleteAfter, o.lang);
+  const sent = longDate(o.noticeSentAt, o.lang);
+  const win = windowWords(o.windowDays, o.lang);
+  const title = en
+    ? `Last call: ${leadsWord(o.count, 'en')} will be deleted on ${date}`
+    : `Dernier rappel : ${leadsWord(o.count, 'fr')} ${o.count === 1 ? 'sera supprimé' : 'seront supprimés'} le ${date}`;
+  const body = en
+    ? `On ${date}, the ${leadsWord(o.count, 'en')} announced in our notice of ${sent} ${o.count === 1 ? 'is' : 'are'} deleted: ${o.count === 1 ? 'it is' : 'they are'} older than the ${win} of your ${o.planName} plan.`
+    : `Le ${date}, ${o.count === 1 ? 'le lead annoncé' : `les ${leadsWord(o.count, 'fr')} annoncés`} dans notre avis du ${sent} ${o.count === 1 ? 'sera supprimé : il dépasse' : 'seront supprimés : ils dépassent'} la durée de ${win} de votre forfait ${o.planName}.`;
+  const keep = en
+    ? 'Export them as CSV from your dashboard, or ask for a longer plan: while your request is open, nothing is deleted.'
+    : 'Exportez-les en CSV depuis votre tableau de bord, ou demandez un forfait plus long : tant que votre demande est ouverte, rien n’est supprimé.';
+  const hello = en ? `Hello ${o.developerName},` : `Bonjour ${o.developerName},`;
+  const text = [hello, '', body, '', keep, '', `${en ? 'Dashboard' : 'Tableau de bord'}: ${o.dashboardUrl}`, `${en ? 'Plans' : 'Forfaits'}: ${o.plansUrl}`].join('\n');
+  const html = systemShell(
+    esc(title),
+    `<p style="margin:0 0 6px;">${esc(hello)}</p>
+     <p style="margin:0 0 16px;color:#334155;">${esc(body)}</p>
+     <p style="margin:0 0 18px;color:#334155;">${esc(keep)}</p>
+     <p style="margin:0 0 14px;"><a href="${esc(o.dashboardUrl)}" style="display:inline-block;background:#0f172a;color:#fff;text-decoration:none;padding:11px 20px;border-radius:10px;font-weight:600;font-size:14px;">${esc(en ? 'Open the dashboard' : 'Ouvrir le tableau de bord')}</a></p>
+     <p style="margin:0;"><a href="${esc(o.plansUrl)}" style="color:#0f172a;font-weight:600;">${esc(en ? 'See the plans' : 'Voir les forfaits')}</a></p>`
+  );
+  const result = await sendWithFallback({ from: getSenderAddress('Inlet'), to: o.to, subject: `Inlet — ${title}`, text, html });
+  return result.success;
+}
+
+/** What a scheduled job did, for the operator. Plain and in English, like the other operator mail. */
+export async function sendOperatorReportEmail(operatorEmail: string, subject: string, lines: string[]): Promise<boolean> {
+  const text = lines.join('\n');
+  const html = `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.6;color:#0f172a">
+    <h2 style="margin:0 0 12px;font-size:17px">${esc(subject)}</h2>
+    <pre style="white-space:pre-wrap;background:#f1f5f9;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.55;margin:0">${esc(text)}</pre>
+  </div>`;
+  const result = await sendWithFallback({ from: getSenderAddress('Inlet'), to: operatorEmail, subject: `[Inlet] ${subject}`, text, html });
+  return result.success;
+}

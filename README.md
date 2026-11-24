@@ -141,10 +141,10 @@ See `.env.example` — every variable is documented there. The ones people miss:
 | `SUPABASE_SERVICE_ROLE_KEY` | bypasses RLS — server only, never `NEXT_PUBLIC_` |
 | `JWT_SECRET` | signs the three session cookies |
 | `SMTP_*`, `SMTP_<n>_*` | the sending-account pool (rotation + cooldown); every `FROM` must be a verified sender on its account |
-| `OPERATOR_EMAIL` | receives plan requests (falls back to `ADMIN_2FA_EMAIL`) |
+| `OPERATOR_EMAIL` | receives plan requests and the retention reports (falls back to `ADMIN_2FA_EMAIL`) |
 | `AI_CLASSIFIER_ENABLED` | the AI spam classifier runs only when exactly `true` |
 | `CRON_SECRET` | bearer the scheduler sends to `/api/cron/*`; the daily redelivery sweep needs it |
-| `RETENTION_ENABLED`, `RETENTION_APPLY` | the retention job is off unless both are `true` (on top of `CRON_SECRET`); without `RETENTION_APPLY=true` it only reports |
+| `RETENTION_ENABLED`, `RETENTION_APPLY` | retention is skipped unless `RETENTION_ENABLED=true`; then it only reports to the operator; with `RETENTION_APPLY=true` it e-mails developers their deletion calendar and deletes on the announced dates |
 
 ---
 
@@ -213,8 +213,28 @@ or a Pro team with both identities as members.
 
 Scheduled jobs (`vercel.json` → `crons`, authenticated with `CRON_SECRET`):
 `/api/cron/redeliver` runs daily and sends the notifications that never left.
-`/api/cron/retention` is not scheduled; it also needs `RETENTION_ENABLED=true`
-and `RETENTION_APPLY=true`, and reports a dry run otherwise.
+`/api/cron/retention` runs daily too and does nothing until it is switched on.
+Each run leaves a row in `job_runs`; the operator reads them under
+Logs → Scheduled jobs.
+
+**Retention deletes, so it warns first** (`lib/retentionCore.ts`, tested by
+`npm run test:retention`). A lead is deleted for age only when it has outlived
+the window of the developer's current plan *and* a notice covering it was
+e-mailed at least 7 days earlier for that same window. A notice is the
+developer's whole deletion calendar; a backlog gets a last call 48 hours
+before. A plan change voids what was announced, an open upgrade request pauses
+it, and a notice whose calendar ended two weeks ago authorises nothing (so a
+job that was off for a while starts again with a fresh notice). Three switches:
+
+| State | Variables | What happens |
+|---|---|---|
+| Off | `RETENTION_ENABLED` unset | the run is skipped |
+| Report | `RETENTION_ENABLED=true` | the operator is e-mailed what arming would do (when it changes, and weekly); no developer is e-mailed, nothing is deleted |
+| Armed | + `RETENTION_APPLY=true` | developers get their calendar; leads go on the announced dates; the operator gets what happened |
+
+The dashboard repeats an announced deletion with the export button; the
+client inbox says how long requests stay. Export (`/api/developer/leads/export`,
+`/api/portal/leads/export`) is on every plan and holds every lead.
 
 ## Security rules (non-negotiable)
 

@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { logSecurityEvent } from './securityEvents';
 import { background } from './background';
+import { getLocale } from './i18n';
 
 /**
  * Device/session registry (migrations/migration_v15) — anti subscription-
@@ -25,6 +26,11 @@ export async function registerClientSession(
       .select('id')
       .single();
     if (error || !data) return null;
+
+    // Remember the language of this sign-in: scheduled e-mails (no request, no
+    // cookie) are written in it. Never blocks the sign-in.
+    const lang = await getLocale().catch(() => null);
+    if (lang) background(Promise.resolve(supabase.from('clients').update({ lang }).eq('id', clientId)).then(() => {}, () => {}));
 
     // Enforce the cap: keep the newest DEVICE_LIMIT sessions, revoke the rest.
     const { data: active } = await supabase

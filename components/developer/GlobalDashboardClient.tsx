@@ -9,6 +9,8 @@ import NewFormButton from './NewFormButton';
 import OnboardingChecklist from './OnboardingChecklist';
 import DeliveryNotice, { PendingChip, PendingLine } from './DeliveryNotice';
 import ExportButton from '@/components/ExportButton';
+import RetentionNotice from './RetentionNotice';
+import type { UpcomingDeletions } from '@/lib/retention';
 import type { AppDict } from '@/lib/appDict';
 
 type DashDict = AppDict['dashboard'];
@@ -24,7 +26,7 @@ export interface DashboardStats {
   formPerformance: { name: string, count: number }[];
 }
 
-export default function GlobalDashboardClient({ stats, forms = [], t, sn }: { stats: DashboardStats; forms?: { id: string; name: string }[]; t: DashDict; sn: AppDict['snippets'] }) {
+export default function GlobalDashboardClient({ stats, forms = [], t, sn, upcoming = null, locale = 'fr' }: { stats: DashboardStats; forms?: { id: string; name: string }[]; t: DashDict; sn: AppDict['snippets']; upcoming?: UpcomingDeletions | null; locale?: 'fr' | 'en' }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLead, setSelectedLead] = useState<DashboardLead | null>(null);
 
@@ -63,6 +65,9 @@ export default function GlobalDashboardClient({ stats, forms = [], t, sn }: { st
 
       {/* Stored but nobody was told: say so, and offer the repair */}
       <DeliveryNotice count={stats?.recentLeads.filter((l) => l.notify_pending).length ?? 0} d={t.delivery} />
+
+      {/* Deletions already announced by e-mail: the same calendar, where the work happens */}
+      <RetentionNotice upcoming={upcoming} r={t.retention} locale={locale} />
 
       {/* The moment that matters: their very first lead = "my integration works" */}
       {stats?.allTime === 1 && (

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { redeliverPending } from '@/lib/delivery';
+import { recordJobRun } from '@/lib/jobRuns';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -14,7 +15,16 @@ export async function GET(req: Request) {
   if (!secret || req.headers.get('authorization') !== `Bearer ${secret}`) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
-  const result = await redeliverPending({ limit: 20 });
-  console.log('[REDELIVER]', JSON.stringify(result));
-  return NextResponse.json({ success: true, ...result });
+  const startedAt = new Date();
+  try {
+    const result = await redeliverPending({ limit: 20 });
+    console.log('[REDELIVER]', JSON.stringify(result));
+    await recordJobRun('redeliver', { ok: result.failed === 0, summary: { ...result }, startedAt });
+    return NextResponse.json({ success: true, ...result });
+  } catch (err) {
+    const message = (err as Error)?.message || String(err);
+    console.error('[REDELIVER] run failed:', message);
+    await recordJobRun('redeliver', { ok: false, summary: { error: message }, startedAt });
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
 }

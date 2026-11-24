@@ -5,6 +5,7 @@ import { getFailuresLogs } from '@/lib/actions';
 import BlurFade from '@/components/magicui/blur-fade';
 import { Activity, AlertTriangle, PlayCircle, PauseCircle } from 'lucide-react';
 import { useLocale } from '@/lib/useLocale';
+import JobsPanel from '@/components/admin/JobsPanel';
 import { getAppDict } from '@/lib/appDict';
 
 interface FailureLog {
@@ -58,6 +59,7 @@ export default function LogsPage() {
 
   return (
     <div className="space-y-6">
+      <JobsPanel />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{t.title}</h2>

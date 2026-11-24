@@ -32,6 +32,7 @@ export default function PortalLeads() {
   const [forms, setForms] = useState<Form[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [supportsHandled, setSupportsHandled] = useState(true);
+  const [keptDays, setKeptDays] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(0);
   const [search, setSearch] = useState('');
@@ -52,6 +53,7 @@ export default function PortalLeads() {
           setForms(data.forms ?? []);
           setLeads(list);
           setSupportsHandled(data.handledSupported !== false);
+          setKeptDays(typeof data.keptDays === 'number' ? data.keptDays : null);
           // Open on what needs attention; when nothing does, show everything.
           if (data.handledSupported === false || !list.some((l) => !l.handled_at)) setTab('all');
         }
@@ -235,6 +237,11 @@ export default function PortalLeads() {
       </div>
 
       {saveError && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700">{t.errSave}</p>}
+      {keptDays !== null && leads.length > 0 && (
+        <p className="text-xs leading-5 text-slate-500">
+          {t.keptNote.replace('{window}', keptDays === 365 ? t.keptYear : t.keptDays.replace('{n}', String(keptDays)))}
+        </p>
+      )}
 
       <ul className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
         {filtered.length === 0 ? (

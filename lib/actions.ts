@@ -484,6 +484,61 @@ export async function getFailuresLogs() {
   }
 }
 
+// ==================== SCHEDULED JOBS ====================
+
+export interface OperationsStatus {
+  retentionMode: 'off' | 'report' | 'apply';
+  cronSecretSet: boolean;
+  /** `stale`: nothing written for more than a day (the job runs daily) */
+  jobs: Record<'redeliver' | 'retention', { at: string; ok: boolean; stale: boolean; mode: string | null; summary: Record<string, unknown> } | null>;
+  pendingNotifications: number;
+  notices: { developer: string; windowDays: number; leadCount: number; overdueCount: number; deletedCount: number; sentAt: string; deleteAfter: string }[];
+}
+
+/** What the scheduled jobs last did, and what retention has announced: the operator's proof of life. */
+export async function getOperationsStatus(): Promise<{ success: true; data: OperationsStatus } | { success: false; error: string }> {
+  try {
+    await verifyAdminAuth();
+    const { retentionMode } = await import('./retention');
+    const { lastJobRuns } = await import('./jobRuns');
+    const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+    const [redeliver, retention, pending, notices] = await Promise.all([
+      lastJobRuns('redeliver', 1),
+      lastJobRuns('retention', 1),
+      supabase.from('submissions').select('id', { count: 'exact', head: true }).is('notified_at', null).gte('created_at', since),
+      supabase
+        .from('retention_notices')
+        .select('window_days, lead_count, overdue_count, deleted_count, sent_at, delete_after, clients(name)')
+        .order('sent_at', { ascending: false })
+        .limit(12),
+    ]);
+    const shape = (r: Awaited<ReturnType<typeof lastJobRuns>>[number] | undefined) =>
+      r ? { at: r.finished_at || r.started_at, ok: r.ok, stale: Date.now() - new Date(r.finished_at || r.started_at).getTime() > 26 * 3_600_000, mode: r.mode, summary: r.summary ?? {} } : null;
+    type NoticeJoin = { window_days: number; lead_count: number; overdue_count: number; deleted_count: number; sent_at: string; delete_after: string; clients: { name: string } | { name: string }[] | null };
+    return {
+      success: true,
+      data: {
+        retentionMode: retentionMode(),
+        cronSecretSet: !!process.env.CRON_SECRET,
+        jobs: { redeliver: shape(redeliver[0]), retention: shape(retention[0]) },
+        pendingNotifications: pending.count ?? 0,
+        notices: ((notices.data ?? []) as unknown as NoticeJoin[]).map((n) => ({
+          developer: (Array.isArray(n.clients) ? n.clients[0]?.name : n.clients?.name) ?? '—',
+          windowDays: n.window_days,
+          leadCount: n.lead_count,
+          overdueCount: n.overdue_count,
+          deletedCount: n.deleted_count,
+          sentAt: n.sent_at,
+          deleteAfter: n.delete_after,
+        })),
+      },
+    };
+  } catch (err) {
+    console.error('Error in getOperationsStatus:', err);
+    return { success: false, error: (err as Error)?.message || String(err) };
+  }
+}
+
 // ==================== EMAIL HEALTH ====================
 
 /** Mask an SMTP login so full credentials never render in the admin DOM. */

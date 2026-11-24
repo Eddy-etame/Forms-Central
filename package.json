@@ -20,6 +20,7 @@
     "test:spam": "node --experimental-strip-types scripts/test-spam-core.ts",
     "test:autoreply": "node --experimental-strip-types scripts/test-autoreply.ts",
     "test:retention": "node --experimental-strip-types scripts/test-retention.ts",
+    "retention:report": "node --experimental-strip-types scripts/retention-report.ts",
     "test:csv": "node --experimental-strip-types scripts/test-csv.ts",
     "test:unit": "npm run test:mail && npm run test:security && npm run test:otp && npm run test:crypto && npm run test:spam && npm run test:autoreply && npm run test:retention && npm run test:csv"
   },

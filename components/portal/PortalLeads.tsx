@@ -188,18 +188,19 @@ export default function PortalLeads() {
         </div>
         {week.length > 0 && (
           <div className="shrink-0" aria-label={`${t.weekLabel}: ${weekTotal}`}>
-            <div className="flex h-12 items-end gap-1.5" aria-hidden>
+            <div className="flex h-12 items-end gap-2" aria-hidden>
               {week.map((d) => (
-                <div key={d.from} className="flex w-6 flex-col items-center justify-end gap-1">
+                <div key={d.from} className="flex w-4 flex-col items-center justify-end gap-1.5">
+                  {/* a slim pill per day; an empty day is a dot, so one busy day never reads as a brick */}
                   <div
-                    className="w-full rounded-sm"
-                    style={{ height: `${d.count ? Math.max(6, Math.round((d.count / weekMax) * 34)) : 3}px`, background: d.count ? 'var(--brand, #0f172a)' : '#e2e8f0', opacity: d.count && !d.today ? 0.55 : 1 }}
+                    className="w-2.5 rounded-full"
+                    style={{ height: `${d.count ? Math.max(10, Math.round((d.count / weekMax) * 30)) : 4}px`, background: d.count ? 'var(--brand, #0f172a)' : '#cbd5e1', opacity: d.count && !d.today ? 0.5 : 1 }}
                   />
                   <span className={`text-[10px] leading-none ${d.today ? 'font-bold text-slate-700' : 'text-slate-400'}`}>{d.label}</span>
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-right text-xs text-slate-500">
+            <p className="mt-2 text-xs text-slate-500 sm:text-right">
               {t.weekLabel} · <span className="font-semibold text-slate-700">{(weekTotal === 1 ? t.weekCountOne : t.weekCount).replace('{n}', String(weekTotal))}</span>
             </p>
           </div>

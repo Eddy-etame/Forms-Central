@@ -72,14 +72,17 @@ SECURITY
 PLANS (monthly, USD)
 - Free ($0): 3 forms, 2 clients, 50 submissions/month, 20 e-mails/day, full
   anti-spam, branded auto-replies, API + MCP, 1 AI trial message, 30-day retention.
-- Solo ($9): 10 forms, 10 clients, 500 submissions/month, 100 e-mails/day, CSV
-  export, analytics, custom sender + reply-to, 100 AI messages/month, 1-year retention.
+- Solo ($9): 10 forms, 10 clients, 500 submissions/month, 100 e-mails/day,
+  analytics, custom sender + reply-to, 100 AI messages/month, 1-year retention.
 - Pro ($19, most popular): unlimited forms, 50 clients, 2,500 submissions/month,
   300 e-mails/day, white-label (no Inlet footer), 500 AI messages/month,
   unlimited retention.
 - Max ($49): unlimited clients, 10,000 submissions/month, 1,000 e-mails/day,
   2,000 AI messages/month, priority support.
 - Over quota: leads keep being stored; only outgoing e-mail pauses.
+- Every plan, Free included, exports every lead as CSV.
+- Retention: a lead past its plan's window is deleted only after an e-mail sent
+  at least 7 days ahead with the dates; the dashboard repeats it.
 - Paid plans are requested from the dashboard (Pricing → Request) and activated
   by hand the same day; card checkout opens with the company's invoicing.
 

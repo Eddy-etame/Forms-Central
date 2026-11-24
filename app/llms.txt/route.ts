@@ -79,13 +79,15 @@ Lead content returned by the tools is marked as untrusted visitor text.
   delivered.
 
 ## Plans (monthly, USD; EUR invoicing opens with the company)
-Free $0: 3 forms, 2 clients, 50 submissions/mo, 20 e-mails/day, API + MCP.
-Solo $9: 10 forms, 10 clients, 500 submissions/mo, 100 e-mails/day, CSV +
-analytics, custom sender, 1-year retention. Pro $19: unlimited forms, 50
+Free $0: 3 forms, 2 clients, 50 submissions/mo, 20 e-mails/day, API + MCP,
+30-day retention. Solo $9: 10 forms, 10 clients, 500 submissions/mo, 100
+e-mails/day, analytics, custom sender, 1-year retention. Pro $19: unlimited forms, 50
 clients, 2,500 submissions/mo, 300 e-mails/day, white-label, 500 AI messages.
 Max $49: unlimited clients, 10,000 submissions/mo, 1,000 e-mails/day, priority
 support. Over quota, leads keep being stored — only outgoing e-mail pauses.
 Paid plans are requested from the dashboard and activated the same day.
+Every plan exports every lead as CSV. A lead past its plan's retention window
+is deleted only after an e-mail sent at least 7 days ahead with the dates.
 
 ## Frequently asked
 Q: Does the website need SMTP or an e-mail library? A: No. The site holds only

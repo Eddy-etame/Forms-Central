@@ -310,7 +310,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
         point1Title: 'No SMTP, no backend', point1Desc: 'Two values wire any site — the service does the rest.',
         point2Title: 'AI + proof-of-work anti-spam', point2Desc: 'Modern spam blocked before it ever reaches you.',
         point3Title: 'Every lead stored, then delivered', point3Desc: 'The lead is saved first; your client gets it by e-mail and in a private inbox.',
-        footerTagline: 'One developer account · your clients · their forms · every lead kept', backToSite: '← Back to site', orDivider: 'or',
+        footerTagline: 'One developer account · your clients · their forms · every lead stored', backToSite: '← Back to site', orDivider: 'or',
       },
       adminLogin: {
         enterCode: 'Enter your code', adminAccess: 'Admin access',
@@ -662,7 +662,7 @@ export const appDictionaries: Record<Locale, AppDict> = {
         point1Title: 'Sans SMTP, sans backend', point1Desc: 'Deux valeurs suffisent à câbler n’importe quel site — le service fait le reste.',
         point2Title: 'IA + anti-spam par preuve de travail', point2Desc: 'Le spam moderne est bloqué avant même de vous atteindre.',
         point3Title: 'Chaque lead enregistré, puis livré', point3Desc: 'Le lead est d’abord sauvegardé ; votre client le reçoit par e-mail et dans une boîte privée.',
-        footerTagline: 'Un compte développeur · vos clients · leurs formulaires · chaque lead conservé', backToSite: '← Retour au site', orDivider: 'ou',
+        footerTagline: 'Un compte développeur · vos clients · leurs formulaires · chaque lead enregistré', backToSite: '← Retour au site', orDivider: 'ou',
       },
       adminLogin: {
         enterCode: 'Saisissez votre code', adminAccess: 'Accès administrateur',

@@ -25,7 +25,7 @@ export interface Plan {
   emailsPerDay: number;
   aiMessages: number | null;       // lifetime for free, per-month for solo, null = unlimited
   whiteLabel: boolean;             // no "Powered by Inlet" on e-mails and portals
-  csvExport: boolean;
+  csvExport: boolean;              // true everywhere (the terms promise it); kept so the pricing table shows it
   analytics: boolean;
   customSender: boolean;           // custom sender name + reply-to on client e-mails
   retentionDays: number | null;    // null = unlimited
@@ -45,7 +45,7 @@ export const PLANS: Record<PlanId, Plan> = {
     emailsPerDay: 20,
     aiMessages: 1, // lifetime trial
     whiteLabel: false,
-    csvExport: false,
+    csvExport: true, // every plan: the leads are the developer's, and retention deletes them
     analytics: false,
     customSender: false,
     retentionDays: 30,

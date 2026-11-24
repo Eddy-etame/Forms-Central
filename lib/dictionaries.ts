@@ -67,7 +67,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
       subtitle: 'You build websites for clients. Each client gets its forms and a private lead inbox; you keep one dashboard, an API and an MCP server. No SMTP, no e-mail address in your code.',
       ctaPrimary: 'Start free',
       ctaSecondary: 'See how it works',
-      reassure: 'No credit card · no SMTP · one snippet per site · every lead kept',
+      reassure: 'No credit card · no SMTP · one snippet per site · every lead stored',
       stack: 'Drops into any stack',
     },
     pricing: {
@@ -83,7 +83,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
       },
       planSolo: {
         name: 'Solo', blurb: 'For a freelancer with a handful of sites.',
-        f1: '{forms} forms · {submissions} submissions/mo', f2: '{emails} emails/day', f3: '10 clients · CSV export + analytics', f4: 'Custom email sender + reply-to', f5: 'AI assistant — {n}/month', f6: '1-year data retention',
+        f1: '{forms} forms · {submissions} submissions/mo', f2: '{emails} emails/day', f3: '10 clients with their own inbox · analytics', f4: 'Custom email sender + reply-to', f5: 'AI assistant — {n}/month', f6: '1-year data retention',
         cta: 'Choose Solo',
       },
       planPro: {
@@ -122,7 +122,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         subtitle: 'One backend, many client sites — each branded, all protected, all centralized.',
         cards: [
           { title: 'Centralized inbox', desc: 'Every submission from every site lands in one dashboard with live status.' },
-          { title: 'Anti-spam in four layers', desc: 'Honeypot, proof-of-work, keyword flagging, and bans by IP, fingerprint and reverse-DNS host. A flagged lead is kept, never deleted.' },
+          { title: 'Anti-spam in four layers', desc: 'Honeypot, proof-of-work, keyword flagging, and bans by IP, fingerprint and reverse-DNS host. A flagged lead is stored like any other, never dropped.' },
           { title: 'White-label emails', desc: "Auto-reply emails adapt to each client's logo, colors and name." },
           { title: 'A private inbox per client', desc: 'Each business you build for gets its leads by e-mail and in its own branded inbox — answer with one reply.' },
           { title: 'CSV export', desc: 'One click flattens dynamic fields into clean columns.' },
@@ -144,7 +144,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         title: 'Why teams switch',
         subtitle: 'Built for people who run many client sites.',
         capability: 'Capability',
-        rows: ['One account, a client per business', 'No SMTP in your sites', 'White-label e-mails and inboxes', 'Proof-of-work + keyword anti-spam', 'MCP server: your AI sets up a site', 'Every lead kept, exportable any time'],
+        rows: ['One account, a client per business', 'No SMTP in your sites', 'White-label e-mails and inboxes', 'Proof-of-work + keyword anti-spam', 'MCP server: your AI sets up a site', 'Every lead stored, exportable any time'],
         swipeHint: 'Swipe to compare →',
       },
       testimonials: {
@@ -286,7 +286,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
       subtitle: 'Vous créez des sites pour des clients. Chaque client a ses formulaires et une boîte de leads privée ; vous gardez un tableau de bord, une API et un serveur MCP. Pas de SMTP, pas d’adresse e-mail dans votre code.',
       ctaPrimary: 'Commencer gratuitement',
       ctaSecondary: 'Voir comment ça marche',
-      reassure: 'Sans carte bancaire · sans SMTP · un extrait par site · chaque lead conservé',
+      reassure: 'Sans carte bancaire · sans SMTP · un extrait par site · chaque lead enregistré',
       stack: "S'intègre à n'importe quelle stack",
     },
     pricing: {
@@ -302,7 +302,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
       },
       planSolo: {
         name: 'Solo', blurb: 'Pour un freelance avec quelques sites.',
-        f1: '{forms} formulaires · {submissions} soumissions/mois', f2: '{emails} e-mails/jour', f3: '10 clients · export CSV + analytique', f4: 'Expéditeur e-mail personnalisé + reply-to', f5: 'Assistant IA — {n}/mois', f6: 'Rétention des données 1 an',
+        f1: '{forms} formulaires · {submissions} soumissions/mois', f2: '{emails} e-mails/jour', f3: '10 clients avec leur propre boîte · analytique', f4: 'Expéditeur e-mail personnalisé + reply-to', f5: 'Assistant IA — {n}/mois', f6: 'Rétention des données 1 an',
         cta: 'Choisir Solo',
       },
       planPro: {
@@ -341,7 +341,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         subtitle: 'Un seul backend, plusieurs sites clients — chacun à sa marque, tous protégés, tous centralisés.',
         cards: [
           { title: 'Boîte de réception centralisée', desc: 'Chaque soumission de chaque site arrive dans un seul tableau de bord, avec statut en direct.' },
-          { title: 'Anti-spam en quatre couches', desc: 'Honeypot, preuve de travail, signalement par mots-clés, et bannissements par IP, empreinte et hôte DNS inversé. Un lead signalé est conservé, jamais supprimé.' },
+          { title: 'Anti-spam en quatre couches', desc: 'Honeypot, preuve de travail, signalement par mots-clés, et bannissements par IP, empreinte et hôte DNS inversé. Un lead signalé est enregistré comme les autres, jamais écarté.' },
           { title: 'E-mails en marque blanche', desc: "Les réponses automatiques s'adaptent au logo, aux couleurs et au nom de chaque client." },
           { title: 'Une boîte privée par client', desc: 'Chaque entreprise pour laquelle vous travaillez reçoit ses leads par e-mail et dans sa propre boîte à sa marque — une réponse suffit.' },
           { title: 'Export CSV', desc: 'En un clic, les champs dynamiques deviennent des colonnes propres.' },
@@ -363,7 +363,7 @@ export const dictionaries: Record<Locale, MarketingDict> = {
         title: 'Pourquoi les équipes changent',
         subtitle: 'Conçu pour ceux qui gèrent de nombreux sites clients.',
         capability: 'Fonctionnalité',
-        rows: ['Un compte, un client par entreprise', 'Aucun SMTP dans vos sites', 'E-mails et boîtes en marque blanche', 'Anti-spam preuve de travail + mots-clés', 'Serveur MCP : votre IA configure un site', 'Chaque lead conservé, exportable à tout moment'],
+        rows: ['Un compte, un client par entreprise', 'Aucun SMTP dans vos sites', 'E-mails et boîtes en marque blanche', 'Anti-spam preuve de travail + mots-clés', 'Serveur MCP : votre IA configure un site', 'Chaque lead enregistré, exportable à tout moment'],
         swipeHint: 'Glissez pour comparer →',
       },
       testimonials: {

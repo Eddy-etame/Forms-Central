@@ -14,7 +14,7 @@ export function isLegalDoc(v: string): v is LegalDocId {
 export type LegalSection = { h: string; p?: string[]; ul?: string[] };
 export type LegalDoc = { kicker: string; title: string; lead: string; updatedLabel: string; updated: string; seeAlso: string; sections: LegalSection[] };
 
-const UPDATED = { en: '8 November 2026', fr: '8 novembre 2026' };
+const UPDATED = { en: '24 November 2026', fr: '24 novembre 2026' };
 
 const EN: Record<LegalDocId, LegalDoc> = {
   privacy: {
@@ -49,7 +49,7 @@ const EN: Record<LegalDocId, LegalDoc> = {
       { h: 'Where the data lives, and for how long', ul: [
         'Hosting, database and file storage run in the European Union.',
         'Account and client data stay as long as the account exists, and are deleted within 30 days after you ask us to close it.',
-        'Leads are kept for the retention window of your plan: 30 days on Free, one year on Solo, without limit on Pro and Max. Leads past the window may be deleted at any time, together with their attachments. Export is one click, on every plan.',
+        'Leads are kept for the retention window of your plan: 30 days on Free, one year on Solo, without limit on Pro and Max. Past the window a lead may be deleted, with its attachments, but never by surprise: the account is e-mailed at least 7 days before, with the dates, and the dashboard repeats it. Export is one click, on every plan, and holds every lead.',
         'Security logs and automatic bans expire on their own after a limited time.',
         'File attachments are stored at unguessable addresses; anyone holding the exact link can open the file, so treat lead e-mails as confidential.',
       ] },
@@ -105,7 +105,7 @@ const EN: Record<LegalDocId, LegalDoc> = {
       ] },
       { h: 'Your data', ul: [
         'Your leads are yours. You can export them as CSV at any time, on every plan.',
-        'Leads are kept for the retention window of your plan (see pricing) and may be deleted after it, with their attachments.',
+        'Leads are kept for the retention window of your plan (see pricing). After it they may be deleted, with their attachments, once we have e-mailed you at least 7 days ahead with the dates.',
         'When you close your account, we delete its data within 30 days, except what the law requires us to keep.',
       ] },
       { h: 'Suspension and termination', p: [
@@ -157,7 +157,7 @@ const FR: Record<LegalDocId, LegalDoc> = {
       { h: 'Où sont les données, et combien de temps', ul: [
         'L’hébergement, la base de données et le stockage de fichiers tournent dans l’Union européenne.',
         'Les données de compte et de clients restent tant que le compte existe, et sont supprimées dans les 30 jours après votre demande de fermeture.',
-        'Les leads sont conservés pendant la durée de rétention de votre forfait : 30 jours en Free, un an en Solo, sans limite en Pro et Max. Les leads au-delà de cette durée peuvent être supprimés à tout moment, avec leurs pièces jointes. L’export tient en un clic, quel que soit le forfait.',
+        'Les leads sont conservés pendant la durée de rétention de votre forfait : 30 jours en Free, un an en Solo, sans limite en Pro et Max. Au-delà, un lead peut être supprimé, avec ses pièces jointes, mais jamais par surprise : le compte reçoit un e-mail au moins 7 jours avant, avec les dates, et le tableau de bord le rappelle. L’export tient en un clic, quel que soit le forfait, et contient tous les leads.',
         'Les journaux de sécurité et les bannissements automatiques expirent d’eux-mêmes après une durée limitée.',
         'Les pièces jointes sont stockées à des adresses impossibles à deviner ; quiconque détient le lien exact peut ouvrir le fichier : traitez les e-mails de leads comme confidentiels.',
       ] },
@@ -213,7 +213,7 @@ const FR: Record<LegalDocId, LegalDoc> = {
       ] },
       { h: 'Vos données', ul: [
         'Vos leads vous appartiennent. Vous pouvez les exporter en CSV à tout moment, quel que soit le forfait.',
-        'Les leads sont conservés pendant la durée de rétention de votre forfait (voir Tarifs) et peuvent être supprimés ensuite, avec leurs pièces jointes.',
+        'Les leads sont conservés pendant la durée de rétention de votre forfait (voir Tarifs). Ensuite ils peuvent être supprimés, avec leurs pièces jointes, après un e-mail envoyé au moins 7 jours avant, avec les dates.',
         'Quand vous fermez votre compte, nous supprimons ses données dans les 30 jours, sauf ce que la loi nous impose de conserver.',
       ] },
       { h: 'Suspension et résiliation', p: [

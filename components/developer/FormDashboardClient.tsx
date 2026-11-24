@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import FormSettings from './FormSettings';
 import DeliveryNotice, { PendingChip, PendingLine, type DeliveryDict } from './DeliveryNotice';
+import ExportButton from '@/components/ExportButton';
 import type { AppDict } from '@/lib/appDict';
 
 export type DashboardLead = { id: string; created_at: string; payload: Record<string, unknown>; forms?: { name: string } | null; notify_pending?: boolean };
@@ -25,42 +26,6 @@ export default function FormDashboardClient({ stats, t, formId, sn, d }: { stats
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLead, setSelectedLead] = useState<DashboardLead | null>(null);
 
-  const exportToCSV = () => {
-    if (!stats || stats.recentLeads.length === 0) return;
-    
-    // Extract all unique keys from payloads to form headers
-    const allKeys = new Set<string>();
-    stats.recentLeads.forEach(lead => {
-      Object.keys(lead.payload).forEach(k => allKeys.add(k));
-    });
-    
-    const headers = ['Date', ...Array.from(allKeys)];
-    
-    const csvRows = stats.recentLeads.map(lead => {
-      const date = new Date(lead.created_at).toLocaleString('en-GB');
-      
-      const payloadData = Array.from(allKeys).map(key => {
-        const val = isAttachmentValue(lead.payload[key]) ? `${window.location.origin}${downloadHref(lead.id, key)}` : lead.payload[key];
-        if (typeof val === 'string') {
-          return `"${val.replace(/"/g, '""')}"`;
-        }
-        return val || '';
-      });
-      
-      return `"${date}",${payloadData.join(',')}`;
-    });
-    
-    const csvContent = [headers.join(','), ...csvRows].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `${stats.formName}_export_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const filteredLeads = stats?.recentLeads.filter(lead => {
     if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase();
@@ -75,7 +40,7 @@ export default function FormDashboardClient({ stats, t, formId, sn, d }: { stats
 
   const tableColumns = schemaKeys.slice(0, 5);
 
-  const isFileUrl = (val: unknown) => typeof val === 'string' && val.startsWith('http') && val.includes('supabase.co/storage');
+  const isFileUrl = (val: unknown) => isAttachmentValue(val);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
@@ -90,13 +55,11 @@ export default function FormDashboardClient({ stats, t, formId, sn, d }: { stats
             {t.subtitle}
           </p>
         </div>
-        <button 
-          onClick={exportToCSV}
+        <ExportButton
+          href={`/api/developer/leads/export?form=${formId}`}
+          label={`${t.exportCsv} (${stats?.allTime ?? 0})`}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 transition-colors"
-        >
-          <Download className="h-4 w-4" />
-          {t.exportCsv} ({stats?.allTime})
-        </button>
+        />
       </div>
 
       {/* Stored but nobody was told: say so, and offer the repair */}
@@ -220,7 +183,7 @@ export default function FormDashboardClient({ stats, t, formId, sn, d }: { stats
                           <td key={col} className="px-6 py-4">
                             {isFile ? (
                               <a 
-                                href={`/api/download?sid=${encodeURIComponent(lead.id)}&field=${encodeURIComponent(col)}`}
+                                href={downloadHref(lead.id, col)}
                                 onClick={(e) => e.stopPropagation()}
                                 className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200 transition-colors"
                               >
@@ -301,7 +264,7 @@ export default function FormDashboardClient({ stats, t, formId, sn, d }: { stats
                             {String(value).match(/\.(jpeg|jpg|gif|png|webp)$/i) ? (
                               <div className="relative h-40 w-full overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-950/60 flex items-center justify-center border border-slate-100 dark:border-slate-800">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={`/api/download?sid=${encodeURIComponent(selectedLead.id)}&field=${encodeURIComponent(key)}`} alt={key} className="max-h-full max-w-full object-contain" />
+                                <img src={downloadHref(selectedLead.id, key)} alt={key} className="max-h-full max-w-full object-contain" />
                               </div>
                             ) : (
                               <div className="h-16 w-full rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
@@ -310,7 +273,7 @@ export default function FormDashboardClient({ stats, t, formId, sn, d }: { stats
                               </div>
                             )}
                             <a 
-                              href={`/api/download?sid=${encodeURIComponent(selectedLead.id)}&field=${encodeURIComponent(key)}`}
+                              href={downloadHref(selectedLead.id, key)}
                               download
                               onClick={(e) => e.stopPropagation()}
                               className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition-colors w-full"

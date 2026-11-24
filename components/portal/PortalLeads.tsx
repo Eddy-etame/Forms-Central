@@ -5,6 +5,7 @@ import { isAttachmentValue, downloadHref } from '@/lib/attachments';
 import { Search, X, Inbox, Download, Mail, Phone, Check, RotateCcw } from 'lucide-react';
 import { useLocale } from '@/lib/useLocale';
 import { getAppDict } from '@/lib/appDict';
+import ExportButton from '@/components/ExportButton';
 
 type Lead = { id: string; form_id: string; payload: Record<string, unknown>; created_at: string; handled_at?: string | null };
 type Form = { id: string; name: string };
@@ -122,28 +123,6 @@ export default function PortalLeads() {
     }
   }
 
-  function exportCsv() {
-    if (filtered.length === 0) return;
-    const keys = new Set<string>();
-    filtered.forEach((l) => Object.keys(l.payload).forEach((k) => keys.add(k)));
-    const cols = [t.colDate, t.colForm, ...(supportsHandled ? [t.colStatus] : []), ...keys];
-    const rows = filtered.map((l) => {
-      const base = [new Date(l.created_at).toLocaleString('en-GB'), formName(l.form_id), ...(supportsHandled ? [l.handled_at ? t.statusDone : t.statusTodo] : [])];
-      const vals = [...keys].map((k) => {
-        const v = isAttachmentValue(l.payload[k]) ? `${window.location.origin}${downloadHref(l.id, k)}` : l.payload[k];
-        return typeof v === 'string' ? `"${v.replace(/"/g, '""')}"` : (v ?? '');
-      });
-      return [...base.map((b) => `"${b}"`), ...vals].join(',');
-    });
-    const blob = new Blob([[cols.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `leads_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
   if (loading) return <p className="text-sm text-slate-400">{t.loadingLeads}</p>;
 
   if (forms.length === 0) {
@@ -248,12 +227,11 @@ export default function PortalLeads() {
             ))}
           </select>
         )}
-        <button
-          onClick={exportCsv}
+        <ExportButton
+          href="/api/portal/leads/export"
+          label={t.exportCsv}
           className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300"
-        >
-          <Download className="h-4 w-4" /> {t.exportCsv}
-        </button>
+        />
       </div>
 
       {saveError && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700">{t.errSave}</p>}

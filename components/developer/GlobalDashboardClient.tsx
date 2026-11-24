@@ -8,6 +8,7 @@ import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import NewFormButton from './NewFormButton';
 import OnboardingChecklist from './OnboardingChecklist';
 import DeliveryNotice, { PendingChip, PendingLine } from './DeliveryNotice';
+import ExportButton from '@/components/ExportButton';
 import type { AppDict } from '@/lib/appDict';
 
 type DashDict = AppDict['dashboard'];
@@ -26,43 +27,6 @@ export interface DashboardStats {
 export default function GlobalDashboardClient({ stats, forms = [], t, sn }: { stats: DashboardStats; forms?: { id: string; name: string }[]; t: DashDict; sn: AppDict['snippets'] }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLead, setSelectedLead] = useState<DashboardLead | null>(null);
-
-  const exportToCSV = () => {
-    if (!stats || stats.recentLeads.length === 0) return;
-    
-    // Extract all unique keys from payloads to form headers
-    const allKeys = new Set<string>();
-    stats.recentLeads.forEach(lead => {
-      Object.keys(lead.payload).forEach(k => allKeys.add(k));
-    });
-    
-    const headers = ['Date', 'Form', ...Array.from(allKeys)];
-    
-    const csvRows = stats.recentLeads.map(lead => {
-      const date = new Date(lead.created_at).toLocaleString('en-GB');
-      const formName = lead.forms?.name || 'Unknown';
-      
-      const payloadData = Array.from(allKeys).map(key => {
-        const val = isAttachmentValue(lead.payload[key]) ? `${window.location.origin}${downloadHref(lead.id, key)}` : lead.payload[key];
-        if (typeof val === 'string') {
-          return `"${val.replace(/"/g, '""')}"`;
-        }
-        return val || '';
-      });
-      
-      return `"${date}","${formName}",${payloadData.join(',')}`;
-    });
-    
-    const csvContent = [headers.join(','), ...csvRows].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `leads_export_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   const filteredLeads = stats?.recentLeads.filter(lead => {
     if (!searchTerm) return true;
@@ -89,13 +53,11 @@ export default function GlobalDashboardClient({ stats, forms = [], t, sn }: { st
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <NewFormButton label={t.newForm} m={t.nf} sn={sn} />
-          <button
-            onClick={exportToCSV}
+          <ExportButton
+            href="/api/developer/leads/export"
+            label={t.exportCsv}
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:border-slate-300 hover:text-slate-900 transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            <Download className="h-4 w-4" />
-            {t.exportCsv}
-          </button>
+          />
         </div>
       </div>
 
@@ -402,7 +364,7 @@ export default function GlobalDashboardClient({ stats, forms = [], t, sn }: { st
                 {selectedLead.notify_pending && <PendingLine leadId={selectedLead.id} d={t.delivery} />}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {Object.entries(selectedLead.payload).map(([key, value]) => {
-                    const isSupabaseUrl = typeof value === 'string' && value.startsWith('http') && value.includes('supabase.co/storage');
+                    const isSupabaseUrl = isAttachmentValue(value);
                     
                     return (
                       <div key={key} className="rounded-lg border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60">
@@ -414,10 +376,10 @@ export default function GlobalDashboardClient({ stats, forms = [], t, sn }: { st
                           <div className="flex flex-col gap-3">
                             <div className="relative h-32 w-full overflow-hidden rounded-md border border-slate-200 bg-white flex items-center justify-center">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={`/api/download?sid=${encodeURIComponent(selectedLead.id)}&field=${encodeURIComponent(key)}`} alt={key} className="max-h-full max-w-full object-contain" />
+                              <img src={downloadHref(selectedLead.id, key)} alt={key} className="max-h-full max-w-full object-contain" />
                             </div>
                             <a 
-                              href={`/api/download?sid=${encodeURIComponent(selectedLead.id)}&field=${encodeURIComponent(key)}`}
+                              href={downloadHref(selectedLead.id, key)}
                               download
                               onClick={(e) => e.stopPropagation()}
                               className="inline-flex items-center justify-center gap-2 rounded bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 transition-colors self-start"

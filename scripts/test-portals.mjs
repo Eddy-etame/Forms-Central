@@ -292,6 +292,83 @@ try {
     const ab = await again.json().catch(() => ({}));
     check('a second call sends nothing (no duplicate)', again.status === 200 && ab.sent === 0, JSON.stringify(ab));
   }
+  {
+    // Export (2026-11-24): one CSV holding EVERY lead (the old browser export stopped at the rows on
+    // screen), safe to open in a spreadsheet, scoped to its owner. 1,005 rows cross the database's page size.
+    console.log(`\n== Export: complete, safe in a spreadsheet, scoped to its owner ==`);
+    const HOSTILE = '=HYPERLINK("http://evil.example","x")';
+    await sb.from('submissions').insert({ form_id: formId, payload: { name: HOSTILE, email: 'evil@selftest.invalid', phone: '+33 6 12 34 56 78', message: 'ligne 1\nligne 2, avec "guillemets"' }, ip_address: '127.0.0.1', fingerprint: 's' });
+    const bulk = Array.from({ length: 1005 }, (_, i) => ({ form_id: form2Id, payload: { name: `Bulk ${i}`, email: `bulk${i}@selftest.invalid` }, ip_address: '127.0.0.1', fingerprint: 's' }));
+    const { error: bulkErr } = await sb.from('submissions').insert(bulk);
+    check('test data: 1,005 leads inserted on the second form', !bulkErr, bulkErr?.message);
+    const { count: total } = await sb.from('submissions').select('id', { count: 'exact', head: true }).in('form_id', [formId, form2Id]);
+    const { count: totalBeta } = await sb.from('submissions').select('id', { count: 'exact', head: true }).eq('form_id', form2Id);
+    const { count: totalAcme } = await sb.from('submissions').select('id', { count: 'exact', head: true }).eq('form_id', formId);
+
+    /** Minimal RFC 4180 reader: records of cells, quotes doubled, line breaks allowed inside quotes. */
+    const parseCsv = (text) => {
+      const out = []; let row = [], cell = '', q = false;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (q) { if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; }
+        else if (ch === '"') q = true;
+        else if (ch === ',') { row.push(cell); cell = ''; }
+        else if (ch === '\r') { /* part of CRLF */ }
+        else if (ch === '\n') { row.push(cell); out.push(row); row = []; cell = ''; }
+        else cell += ch;
+      }
+      if (cell !== '' || row.length) { row.push(cell); out.push(row); }
+      return out;
+    };
+
+    const anon = await fetch(`${BASE}/api/developer/leads/export`);
+    check('export rejects no session (401)', anon.status === 401, `got ${anon.status}`);
+
+    // the developer's language is the request's: pin it so the column names are known
+    const devEn = `${devCookie}; inlet-locale=en`;
+    const res = await fetch(`${BASE}/api/developer/leads/export`, { headers: { cookie: devEn } });
+    const raw = res.ok ? Buffer.from(await res.arrayBuffer()) : Buffer.alloc(0); // fetch's text() would swallow the byte-order mark
+    const text = raw.toString('utf8');
+    const recs = parseCsv(text.replace(/^\uFEFF/, ''));
+    check('developer export: a CSV download (200, text/csv, attachment, never cached)', res.status === 200 && (res.headers.get('content-type') || '').startsWith('text/csv') && /attachment; filename="leads-\d{4}-\d{2}-\d{2}\.csv"/.test(res.headers.get('content-disposition') || '') && res.headers.get('cache-control') === 'no-store', `got ${res.status} ${res.headers.get('content-type')} ${res.headers.get('content-disposition')}`);
+    check('it starts with the byte-order mark spreadsheets need for accents', raw[0] === 0xef && raw[1] === 0xbb && raw[2] === 0xbf, raw.subarray(0, 3).toString('hex'));
+    check(`it holds every lead, past the page size (${total} rows)`, recs.length === (total ?? -1) + 1 && Number(res.headers.get('x-inlet-rows')) === total, `records ${recs.length - 1}, header ${res.headers.get('x-inlet-rows')}, database ${total}`);
+    check('every record has the same number of columns', recs.every((r) => r.length === recs[0].length), `header ${recs[0]?.length}`);
+    const head = recs[0] ?? [];
+    const col = (name) => head.indexOf(name);
+    const hostile = recs.find((r) => r[col('email')] === 'evil@selftest.invalid');
+    check('a formula typed by a visitor leaves as text', hostile?.[col('name')] === `'${HOSTILE}`, JSON.stringify(hostile?.[col('name')]));
+    check('a phone number is left as it was typed', hostile?.[col('phone')] === '+33 6 12 34 56 78', JSON.stringify(hostile?.[col('phone')]));
+    check('line breaks and quotes survive inside a cell', hostile?.[col('message')] === 'ligne 1\nligne 2, avec "guillemets"', JSON.stringify(hostile?.[col('message')]));
+    check('each lead carries its form and its client', col('Client') > 0 && recs.some((r) => r[col('Form')] === 'Acme site' && r[col('Client')] === 'Acme Corp') && recs.some((r) => r[col('Form')] === 'Beta site' && r[col('Client')] === 'Beta SARL'), JSON.stringify(head.slice(0, 6)));
+    const fileRec = recs.find((r) => r[col('name')] === 'File Lead');
+    check('an attachment is exported as the session-checked download link', /^https?:\/\/[^/]+\/api\/download\?sid=[0-9a-f-]{36}&field=photo$/.test(fileRec?.[col('photo')] ?? ''), fileRec?.[col('photo')]);
+
+    const one = await fetch(`${BASE}/api/developer/leads/export?form=${formId}`, { headers: { cookie: devEn } });
+    const oneRecs = one.ok ? parseCsv((await one.text()).replace(/^\uFEFF/, '')) : [];
+    check('export of one form holds that form only', one.status === 200 && oneRecs.length === (totalAcme ?? -1) + 1 && oneRecs.slice(1).every((r) => r[oneRecs[0].indexOf('Form')] === 'Acme site') && /filename="leads-acme-site-/.test(one.headers.get('content-disposition') || ''), `got ${one.status}, ${oneRecs.length - 1} rows, want ${totalAcme}`);
+
+    const otherCookie = await (async () => {
+      const email = `exporter+${Date.now()}@test.invalid`;
+      const su = await post('/api/auth/developer-signup', { name: 'Export Dev', email, password: 'testpass123' });
+      const { data: oc } = await sb.from('clients').select('id').eq('email', email).single();
+      if (oc?.id) otherDevs.push(oc.id);
+      return setCookies(su).join('; ');
+    })();
+    const foreign = await fetch(`${BASE}/api/developer/leads/export?form=${formId}`, { headers: { cookie: otherCookie } });
+    check('cross-tenant: another developer asking for this form gets 404', foreign.status === 404, `got ${foreign.status}`);
+    const theirs = await fetch(`${BASE}/api/developer/leads/export`, { headers: { cookie: otherCookie } });
+    const theirText = theirs.ok ? await theirs.text() : 'x';
+    check('cross-tenant: their own export is empty and holds none of these leads', theirs.status === 200 && !theirText.includes('Bulk 1') && !theirText.includes('Lead on Acme') && parseCsv(theirText.replace(/^\uFEFF/, '')).length === 1, `got ${theirs.status}, ${theirText.length} chars`);
+
+    const anonPortal = await fetch(`${BASE}/api/portal/leads/export`);
+    check('client export rejects no session (401)', anonPortal.status === 401, `got ${anonPortal.status}`);
+    const mine = await fetch(`${BASE}/api/portal/leads/export`, { headers: { cookie: portalCookie } });
+    const mineRecs = mine.ok ? parseCsv((await mine.text()).replace(/^\uFEFF/, '')) : [];
+    const mh = mineRecs[0] ?? [];
+    check('client export: its own requests, all of them, with their status', mine.status === 200 && mineRecs.length === (totalAcme ?? -1) + 1 && mh.includes('Status') && !mh.includes('Client'), `got ${mine.status}, ${mineRecs.length - 1} rows, want ${totalAcme}, head ${JSON.stringify(mh.slice(0, 5))}`);
+    check("ISOLATION: the client's export holds nothing of the other client", !mineRecs.some((r) => r.some((c) => c.startsWith('Bulk ') || c === 'Lead on Beta')), `(${totalBeta} rows on the other form)`);
+  }
 } catch (e) {
   fail++; failures.push(`suite crashed: ${e.message}`); console.error('SUITE ERROR:', e);
 } finally {

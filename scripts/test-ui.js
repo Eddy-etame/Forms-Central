@@ -156,6 +156,15 @@ let devId = null, formId = null, clientId = null;
     const after = await sb(`submissions?form_id=eq.${formId}&notified_at=is.null&select=id`);
     step('one click re-sends it: the lead is marked delivered and the notice is gone', Array.isArray(after.body) && after.body.length === 0 && (await notice.count()) === 0, JSON.stringify(after.body));
 
+    // 5c. the export button downloads one CSV with every lead (server-side, not the rows on screen)
+    const grab = async (p, button) => {
+      const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 30000 }), button.click()]);
+      const file = await dl.path();
+      return { name: dl.suggestedFilename(), body: file ? fs.readFileSync(file, 'utf8') : '' };
+    };
+    const csv = await grab(page, page.getByRole('button', { name: /^export csv$|^exporter( en)? csv$/i }).first()).catch((e) => ({ name: '', body: String(e) }));
+    step('dashboard export: a dated CSV file with every lead', /^leads-\d{4}-\d{2}-\d{2}\.csv$/.test(csv.name) && csv.body.includes('Jane Lead') && csv.body.includes('Missed Lead') && csv.body.charCodeAt(0) === 0xfeff, `${csv.name} ${csv.body.slice(0, 120)}`);
+
     // 6. the client sets a password from an invite link and opens their inbox
     const raw = crypto.randomBytes(32).toString('base64url');
     const hash = crypto.createHash('sha256').update(raw).digest('hex');
@@ -190,6 +199,8 @@ let devId = null, formId = null, clientId = null;
     const pt2 = await text(portal);
     const handledRows = await sb(`submissions?form_id=eq.${formId}&handled_at=not.is.null&select=id`);
     step('marking a request as handled updates the headline and the database', /1 request has been waiting|1 demande vous attend/i.test(pt2) && Array.isArray(handledRows.body) && handledRows.body.length === 1, JSON.stringify(handledRows.body));
+    const pcsv = await grab(portal, portal.getByRole('button', { name: /^export csv$|^exporter( en)? csv$/i }).first()).catch((e) => ({ name: '', body: String(e) }));
+    step('client inbox export: its requests with their status', /^leads-\d{4}-\d{2}-\d{2}\.csv$/.test(pcsv.name) && pcsv.body.includes('Jane Lead') && /Handled|Traitée/.test(pcsv.body), `${pcsv.name} ${pcsv.body.slice(0, 120)}`);
     await portal.setViewportSize({ width: 390, height: 844 });
     await portal.waitForTimeout(500);
     await shot(portal, '10d-inbox-phone');

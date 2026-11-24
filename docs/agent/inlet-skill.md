@@ -159,6 +159,24 @@ export async function POST(req: Request) {
 A key-authenticated request is trusted: proof-of-work and CORS are waived and
 the forwarded visitor IP keeps rate limits pointed at the visitor.
 
+### No key yet? Posting from the server with a solved challenge
+
+It works (GET `/api/challenge`, solve, POST JSON as in section 2), but the
+server is then the visitor in Inlet's eyes. Handle all four:
+
+- The form's allowed origins do not apply: that check runs only when the
+  request carries an `Origin` header, and a server-side fetch carries none.
+- The challenge is tied to the IP that fetched it, valid 5 minutes, single
+  use. Fetch and submit in the same invocation; on `POW_SOLUTION_INVALID`
+  fetch a new challenge and retry once.
+- **Never forward a filled honeypot.** If `_gotcha` is not empty, drop the
+  submission in your handler and answer success yourself. Forwarding it bans
+  the server's IP for 24 hours and every real visitor behind it.
+- Rate limits are per IP: more than 12 submissions a minute from the server
+  earns a ban. Rate-limit your own endpoint first.
+
+Prefer the key: it removes all four concerns.
+
 ## 4. Webhooks (optional)
 
 If the form has a webhook URL, every stored lead is POSTed:
@@ -201,7 +219,7 @@ export function verifyInletWebhook(rawBody, sigHeader, secret, toleranceSec = 30
 | `RATE_LIMIT_EXCEEDED` | 429 | back off 60 s; repeated bursts earn a temporary ban |
 | `HOST_BLACKLISTED` / `SENDER_BLACKLISTED` | 403 | IP or e-mail temporarily banned (24 h) after a honeypot hit or a burst |
 | `PAYLOAD_TOO_LARGE` | 413 | body over the limit (attachments included) — shrink files |
-| `MISSING_ORIGIN` | 403 | browser request without an Origin header — post from a real page or use a relay |
+| `MISSING_ORIGIN` | 400 | a CORS preflight (OPTIONS) without an Origin header — browsers always send one; a server needs no preflight, POST directly |
 
 Notes: only `/api/challenge` and `/api/submit/{FORM_ID}` are public. Docs:
 `{FORM_API_URL}/docs` · machine summary: `{FORM_API_URL}/llms.txt`.

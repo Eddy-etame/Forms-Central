@@ -98,7 +98,7 @@ const ERRORS: Err[] = [
   { code: "FORM_NOT_FOUND", status: 404, en: "Wrong FORM_ID. Re-copy it from the form page.", fr: "FORM_ID erroné. Recopiez-le depuis la page du formulaire." },
   { code: "FORM_INACTIVE", status: 403, en: "The form is switched off. Turn it on in its settings.", fr: "Le formulaire est désactivé. Réactivez-le dans ses réglages." },
   { code: "CORS_NOT_ALLOWED", status: 403, en: "The page's origin is not in the form's allowed origins. Add it (or *).", fr: "L’origine de la page n’est pas dans les origines autorisées. Ajoutez-la (ou *)." },
-  { code: "MISSING_ORIGIN", status: 403, en: "A browser request arrived without an Origin header. Post from a real page, or use a server relay.", fr: "Une requête navigateur est arrivée sans en-tête Origin. Postez depuis une vraie page, ou passez par un relais serveur." },
+  { code: "MISSING_ORIGIN", status: 400, en: "A CORS preflight (OPTIONS) arrived without an Origin header. Browsers always send one; a server needs no preflight — POST directly.", fr: "Une pré-requête CORS (OPTIONS) est arrivée sans en-tête Origin. Les navigateurs en envoient toujours un ; un serveur n’a pas besoin de pré-requête — faites directement le POST." },
   { code: "POW_PARAMETERS_MISSING / POW_*", status: 400, en: "JSON posts must solve a fresh challenge from /api/challenge. Never reuse one.", fr: "Les envois JSON doivent résoudre un défi frais depuis /api/challenge. N’en réutilisez jamais un." },
   { code: "INVALID_API_KEY", status: 401, en: "The relay key is wrong, revoked, or belongs to another account.", fr: "La clé du relais est fausse, révoquée, ou appartient à un autre compte." },
   { code: "RATE_LIMIT_EXCEEDED", status: 429, en: "Too many posts from one IP. Back off 60 s; repeated bursts earn a temporary ban.", fr: "Trop d’envois depuis une IP. Patientez 60 s ; des rafales répétées valent un bannissement temporaire." },
@@ -114,7 +114,7 @@ type DocDict = {
   quick: { title: string; intro: string; steps: { t: string; d: string }[]; curlTitle: string; curlNote: string };
   code: { title: string; intro: string; envTitle: string; envApi: string; envId: string; placeholder: string };
   fields: { title: string; intro: string; rows: [string, string][]; files: string };
-  relay: { title: string; intro: string; when: string[]; keyNote: string };
+  relay: { title: string; intro: string; when: string[]; keyNote: string; keylessTitle: string; keylessIntro: string; keyless: string[] };
   clients: { title: string; intro: string; points: string[]; portalNote: string };
   security: { title: string; intro: string; items: { t: string; d: string }[] };
   mcp: { title: string; intro: string; step1: string; step2: string; step3: string; toolsTitle: string; promptsTitle: string; untrusted: string; llmTitle: string; llmIntro: string; skillNote: string };
@@ -190,6 +190,15 @@ const DOC: Record<Locale, DocDict> = {
         "The key proves the request comes from you and must own the form; otherwise 401 INVALID_API_KEY.",
       ],
       keyNote: "The key is a secret. Server env only. Never in a browser bundle, never in a repository.",
+      keylessTitle: "Posting from your server without a key",
+      keylessIntro: "It works: fetch a challenge, solve it and POST JSON, exactly as the browser helper does. But in Inlet’s eyes your server is now the visitor, so four things change.",
+      keyless: [
+        "The allowed-sites list no longer applies. That check runs only when a request carries an Origin header, and a server-side fetch carries none.",
+        "The challenge is tied to the IP that fetched it, lives five minutes and works once. Fetch it and submit in the same invocation; on POW_SOLUTION_INVALID fetch a new one and retry once.",
+        "Never forward a filled honeypot. When _gotcha is not empty, drop the submission and answer success yourself — otherwise the 24-hour ban lands on your server’s IP, and on every real visitor behind it.",
+        "Rate limits count your server as a single visitor: more than 12 submissions a minute from one IP earns a ban. Limit your own endpoint first.",
+        "The API key removes all four: it is the supported way to post from a server.",
+      ],
     },
     clients: {
       title: "Clients and their inbox",
@@ -327,6 +336,15 @@ const DOC: Record<Locale, DocDict> = {
         "La clé prouve que la requête vient de vous et doit posséder le formulaire ; sinon 401 INVALID_API_KEY.",
       ],
       keyNote: "La clé est un secret. Environnement serveur uniquement. Jamais dans un bundle navigateur, jamais dans un dépôt.",
+      keylessTitle: "Envoyer depuis votre serveur sans clé",
+      keylessIntro: "Cela fonctionne : récupérez un défi, résolvez-le et envoyez du JSON, exactement comme l’assistant navigateur. Mais aux yeux d’Inlet votre serveur devient le visiteur, et quatre choses changent.",
+      keyless: [
+        "La liste des sites autorisés ne s’applique plus. Ce contrôle ne s’exécute que si la requête porte un en-tête Origin, et un fetch côté serveur n’en porte pas.",
+        "Le défi est lié à l’IP qui l’a demandé, vit cinq minutes et ne sert qu’une fois. Demandez-le et soumettez dans la même invocation ; sur POW_SOLUTION_INVALID, demandez-en un nouveau et réessayez une fois.",
+        "Ne transmettez jamais un honeypot rempli. Si _gotcha n’est pas vide, écartez l’envoi et répondez vous-même par un succès — sinon le bannissement de 24 heures tombe sur l’IP de votre serveur, et sur tous les vrais visiteurs derrière elle.",
+        "Les limites de débit comptent votre serveur comme un seul visiteur : plus de 12 envois par minute depuis une IP valent un bannissement. Limitez d’abord votre propre point d’entrée.",
+        "La clé API lève ces quatre points : c’est la façon prévue d’envoyer depuis un serveur.",
+      ],
     },
     clients: {
       title: "Les clients et leur boîte",
@@ -563,6 +581,18 @@ export default async function DocsPage({ searchParams }: { searchParams: Promise
           <p className="mt-4 flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-900">
             <KeyRound className="mt-0.5 h-4 w-4 shrink-0" /> {t.relay.keyNote}
           </p>
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
+            <h3 className="font-semibold text-slate-900">{t.relay.keylessTitle}</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">{t.relay.keylessIntro}</p>
+            <ol className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+              {t.relay.keyless.map((w, i) => (
+                <li key={w} className="flex items-start gap-3">
+                  <span className="mt-0.5 font-mono text-xs text-slate-400">{String(i + 1).padStart(2, "0")}</span>
+                  <span>{w}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
 
           {/* Clients */}
           <SectionTitle id="clients" n="6">{t.clients.title}</SectionTitle>

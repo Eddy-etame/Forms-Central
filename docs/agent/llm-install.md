@@ -98,6 +98,12 @@ Keep the browser talking only to the site: a route forwards the fields with
 `X-Inlet-Visitor-IP`. Trusted relays skip CORS and proof-of-work. Full
 examples for Next.js and Astro: `{FORM_API_URL}/docs#relay`.
 
+Without a key a server may still fetch a challenge, solve it and POST JSON,
+but it is then the visitor: never forward a submission whose `_gotcha` is
+filled (drop it and answer success — forwarding it bans the server's IP for
+24 hours), rate-limit your own endpoint (12 submissions a minute per IP is
+the ceiling), and fetch the challenge in the same invocation that submits it.
+
 ## Error codes you may receive (JSON `code`)
 - `FORM_NOT_FOUND` — wrong `FORM_ID`. Ask the user to re-copy it.
 - `FORM_INACTIVE` — the form is switched off in the dashboard.

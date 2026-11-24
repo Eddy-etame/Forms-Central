@@ -11,8 +11,8 @@ import { getPlan } from '@/lib/plans';
 import { checkRateLimit as dbCheckRateLimit } from '@/lib/rateLimit';
 import { verifyApiKey } from '@/lib/apiKeys';
 import { isSyntheticEmail, normalizeLang } from '@/lib/domain';
-import { SITE_URL } from '@/lib/seo';
 import { background } from '@/lib/background';
+import { leadRecipients, markNotified, redeliverPending } from '@/lib/delivery';
 
 export const maxDuration = 30; // attachments + e-mail + webhook can take a while
 
@@ -445,16 +445,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const visitorEmail = senderEmailKey ? String(cleanPayload[senderEmailKey]).trim() : '';
   const validVisitorEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(visitorEmail) ? visitorEmail : null;
 
-  const recipients: { to: string; developerCopy: boolean; openUrl: string }[] = [];
-  if (client && client.notify_leads !== false && client.email && !isSyntheticEmail(client.email)) {
-    recipients.push({ to: client.email, developerCopy: false, openUrl: `${SITE_URL}/portal` });
-  }
-  if (form.notify_email && developer?.email && developer.email.toLowerCase() !== (client?.email || '').toLowerCase()) {
-    recipients.push({ to: developer.email, developerCopy: true, openUrl: `${SITE_URL}/developer/dashboard/forms/${formId}` });
-  }
+  const recipients = leadRecipients(formId, form.notify_email, developer, client);
 
   if (!emailsPaused) {
-    for (const r of recipients) {
+    for (const [i, r] of recipients.entries()) {
       if (emailBudget <= 0) break;
       emailBudget -= 1;
       background(
@@ -472,9 +466,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           replyTo: validVisitorEmail,
         })
           // the log row is part of the task: returned, so it is awaited too
-          .then((res) => (res.success
-            ? logEmailSend(form.client_id, formId, 'lead')
-            : logFailure(formId, 'SMTP_FAILED', `Lead e-mail to the ${r.developerCopy ? 'developer' : 'client'} was not sent`)))
+          // The first recipient is the one the lead is owed to: its delivery is the lead's delivery state.
+          .then(async (res) => {
+            if (!res.success) return logFailure(formId, 'SMTP_FAILED', `Lead e-mail to the ${r.developerCopy ? 'developer' : 'client'} was not sent`);
+            await logEmailSend(form.client_id, formId, 'lead');
+            if (i === 0) await markNotified(inserted.id as string);
+          })
           .catch((err) => logFailure(formId, 'SMTP_FAILED', `Lead e-mail to the ${r.developerCopy ? 'developer' : 'client'}: ${err?.message || err}`))
       );
     }
@@ -510,6 +507,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
   }
+
+  // Self-healing: a new lead is the moment to send what this developer's earlier
+  // leads are still owed (quota pause lifted, mail server back, a crashed send).
+  background(redeliverPending({ developerId: form.client_id, limit: 3 }));
 
   return respondSuccess();
 }

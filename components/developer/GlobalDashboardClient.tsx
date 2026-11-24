@@ -7,11 +7,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import NewFormButton from './NewFormButton';
 import OnboardingChecklist from './OnboardingChecklist';
+import DeliveryNotice, { PendingChip, PendingLine } from './DeliveryNotice';
 import type { AppDict } from '@/lib/appDict';
 
 type DashDict = AppDict['dashboard'];
 
-export type DashboardLead = { id: string; created_at: string; payload: Record<string, unknown>; forms?: { name: string } | null; spam_status?: string | null; spam_reason?: string | null };
+export type DashboardLead = { id: string; created_at: string; payload: Record<string, unknown>; forms?: { name: string } | null; spam_status?: string | null; spam_reason?: string | null; notify_pending?: boolean };
 
 export interface DashboardStats {
   allTime: number;
@@ -97,6 +98,9 @@ export default function GlobalDashboardClient({ stats, forms = [], t, sn }: { st
           </button>
         </div>
       </div>
+
+      {/* Stored but nobody was told: say so, and offer the repair */}
+      <DeliveryNotice count={stats?.recentLeads.filter((l) => l.notify_pending).length ?? 0} d={t.delivery} />
 
       {/* The moment that matters: their very first lead = "my integration works" */}
       {stats?.allTime === 1 && (
@@ -340,6 +344,7 @@ export default function GlobalDashboardClient({ stats, forms = [], t, sn }: { st
                             AI: suspect
                           </span>
                         )}
+                        {lead.notify_pending && <PendingChip d={t.delivery} />}
                       </td>
                       <td className="px-6 py-4">
                         <div className="font-bold text-slate-900 dark:text-white">{String(name || "")}</div>
@@ -394,6 +399,7 @@ export default function GlobalDashboardClient({ stats, forms = [], t, sn }: { st
                 </button>
               </div>
               <div className="p-6 overflow-y-auto flex-1">
+                {selectedLead.notify_pending && <PendingLine leadId={selectedLead.id} d={t.delivery} />}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {Object.entries(selectedLead.payload).map(([key, value]) => {
                     const isSupabaseUrl = typeof value === 'string' && value.startsWith('http') && value.includes('supabase.co/storage');

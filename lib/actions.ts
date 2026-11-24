@@ -9,6 +9,7 @@ import { PLANS, getPlan, isPaidPlanId } from './plans';
 import { normalizeOrigins } from './snippets';
 import { getConfiguredAccountSlots } from './mailAccounts';
 import { getLocale } from './i18n';
+import { pendingNotificationIds } from './delivery';
 
 // Helper: Ensure the request is authenticated via cookies (read on the server)
 async function verifyAdminAuth() {
@@ -724,10 +725,13 @@ export async function getClientDashboardStats() {
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
 
+  // Leads that were stored but whose notification never left (flagged, with a one-click resend).
+  const pendingNotify = await pendingNotificationIds(clientId, formIds);
+
   return {
     allTime: allTime || 0,
     past7Days: past7Days || 0,
-    recentLeads: allLeadsRaw || [],
+    recentLeads: (allLeadsRaw || []).map((l) => ({ ...l, notify_pending: pendingNotify.has(l.id) })),
     formsCount: formIds.length,
     dailyTrends,
     formPerformance
@@ -815,11 +819,13 @@ export async function getClientSingleFormStats(formId: string) {
 
   const dailyTrends = Array.from(dailyTrendsMap.entries()).map(([date, count]) => ({ date, count }));
 
+  const pendingNotify = await pendingNotificationIds(payload.clientId as string, [formId]);
+
   return {
     formName: formCheck.name,
     allTime: allTime || 0,
     past7Days: past7Days || 0,
-    recentLeads: allLeadsRaw || [],
+    recentLeads: (allLeadsRaw || []).map((l) => ({ ...l, notify_pending: pendingNotify.has(l.id) })),
     dailyTrends
   };
 }

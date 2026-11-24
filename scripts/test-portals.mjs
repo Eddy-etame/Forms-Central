@@ -45,7 +45,7 @@ async function cleanup() {
     if (fileObjectPath) await sb.storage.from('uploads').remove([fileObjectPath]);
     for (const id of [developerId, ...otherDevs].filter(Boolean)) {
       const { data: forms } = await sb.from('forms').select('id').eq('client_id', id);
-      for (const f of forms ?? []) await sb.from('submissions').delete().eq('form_id', f.id);
+      for (const f of forms ?? []) { await sb.from('submissions').delete().eq('form_id', f.id); await sb.from('email_log').delete().eq('form_id', f.id); await sb.from('failures_log').delete().eq('form_id', f.id); }
       await sb.from('forms').delete().eq('client_id', id);
       await sb.from('portal_users').delete().eq('parent_client_id', id);
       await sb.from('clients').delete().eq('id', id);
@@ -243,6 +243,33 @@ try {
     check('cross-tenant: another developer cannot touch this form (404)', res.status === 404, `got ${res.status}`);
     const inv = await post('/api/developer/clients/invite', { id: acmeId }, otherCookie);
     check('cross-tenant: another developer cannot invite this client (404)', inv.status === 404, `got ${inv.status}`);
+
+    // Delivery state (v23, incident of 2026-11-24): a lead whose notification never left is
+    // re-sent on demand, marked as delayed, by its own developer only. The client's address is a
+    // reserved .invalid one, so the mail layer verifies the sending account instead of sending.
+    console.log(`\n== Delivery state: a missed notification is re-sent, once, by its owner ==`);
+    const tenMinAgo = new Date(Date.now() - 10 * 60_000).toISOString();
+    const { data: missed } = await sb.from('submissions').insert({ form_id: formId, payload: { name: 'Missed Lead', email: 'missed@selftest.invalid', message: 'Nobody was told about me' }, ip_address: '127.0.0.1', fingerprint: 's', created_at: tenMinAgo }).select('id, notified_at').single();
+    check('a lead starts without a delivery mark', !!missed?.id && missed.notified_at === null, JSON.stringify(missed));
+
+    const anon = await post('/api/developer/leads/redeliver', { ids: [missed.id] });
+    check('redeliver rejects no session (401)', anon.status === 401, `got ${anon.status}`);
+
+    const foreign = await post('/api/developer/leads/redeliver', { ids: [missed.id] }, otherCookie);
+    const fb = await foreign.json().catch(() => ({}));
+    const { data: still } = await sb.from('submissions').select('notified_at, notify_attempts').eq('id', missed.id).single();
+    check('cross-tenant: another developer cannot re-send this lead (nothing sent, lead untouched)', foreign.status === 200 && fb.sent === 0 && still?.notified_at === null && still?.notify_attempts === 0, `status ${foreign.status} ${JSON.stringify(fb)} ${JSON.stringify(still)}`);
+
+    const own = await post('/api/developer/leads/redeliver', { ids: [missed.id] }, devCookie);
+    const ob = await own.json().catch(() => ({}));
+    const { data: done } = await sb.from('submissions').select('notified_at, notify_attempts').eq('id', missed.id).single();
+    check('the owner re-sends it: reported sent, lead marked delivered', own.status === 200 && ob.sent === 1 && ob.failed === 0 && !!done?.notified_at && done?.notify_attempts === 1, `status ${own.status} ${JSON.stringify(ob)} ${JSON.stringify(done)}`);
+    const { count: mails } = await sb.from('email_log').select('id', { count: 'exact', head: true }).eq('form_id', formId).eq('kind', 'lead');
+    check('the delayed notification is in the e-mail log', (mails ?? 0) >= 1, `email_log lead rows: ${mails}`);
+
+    const again = await post('/api/developer/leads/redeliver', { ids: [missed.id] }, devCookie);
+    const ab = await again.json().catch(() => ({}));
+    check('a second call sends nothing (no duplicate)', again.status === 200 && ab.sent === 0, JSON.stringify(ab));
   }
 } catch (e) {
   fail++; failures.push(`suite crashed: ${e.message}`); console.error('SUITE ERROR:', e);

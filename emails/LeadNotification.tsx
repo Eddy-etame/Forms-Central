@@ -49,6 +49,15 @@ const getFieldLabel = (key: string, isEn: boolean): string => {
 export const isStorageUrl = (v: unknown): v is string =>
   typeof v === 'string' && v.startsWith('http') && (v.includes('/storage/v1/object/') || v.includes('supabase.co/storage'));
 
+// Same sentence as lib/email.ts delayedNotice (kept here so the template stays import-free of the mail layer).
+function delayedNoticeText(sinceIso: string, lang: 'fr' | 'en'): string {
+  const d = new Date(sinceIso);
+  const when = `${d.toLocaleDateString(lang === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}, ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC`;
+  return lang === 'en'
+    ? `Delayed notification — this lead arrived on ${when}. A technical fault on our side held this e-mail back; the lead itself was stored safely the whole time.`
+    : `Notification en retard — ce lead est arrivé le ${when}. Un incident technique de notre côté a retenu cet e-mail ; le lead, lui, a bien été enregistré pendant tout ce temps.`;
+}
+
 interface LeadNotificationProps {
   clientName: string;
   formName: string;
@@ -66,6 +75,8 @@ interface LeadNotificationProps {
   openUrl?: string;
   /** True when this copy goes to the developer, not the client. */
   developerCopy?: boolean;
+  /** ISO date of the lead when this notification is a late retry. */
+  delayedSince?: string | null;
 }
 
 export const LeadNotificationEmail = ({
@@ -77,6 +88,7 @@ export const LeadNotificationEmail = ({
   suspect = null,
   openUrl,
   developerCopy = false,
+  delayedSince = null,
 }: LeadNotificationProps) => {
   const isEn = lang === 'en';
   const showInletBadge = !branding.whiteLabel;
@@ -111,6 +123,12 @@ export const LeadNotificationEmail = ({
                     ? 'A visitor sent a request from your website. Reply to this e-mail to answer them directly.'
                     : 'Un visiteur a envoyé une demande depuis votre site. Répondez à cet e-mail pour lui écrire directement.')}
             </Text>
+
+            {delayedSince && (
+              <Section style={{ backgroundColor: '#eff6ff', border: '1px solid #93c5fd', padding: '12px 16px', borderRadius: '8px', marginBottom: '12px' }}>
+                <Text style={{ margin: 0, color: '#1e3a8a', fontSize: '14px', lineHeight: '21px' }}>{delayedNoticeText(delayedSince, isEn ? 'en' : 'fr')}</Text>
+              </Section>
+            )}
 
             {suspect && (
               <Section style={{ backgroundColor: '#fffbeb', border: '1px solid #fcd34d', padding: '12px 16px', borderRadius: '8px' }}>

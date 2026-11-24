@@ -136,6 +136,16 @@ export interface LeadEmailOptions {
   openUrl?: string;            // where the reader opens the lead
   developerCopy?: boolean;     // this copy goes to the developer
   replyTo?: string | null;     // the visitor's address
+  delayedSince?: string | null; // ISO date of the lead when this is a late (retried) notification
+}
+
+/** The sentence a late notification opens with (shared by the HTML template and the text part). */
+export function delayedNotice(sinceIso: string, lang: 'fr' | 'en'): string {
+  const d = new Date(sinceIso);
+  const when = `${d.toLocaleDateString(lang === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}, ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC`;
+  return lang === 'en'
+    ? `Delayed notification — this lead arrived on ${when}. A technical fault on our side held this e-mail back; the lead itself was stored safely the whole time.`
+    : `Notification en retard — ce lead est arrivé le ${when}. Un incident technique de notre côté a retenu cet e-mail ; le lead, lui, a bien été enregistré pendant tout ce temps.`;
 }
 
 /** Lead notification. `success:false` means nothing was sent — callers log it. */
@@ -153,18 +163,20 @@ export async function sendLeadEmail(o: LeadEmailOptions): Promise<SendResult> {
       suspect: o.suspect ?? null,
       openUrl: o.openUrl,
       developerCopy: !!o.developerCopy,
+      delayedSince: o.delayedSince ?? null,
     })
   );
+  const delayedNote = o.delayedSince ? delayedNotice(o.delayedSince, lang) : '';
 
   const lines = Object.entries(o.payload)
     .filter(([, v]) => !(typeof v === 'string' && v.startsWith('http') && v.includes('/storage/')))
     .map(([k, v]) => `- ${k}: ${String(v ?? '')}`)
     .join('\n');
-  const textContent = isEn
+  const textContent = (delayedNote ? `${delayedNote}\n\n` : '') + (isEn
     ? `New lead received\nForm: ${o.formName}\n\n${lines}\n\nOpen: ${o.openUrl || ''}`
-    : `Nouveau lead reçu\nFormulaire : ${o.formName}\n\n${lines}\n\nOuvrir : ${o.openUrl || ''}`;
+    : `Nouveau lead reçu\nFormulaire : ${o.formName}\n\n${lines}\n\nOuvrir : ${o.openUrl || ''}`);
 
-  const prefix = o.suspect ? (isEn ? '[Check] ' : '[À vérifier] ') : '';
+  const prefix = (o.delayedSince ? (isEn ? '[Delayed] ' : '[En retard] ') : '') + (o.suspect ? (isEn ? '[Check] ' : '[À vérifier] ') : '');
   return sendWithFallback({
     from: getSenderAddress(o.clientName),
     to: o.to,

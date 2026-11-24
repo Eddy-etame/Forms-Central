@@ -6,9 +6,10 @@ import { BarChart3, TrendingUp, Download, Search, X, FileText, Paperclip } from 
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import FormSettings from './FormSettings';
+import DeliveryNotice, { PendingChip, PendingLine, type DeliveryDict } from './DeliveryNotice';
 import type { AppDict } from '@/lib/appDict';
 
-export type DashboardLead = { id: string; created_at: string; payload: Record<string, unknown>; forms?: { name: string } | null };
+export type DashboardLead = { id: string; created_at: string; payload: Record<string, unknown>; forms?: { name: string } | null; notify_pending?: boolean };
 
 export interface SingleFormStats {
   formName: string;
@@ -20,7 +21,7 @@ export interface SingleFormStats {
 
 type FormPageDict = import('@/lib/appDict').AppDict['formPage'];
 
-export default function FormDashboardClient({ stats, t, formId, sn }: { stats: SingleFormStats; t: FormPageDict; formId: string; sn: AppDict['snippets'] }) {
+export default function FormDashboardClient({ stats, t, formId, sn, d }: { stats: SingleFormStats; t: FormPageDict; formId: string; sn: AppDict['snippets']; d: DeliveryDict }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLead, setSelectedLead] = useState<DashboardLead | null>(null);
 
@@ -97,6 +98,9 @@ export default function FormDashboardClient({ stats, t, formId, sn }: { stats: S
           {t.exportCsv} ({stats?.allTime})
         </button>
       </div>
+
+      {/* Stored but nobody was told: say so, and offer the repair */}
+      <DeliveryNotice count={stats?.recentLeads.filter((l) => l.notify_pending).length ?? 0} d={d} />
 
       <div className="grid gap-6 md:grid-cols-2">
         <motion.div 
@@ -205,6 +209,7 @@ export default function FormDashboardClient({ stats, t, formId, sn }: { stats: S
                     >
                       <td className="whitespace-nowrap px-6 py-4 font-medium text-slate-900 dark:text-slate-200">
                         {date}
+                        {lead.notify_pending && <PendingChip d={d} />}
                       </td>
                       
                       {tableColumns.map(col => {
@@ -276,6 +281,7 @@ export default function FormDashboardClient({ stats, t, formId, sn }: { stats: S
               </div>
               
               <div className="p-6 overflow-y-auto flex-1">
+                {selectedLead.notify_pending && <PendingLine leadId={selectedLead.id} d={d} />}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.entries(selectedLead.payload).map(([key, value]) => {
                     const isFile = isFileUrl(value);

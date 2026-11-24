@@ -9,5 +9,5 @@ export default async function FormSpecificDashboardPage({ params }: { params: Pr
   const [stats, locale] = await Promise.all([getClientSingleFormStats(resolvedParams.formId), getLocale()]);
 
   const dict = getAppDict(locale);
-  return <FormDashboardClient stats={stats as unknown as SingleFormStats} t={dict.formPage} formId={resolvedParams.formId} sn={dict.snippets} />;
+  return <FormDashboardClient stats={stats as unknown as SingleFormStats} t={dict.formPage} formId={resolvedParams.formId} sn={dict.snippets} d={dict.dashboard.delivery} />;
 }

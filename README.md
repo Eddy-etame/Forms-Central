@@ -43,8 +43,11 @@ created by their developer and receive a set-password link.
   per-form settings (origins, auto-reply, success page, webhook, developer
   copy, on/off), integration code for HTML / React / Astro / Vue / Svelte /
   WordPress / server relays, API keys and the MCP config.
-- **Client inbox** `/portal` — a client reads its leads and attachments. Access
-  through a single-use set-password link (7 days) or "forgot password".
+- **Client inbox** `/portal` — a client reads its requests and attachments,
+  sees in one sentence what is waiting and for how long, replies by e-mail,
+  calls, and marks a request as handled (`submissions.handled_at`). In the
+  client's language, under the developer's brand. Access through a single-use
+  set-password link (7 days) or "forgot password".
 - **Submit pipeline** `POST /api/submit/:formId` — origins (CORS), honeypot,
   proof-of-work for JavaScript posts, keyword flagging (suspect leads are
   **kept** and flagged, never dropped), reverse-DNS host bans after a honeypot hit, per-IP rate

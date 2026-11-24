@@ -233,6 +233,13 @@ The pool is one account with five dead spares: re-key or remove 2–6.
 - `angoularaphael/boxing-center-portet` now posts to the new origin (done by
   the author): every site of the author is moved. Only the five external
   developers still use the old origin.
+- **Client inbox v2** (the wedge named in `vision.md`): it opens on one
+  sentence — "3 requests are waiting. The oldest for 2 days." — with seven
+  pills for the last seven days; tabs to handle / handled / all; a waiting
+  clock on every open request (amber after a day, red after three); a request
+  opens with reply-by-e-mail, call, and a handled toggle (`PATCH
+  /api/portal/leads`, scoped inside the query). Client-facing copy says
+  requests / demandes. Suites: portals 55, UI 31.
 - A second session of the author asked for a contact form for the new
   portfolio. Facts: the owning account is on the free plan with 3/3 forms;
   the operator's form action has no plan limit. The insert was refused by

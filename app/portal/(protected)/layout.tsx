@@ -33,10 +33,14 @@ export default async function PortalProtectedLayout({ children }: { children: Re
   const brandName = parent?.name || t.defaultBrandName;
   const accent = parent?.primary_color || '#0F172A';
   const whiteLabel = getPlan(parent?.plan).whiteLabel;
+  // Text placed on the brand colour: dark ink on a light brand, white on a dark one.
+  const hex = /^#?([0-9a-f]{6})$/i.exec(accent)?.[1];
+  const luminance = hex ? (0.299 * parseInt(hex.slice(0, 2), 16) + 0.587 * parseInt(hex.slice(2, 4), 16) + 0.114 * parseInt(hex.slice(4, 6), 16)) / 255 : 0;
+  const brandVars = { '--brand': hex ? `#${hex}` : '#0F172A', '--brand-ink': luminance > 0.62 ? '#0F172A' : '#FFFFFF' } as React.CSSProperties;
 
   return (
     <LocaleProvider locale={portalLocale}>
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50" style={brandVars}>
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-3">

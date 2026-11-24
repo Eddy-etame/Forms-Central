@@ -289,6 +289,14 @@ interface AppDict {
       exportCsv: string; searchPlaceholder: string; allForms: string; formFallback: string;
       colDate: string; colForm: string; colPreview: string; noMatch: string;
       submissionTitle: string; close: string; downloadFile: string;
+      // inbox v2 (migration v23): what waits, the week, the handled state
+      waitingOne: string; waitingMany: string; allDone: string; allDoneSub: string;
+      weekLabel: string; weekCount: string; weekCountOne: string;
+      tabTodo: string; tabDone: string; tabAll: string; waitingFor: string; handledOn: string;
+      reply: string; call: string; markHandled: string; reopen: string; replySubject: string; replyGreeting: string;
+      emptyTodo: string; emptyDone: string; errSave: string;
+      unitMin: string; unitHour: string; unitDay: string; unitDays: string; justNow: string;
+      colStatus: string; statusTodo: string; statusDone: string;
     };
   };
 }
@@ -622,12 +630,20 @@ export const appDictionaries: Record<Locale, AppDict> = {
         defaultBrandName: 'Client portal', poweredBy: 'Powered by Inlet', signOut: 'Sign out',
       },
       home: {
-        title: 'Your leads',
-        loadingLeads: 'Loading your leads…', emptyTitle: 'No leads yet', emptyBody: "When your forms receive submissions, they'll appear here in real time.",
-        yourLeads: 'Your leads', totalAcrossOne: '{n} total across {m} form', totalAcrossMany: '{n} total across {m} forms',
-        exportCsv: 'Export CSV', searchPlaceholder: 'Search leads…', allForms: 'All forms', formFallback: 'Form',
-        colDate: 'Date', colForm: 'Form', colPreview: 'Preview', noMatch: 'No leads match your search.',
-        submissionTitle: 'Submission', close: 'Close', downloadFile: 'Download file',
+        title: 'Your requests',
+        loadingLeads: 'Loading your requests…', emptyTitle: 'No requests yet', emptyBody: 'Requests sent from your website will appear here the moment they arrive.',
+        yourLeads: 'Your requests', totalAcrossOne: '{n} in total, from {m} form', totalAcrossMany: '{n} in total, from {m} forms',
+        exportCsv: 'Export CSV', searchPlaceholder: 'Search by name, e-mail, message…', allForms: 'All forms', formFallback: 'Request',
+        colDate: 'Date', colForm: 'Form', colPreview: 'Preview', noMatch: 'No request matches your search.',
+        submissionTitle: 'Request', close: 'Close', downloadFile: 'Download file',
+        waitingOne: '1 request has been waiting for {age}.', waitingMany: '{n} requests are waiting. The oldest for {age}.',
+        allDone: 'Everything is handled.', allDoneSub: 'Last request received {age} ago.',
+        weekLabel: 'Last 7 days', weekCount: '{n} received', weekCountOne: '1 received',
+        tabTodo: 'To handle', tabDone: 'Handled', tabAll: 'All', waitingFor: 'waiting {age}', handledOn: 'handled {date}',
+        reply: 'Reply by e-mail', call: 'Call', markHandled: 'Mark as handled', reopen: 'Reopen', replySubject: 'About your message', replyGreeting: 'Hello {name},',
+        emptyTodo: 'Nothing is waiting. Well done.', emptyDone: 'Nothing handled yet.', errSave: 'Could not save. Try again.',
+        unitMin: 'min', unitHour: 'h', unitDay: 'day', unitDays: 'days', justNow: 'a moment',
+        colStatus: 'Status', statusTodo: 'To handle', statusDone: 'Handled',
       },
     },
   },
@@ -959,12 +975,20 @@ export const appDictionaries: Record<Locale, AppDict> = {
         defaultBrandName: 'Portail client', poweredBy: 'Propulsé par Inlet', signOut: 'Se déconnecter',
       },
       home: {
-        title: 'Vos leads',
-        loadingLeads: 'Chargement de vos leads…', emptyTitle: 'Aucun lead pour l’instant', emptyBody: 'Dès que vos formulaires recevront des soumissions, elles apparaîtront ici en temps réel.',
-        yourLeads: 'Vos leads', totalAcrossOne: '{n} au total sur {m} formulaire', totalAcrossMany: '{n} au total sur {m} formulaires',
-        exportCsv: 'Exporter en CSV', searchPlaceholder: 'Rechercher des leads…', allForms: 'Tous les formulaires', formFallback: 'Formulaire',
-        colDate: 'Date', colForm: 'Formulaire', colPreview: 'Aperçu', noMatch: 'Aucun lead ne correspond à votre recherche.',
-        submissionTitle: 'Soumission', close: 'Fermer', downloadFile: 'Télécharger le fichier',
+        title: 'Vos demandes',
+        loadingLeads: 'Chargement de vos demandes…', emptyTitle: 'Aucune demande pour l’instant', emptyBody: 'Les demandes envoyées depuis votre site apparaîtront ici dès leur arrivée.',
+        yourLeads: 'Vos demandes', totalAcrossOne: '{n} au total, depuis {m} formulaire', totalAcrossMany: '{n} au total, depuis {m} formulaires',
+        exportCsv: 'Exporter en CSV', searchPlaceholder: 'Rechercher par nom, e-mail, message…', allForms: 'Tous les formulaires', formFallback: 'Demande',
+        colDate: 'Date', colForm: 'Formulaire', colPreview: 'Aperçu', noMatch: 'Aucune demande ne correspond à votre recherche.',
+        submissionTitle: 'Demande', close: 'Fermer', downloadFile: 'Télécharger le fichier',
+        waitingOne: '1 demande vous attend depuis {age}.', waitingMany: '{n} demandes vous attendent. La plus ancienne depuis {age}.',
+        allDone: 'Tout est traité.', allDoneSub: 'Dernière demande reçue il y a {age}.',
+        weekLabel: '7 derniers jours', weekCount: '{n} reçues', weekCountOne: '1 reçue',
+        tabTodo: 'À traiter', tabDone: 'Traitées', tabAll: 'Toutes', waitingFor: 'en attente depuis {age}', handledOn: 'traitée le {date}',
+        reply: 'Répondre par e-mail', call: 'Appeler', markHandled: 'Marquer comme traitée', reopen: 'Rouvrir', replySubject: 'Suite à votre message', replyGreeting: 'Bonjour {name},',
+        emptyTodo: 'Rien n’attend. Bravo.', emptyDone: 'Aucune demande traitée pour l’instant.', errSave: 'Enregistrement impossible. Réessayez.',
+        unitMin: 'min', unitHour: 'h', unitDay: 'jour', unitDays: 'jours', justNow: 'un instant',
+        colStatus: 'Statut', statusTodo: 'À traiter', statusDone: 'Traitée',
       },
     },
   },

@@ -193,6 +193,27 @@ try {
     check('download endpoint rejects anonymous callers (401)', dlNoAuth.status === 401, `got ${dlNoAuth.status}`);
   }
   {
+    // Handled state (v23): a client marks its own request as handled and reopens it — never another client's.
+    const mine = await (await fetch(`${BASE}/api/portal/leads`, { headers: j(portalCookie) })).json();
+    const myLead = (mine.leads ?? []).find((l) => l.payload?.name === 'Lead on Acme');
+    check('inbox exposes the handled state, a new request starts unhandled', mine.handledSupported === true && !!myLead && myLead.handled_at === null, JSON.stringify({ supported: mine.handledSupported, handled_at: myLead?.handled_at }));
+    const patchLead = (body, cookie) => fetch(`${BASE}/api/portal/leads`, { method: 'PATCH', headers: j(cookie), body: JSON.stringify(body) });
+    const done = await patchLead({ id: myLead.id, handled: true }, portalCookie);
+    const db1 = await sb.from('submissions').select('handled_at, handled_by').eq('id', myLead.id).single();
+    check('client marks its request as handled', done.status === 200 && !!db1.data?.handled_at && db1.data?.handled_by === 'client', `got ${done.status} ${JSON.stringify(db1.data)}`);
+    const reopen = await patchLead({ id: myLead.id, handled: false }, portalCookie);
+    const db2 = await sb.from('submissions').select('handled_at, handled_by').eq('id', myLead.id).single();
+    check('client reopens it', reopen.status === 200 && db2.data?.handled_at === null && db2.data?.handled_by === null, `got ${reopen.status} ${JSON.stringify(db2.data)}`);
+    const { data: other } = await sb.from('submissions').select('id').eq('form_id', form2Id).limit(1);
+    const foreign = await patchLead({ id: other?.[0]?.id, handled: true }, portalCookie);
+    const db3 = await sb.from('submissions').select('handled_at').eq('id', other?.[0]?.id).single();
+    check("ISOLATION: a client cannot mark another client's request (404, untouched)", foreign.status === 404 && db3.data?.handled_at === null, `got ${foreign.status} ${JSON.stringify(db3.data)}`);
+    const anonPatch = await patchLead({ id: myLead.id, handled: true });
+    check('handled toggle rejects no session (401)', anonPatch.status === 401, `got ${anonPatch.status}`);
+    const badPatch = await patchLead({ id: 'nope', handled: true }, portalCookie);
+    check('handled toggle validates its input (400)', badPatch.status === 400, `got ${badPatch.status}`);
+  }
+  {
     const res = await fetch(`${BASE}/api/portal/leads`);
     check('portal leads rejects no session (401)', res.status === 401, `got ${res.status}`);
   }

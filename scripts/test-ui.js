@@ -172,9 +172,29 @@ let devId = null, formId = null, clientId = null;
     await shot(portal, '10-client-inbox');
     step('client inbox shows the lead', (await portal.getByText('Jane Lead').count()) > 0, portal.url());
     const pt = await text(portal);
-    const fr = /Se déconnecter/.test(pt) && /Vos leads/.test(pt) && !/Sign out|Your leads/.test(pt);
-    const en = /Sign out/.test(pt) && /Your leads/.test(pt) && !/Se déconnecter|Vos leads/.test(pt);
+    const fr = /Se déconnecter/.test(pt) && /vos demandes/i.test(pt) && !/Sign out|your requests/i.test(pt);
+    const en = /Sign out/.test(pt) && /your requests/i.test(pt) && !/Se déconnecter|vos demandes/i.test(pt);
     step('client inbox: shell and page share one language', fr || en, fr ? 'fr' : en ? 'en' : 'mixed');
+
+    // 6b. the inbox says what is waiting, opens a request, and marks it as handled (v23)
+    step('client inbox: the headline counts what is waiting', /2 requests are waiting|2 demandes vous attendent/i.test(pt), pt.slice(0, 160).replace(/\s+/g, ' '));
+    await portal.getByRole('button', { name: /Jane Lead/ }).first().click();
+    await portal.getByRole('dialog').waitFor({ timeout: 10000 });
+    await shot(portal, '10b-request-open');
+    step('request detail: reply by e-mail and the handled toggle', (await portal.getByRole('link', { name: /reply by e-mail|répondre par e-mail/i }).count()) === 1 && (await portal.getByRole('button', { name: /mark as handled|marquer comme traitée/i }).count()) === 1);
+    await portal.getByRole('button', { name: /mark as handled|marquer comme traitée/i }).click();
+    await portal.waitForTimeout(1500);
+    await portal.getByRole('button', { name: /^close$|^fermer$/i }).click().catch(() => {});
+    await portal.waitForTimeout(400);
+    await shot(portal, '10c-inbox-after-handled');
+    const pt2 = await text(portal);
+    const handledRows = await sb(`submissions?form_id=eq.${formId}&handled_at=not.is.null&select=id`);
+    step('marking a request as handled updates the headline and the database', /1 request has been waiting|1 demande vous attend/i.test(pt2) && Array.isArray(handledRows.body) && handledRows.body.length === 1, JSON.stringify(handledRows.body));
+    await portal.setViewportSize({ width: 390, height: 844 });
+    await portal.waitForTimeout(500);
+    await shot(portal, '10d-inbox-phone');
+    const psw = await portal.evaluate(() => document.documentElement.scrollWidth);
+    step('client inbox on a phone: no horizontal overflow', psw <= 390, `scrollWidth ${psw}`);
 
     // 7. API & MCP page
     await page.goto(`${B}/developer/dashboard/api`, { waitUntil: 'networkidle' });

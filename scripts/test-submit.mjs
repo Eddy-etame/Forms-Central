@@ -37,7 +37,7 @@ const ALLOWED_ORIGIN = 'https://allowed.example';
 let fpCounter = 0;
 const baseHeaders = () => ({ 'x-forwarded-for': TEST_IP, 'x-client-fingerprint': `fp-${TEST_IP}-${fpCounter++}` });
 
-let developerId = null, clientId = null, formId = null, inactiveFormId = null, rawKey = null;
+let developerId = null, clientId = null, formId = null, inactiveFormId = null, notifyFormId = null, rawKey = null;
 
 async function countSubmissions(fid) {
   const { count } = await sb.from('submissions').select('id', { count: 'exact', head: true }).eq('form_id', fid);
@@ -57,7 +57,7 @@ async function cleanup() {
     await sb.from('blacklist').delete().eq('target', TEST_IP);
     await sb.from('blacklist').delete().eq('target', RELAY_VISITOR_IP);
     await sb.from('blacklist').delete().like('target', `fp-${TEST_IP}-%`);
-    for (const fid of [formId, inactiveFormId].filter(Boolean)) {
+    for (const fid of [formId, inactiveFormId, notifyFormId].filter(Boolean)) {
       await sb.from('failures_log').delete().eq('form_id', fid);
       await sb.from('email_log').delete().eq('form_id', fid);
       await sb.from('submissions').delete().eq('form_id', fid);
@@ -75,11 +75,11 @@ try {
   console.log(`\n== Submit pipeline (heavy) — ${BASE} · test IP ${TEST_IP} ==`);
   await sb.from('blacklist').delete().eq('target', TEST_IP);
 
-  // setup: developer + client (no e-mail sent: notify_leads=false) + active form (allowed origin) + inactive form + API key
+  // setup: developer + client (notify_leads=false: these leads notify nobody; 8b covers notifications) + active form (allowed origin) + inactive form + API key
   {
-    const { data: d } = await sb.from('clients').insert({ name: 'Submit Test', email: `submit+${Date.now()}@test.dev`, plan: 'pro' }).select('id').single();
+    const { data: d } = await sb.from('clients').insert({ name: 'Submit Test', email: `submit+${Date.now()}@test.invalid`, plan: 'pro' }).select('id').single();
     developerId = d.id;
-    const { data: c } = await sb.from('portal_users').insert({ parent_client_id: developerId, name: 'Submit Client', email: `submitclient+${Date.now()}@test.dev`, lang: 'fr', notify_leads: false }).select('id').single();
+    const { data: c } = await sb.from('portal_users').insert({ parent_client_id: developerId, name: 'Submit Client', email: `submitclient+${Date.now()}@test.invalid`, lang: 'fr', notify_leads: false }).select('id').single();
     clientId = c.id;
     const { data: f } = await sb.from('forms').insert({ name: 'Submit form', client_id: developerId, portal_user_id: clientId, is_active: true, allowed_origins: [ALLOWED_ORIGIN], notify_email: false, auto_reply_enabled: false }).select('id').single();
     formId = f.id;
@@ -195,6 +195,39 @@ try {
     const after = await countSubmissions(formId);
     const row = await latest(formId);
     check('keyword hit -> success to the visitor, STORED and flagged suspect', (res.status === 303 || res.status === 200) && after === before + 1 && row?.spam_status === 'suspect' && !!row?.spam_reason, `status ${res.status}, ${before}->${after}, status=${row?.spam_status}`);
+  }
+
+  // 8b. Notifications really leave (regression: Nov 2026 — every lead e-mail was dropped because the
+  //     work ran after the response without being tracked). The client and the visitor use reserved
+  //     .invalid addresses: the mail layer verifies the sending account's login instead of sending,
+  //     then logs the e-mail exactly as for a real one. So a row in email_log proves the whole path:
+  //     recipients → tracked task → SMTP login accepted → log.
+  {
+    const stamp = Date.now();
+    const { data: nc } = await sb.from('portal_users').insert({ parent_client_id: developerId, name: 'Notify Client', email: `notify+${stamp}@selftest.invalid`, lang: 'en', notify_leads: true }).select('id').single();
+    const { data: nf } = await sb.from('forms').insert({ name: 'Notify form', client_id: developerId, portal_user_id: nc.id, is_active: true, allowed_origins: ['*'], notify_email: false, auto_reply_enabled: true, auto_reply_subject: 'Nous avons bien reçu votre message', auto_reply_message: '' }).select('id').single();
+    notifyFormId = nf.id;
+    const startedAt = new Date().toISOString();
+    const res = await fetch(`${BASE}/api/submit/${notifyFormId}`, {
+      method: 'POST', redirect: 'manual',
+      headers: { ...baseHeaders(), 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ name: 'Notify Probe', email: `visitor+${stamp}@selftest.invalid`, message: 'Does the client hear about this lead?', _lang: 'en' }).toString(),
+    });
+    check('notification probe: lead accepted', res.status === 303 || res.status === 200, `status ${res.status}`);
+    let kinds = [];
+    for (let i = 0; i < 30; i++) {
+      const { data } = await sb.from('email_log').select('kind').eq('form_id', notifyFormId);
+      kinds = (data ?? []).map((r) => r.kind);
+      if (kinds.includes('lead') && kinds.includes('auto_reply')) break;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    const { data: fails } = await sb.from('failures_log').select('error_type, error_message').eq('form_id', notifyFormId);
+    const { data: acct } = await sb.from('failures_log').select('error_message').like('error_type', 'SMTP_A%').is('form_id', null).gte('created_at', startedAt);
+    const dead = [...new Set((acct ?? []).map((r) => String(r.error_message).split(' ')[0]))].sort();
+    if (dead.length) console.log(`        sending accounts that refused the login during this probe: ${dead.join(', ')}`);
+    check('the client notification was handed to the mail server and logged', kinds.includes('lead'), `email_log kinds: [${kinds.join(',')}] · failures: ${JSON.stringify(fails ?? [])}`);
+    check('the visitor auto-reply was handed to the mail server and logged', kinds.includes('auto_reply'), `email_log kinds: [${kinds.join(',')}] · failures: ${JSON.stringify(fails ?? [])}`);
+    check('no delivery failure recorded for the probe', (fails ?? []).filter((f) => f.error_type.startsWith('SMTP')).length === 0, JSON.stringify(fails ?? []));
   }
 
   // 9. Honeypot -> deceptive success, NOT stored, visitor IP banned TEMPORARILY (LAST — bans TEST_IP).

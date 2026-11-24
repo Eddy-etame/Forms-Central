@@ -4,6 +4,9 @@ import { getDeveloperContext } from '@/lib/developerAuth';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 import { isPaidPlanId } from '@/lib/plans';
 import { sendPlanRequestEmail } from '@/lib/email';
+import { background } from '@/lib/background';
+
+export const maxDuration = 30; // the operator's e-mail finishes after the response
 
 /**
  * Plan requests. Self-serve checkout opens with the company's invoicing; until
@@ -48,8 +51,11 @@ export async function POST(req: Request) {
 
   const operator = (process.env.OPERATOR_EMAIL || process.env.ADMIN_2FA_EMAIL || '').trim();
   if (operator) {
-    sendPlanRequestEmail(operator, { developerName: dev.name, developerEmail: dev.email, plan, message }).catch((e) =>
-      console.error('plan request email error:', e)
+    // Tracked: a plan request the operator never hears about is lost revenue.
+    background(
+      sendPlanRequestEmail(operator, { developerName: dev.name, developerEmail: dev.email, plan, message }).catch((e) =>
+        console.error('plan request email error:', e)
+      )
     );
   }
 

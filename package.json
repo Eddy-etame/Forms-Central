@@ -18,7 +18,8 @@
     "test:otp": "node --experimental-strip-types scripts/test-otp.ts",
     "test:crypto": "node --experimental-strip-types scripts/test-crypto.ts",
     "test:spam": "node --experimental-strip-types scripts/test-spam-core.ts",
-    "test:unit": "npm run test:mail && npm run test:security && npm run test:otp && npm run test:crypto && npm run test:spam"
+    "test:autoreply": "node --experimental-strip-types scripts/test-autoreply.ts",
+    "test:unit": "npm run test:mail && npm run test:security && npm run test:otp && npm run test:crypto && npm run test:spam && npm run test:autoreply"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",

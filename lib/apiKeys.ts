@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { supabase } from './supabase';
 import { getPlan, type Plan } from './plans';
+import { background } from './background';
 
 /**
  * API keys for programmatic + MCP access.
@@ -50,9 +51,8 @@ export async function verifyApiKey(bearer: string | null | undefined): Promise<A
 
   if (!key || key.revoked || !key.client_name) return null;
 
-  // Fire-and-forget usage timestamp.
-  supabase.from('api_keys').update({ last_used_at: new Date().toISOString() }).eq('id', key.id)
-    .then(() => {}, () => {});
+  // Usage timestamp: never delays the caller, always lands.
+  background(Promise.resolve(supabase.from('api_keys').update({ last_used_at: new Date().toISOString() }).eq('id', key.id)).then(() => {}, () => {}));
 
   return {
     clientId: key.client_id,

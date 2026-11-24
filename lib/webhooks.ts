@@ -92,10 +92,10 @@ export async function dispatchLeadWebhook(args: {
       if (attempt === 1) await new Promise((r) => setTimeout(r, 1500));
     }
 
-    // Both attempts failed — signal it on /admin/logs.
-    supabase
+    // Both attempts failed — signal it on /admin/logs (awaited: the caller tracks this whole dispatch).
+    await supabase
       .from('failures_log')
-      .insert([{ form_id: formId, error_type: 'WEBHOOK_FAILED', error_message: `${webhookUrl}: ${lastErr}`.slice(0, 500), payload: {} }])
+      .insert([{ form_id: formId, error_type: 'WEBHOOK_FAILED', error_message: `${new URL(webhookUrl).host}: ${lastErr}`.slice(0, 500), payload: {} }])
       .then(() => {}, () => {});
   } catch (err) {
     console.warn('[webhook] dispatch skipped:', (err as Error)?.message);

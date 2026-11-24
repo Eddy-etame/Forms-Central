@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { background } from '@/lib/background';
+
+export const maxDuration = 30; // the reset e-mail finishes after the response
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 import { getLocale } from '@/lib/i18n';
 
@@ -31,7 +34,8 @@ export async function POST(req: Request) {
   await supabase.from('clients').update({ reset_token: hash, reset_token_expires: expires }).eq('id', client.id);
 
   const resetUrl = `${new URL(req.url).origin}/developer/reset-password?token=${raw}`;
-  sendPasswordResetEmail(cleanEmail, resetUrl, await getLocale()).catch((e) => console.error('reset email error:', e));
+  // Tracked (not awaited, so the answer time never reveals whether the address exists).
+  background(sendPasswordResetEmail(cleanEmail, resetUrl, await getLocale()).catch((e) => console.error('reset email error:', e)));
 
   return NextResponse.json({ success: true });
 }

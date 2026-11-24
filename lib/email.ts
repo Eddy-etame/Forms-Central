@@ -7,6 +7,8 @@ import DeveloperWelcomeEmail from '@/emails/DeveloperWelcome';
 import ClientInviteEmail from '@/emails/ClientInvite';
 import { getMailAccounts, applyDisplayName, extractDisplayName } from './mailAccounts';
 import { supabase } from './supabase';
+import { isUndeliverableEmail, localizeAutoReplySubject } from './domain';
+import { background } from './background';
 
 /**
  * Outgoing e-mail.
@@ -30,12 +32,24 @@ function getSenderAddress(displayName?: string): string {
   return applyDisplayName(base, displayName);
 }
 
-/** Records an SMTP failure so it surfaces on the operator Logs page. Fire-and-forget. */
+/** Records an SMTP failure so it surfaces on the operator Logs page. Never blocks, always lands. */
 function logSmtpFailure(errorType: string, label: string, user: string, message: string): void {
-  supabase
-    .from('failures_log')
-    .insert([{ form_id: null, error_type: errorType, error_message: `${label} (${user}): ${message}`.slice(0, 500), payload: {} }])
-    .then(() => {}, () => {});
+  background(
+    Promise.resolve(
+      supabase
+        .from('failures_log')
+        .insert([{ form_id: null, error_type: errorType, error_message: `${label} (${user}): ${message}`.slice(0, 500), payload: {} }])
+    ).then(() => {}, () => {})
+  );
+}
+
+// A dead or slow account must not eat the whole invocation: fail fast, try the next.
+const SMTP_TIMEOUTS = { connectionTimeout: 8_000, greetingTimeout: 8_000, socketTimeout: 15_000 };
+
+/** Every recipient is a reserved, undeliverable address (see lib/domain.ts). */
+function onlyUndeliverable(to: nodemailer.SendMailOptions['to']): boolean {
+  const list = (Array.isArray(to) ? to : [to]).map((r) => (typeof r === 'string' ? r : r?.address || ''));
+  return list.length > 0 && list.every((r) => isUndeliverableEmail(r));
 }
 
 // Circuit breaker: after an account fails, skip it for a cooldown window so we
@@ -52,6 +66,9 @@ async function sendWithFallback(mailOptions: nodemailer.SendMailOptions): Promis
   }
 
   const displayName = extractDisplayName(mailOptions.from as string | undefined);
+  // Reserved addresses are never mailed: the account's login is verified instead,
+  // which is everything short of handing the message over.
+  const verifyOnly = onlyUndeliverable(mailOptions.to);
   const now = Date.now();
   const healthy = accounts.filter((a) => (accountCooldownUntil.get(a.label) ?? 0) <= now);
   const pool = healthy.length > 0 ? healthy : accounts;
@@ -64,8 +81,15 @@ async function sendWithFallback(mailOptions: nodemailer.SendMailOptions): Promis
         port: acc.port,
         secure: acc.secure,
         auth: { user: acc.user, pass: acc.passwords[i] },
+        ...SMTP_TIMEOUTS,
       });
       try {
+        if (verifyOnly) {
+          await transporter.verify();
+          transporter.close();
+          accountCooldownUntil.delete(acc.label);
+          return { success: true, messageId: `verify-only:${acc.label}` };
+        }
         const info = await transporter.sendMail({
           ...mailOptions,
           from: applyDisplayName(acc.from, displayName),
@@ -173,8 +197,8 @@ export async function sendAutoReplyEmail(
     return text.replace(/\{\{name\}\}/gi, nameToUse).replace(/\{\{nom\}\}/gi, nameToUse);
   };
 
-  const defaultSubject = isEn ? `Confirmation of receipt - ${formName}` : `Confirmation de réception - ${formName}`;
-  const subject = customSubject && customSubject.trim() !== '' ? parseTemplate(customSubject) : defaultSubject;
+  // A written subject wins; a stored default is answered in the visitor's language.
+  const subject = parseTemplate(localizeAutoReplySubject(customSubject, isEn ? 'en' : 'fr'));
   const parsedCustomMessage = customMessage ? parseTemplate(customMessage) : undefined;
 
   const htmlContent = await render(

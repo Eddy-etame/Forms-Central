@@ -45,8 +45,8 @@ const sb = async (p, init = {}) => {
 };
 
 const ts = Date.now();
-const DEV = { name: 'UI Test Developer', email: `ui-test+${ts}@test.dev`, password: `Ui-${crypto.randomBytes(9).toString('base64url')}` };
-const CLIENT = { name: 'Acme UI Test', email: `acme-ui+${ts}@test.dev` };
+const DEV = { name: 'UI Test Developer', email: `ui-test+${ts}@test.invalid`, password: `Ui-${crypto.randomBytes(9).toString('base64url')}` };
+const CLIENT = { name: 'Acme UI Test', email: `acme-ui+${ts}@test.invalid` };
 const CLIENT_PASSWORD = `Cl-${crypto.randomBytes(9).toString('base64url')}`;
 const steps = [], errors = [];
 const step = (name, ok, detail = '') => { steps.push({ name, ok }); console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? '  ' + detail : ''}`); };

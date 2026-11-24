@@ -82,6 +82,40 @@ export function normalizeLang(v: unknown, fallback: Lang = 'fr'): Lang {
   return v === 'en' || v === 'fr' ? v : fallback;
 }
 
+/** Default auto-reply subject of a new form, by language. */
+export const AUTO_REPLY_SUBJECTS: Record<Lang, string> = {
+  fr: 'Nous avons bien reçu votre message',
+  en: 'Thanks — we received your message',
+};
+
+// Every default subject the product ever stored on a form (dashboard, operator
+// area, service), paired with its counterpart in the other language.
+const DEFAULT_SUBJECT_FAMILIES: { fr: string; en: string[] }[] = [
+  { fr: 'Nous avons bien reçu votre message', en: ['Thanks — we received your message', 'We received your message'] },
+  { fr: 'Confirmation de réception', en: ['Confirmation of receipt'] },
+];
+
+/**
+ * The subject a visitor receives for an auto-reply.
+ *
+ * A subject the developer wrote is never touched. A stored *default* is in one
+ * language only, so a French visitor of a form created from the English UI got
+ * an English subject over a French body (and an English visitor of a French
+ * form the reverse). A default is therefore answered in the visitor's language
+ * — and left exactly as stored when the languages already match, so nothing
+ * changes for the sites that were already consistent.
+ */
+export function localizeAutoReplySubject(stored: string | null | undefined, lang: Lang): string {
+  const s = (stored ?? '').trim();
+  if (!s) return AUTO_REPLY_SUBJECTS[lang];
+  const key = s.toLowerCase();
+  for (const f of DEFAULT_SUBJECT_FAMILIES) {
+    if (f.fr.toLowerCase() === key) return lang === 'fr' ? s : f.en[0];
+    if (f.en.some((e) => e.toLowerCase() === key)) return lang === 'en' ? s : f.fr;
+  }
+  return s;
+}
+
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Passwords are hashed with scrypt; a megabyte of input is a CPU bill, not a password. */
@@ -121,6 +155,17 @@ export function normalizeWebsite(v: unknown): string | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Reserved names that can never receive mail (RFC 2606 / RFC 6761): `.invalid`,
+ * `.test`, `.example`, `.localhost`, `example.com|net|org`. The mail layer never
+ * sends to them — it verifies the sending account's login instead — so the test
+ * suites exercise the real notification path without e-mailing anyone.
+ */
+export function isUndeliverableEmail(email: string | null | undefined): boolean {
+  const domain = String(email ?? '').trim().toLowerCase().split('@').pop() || '';
+  return !domain || /(^|\.)(invalid|test|example|localhost)$/.test(domain) || /^example\.(com|net|org)$/.test(domain);
 }
 
 /** Addresses that must never be e-mailed (synthetic rows from the v22 backfill). */

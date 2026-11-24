@@ -34,9 +34,9 @@ const setCookies = (res) => (res.headers.getSetCookie?.() ?? []).map((c) => c.sp
 const j = (v) => ({ 'Content-Type': 'application/json', ...(v ? { cookie: v } : {}) });
 const post = (path, body, cookie) => fetch(`${BASE}${path}`, { method: 'POST', headers: j(cookie), body: JSON.stringify(body) });
 
-const DEV_EMAIL = `portaldev+${Date.now()}@test.dev`;
-const EC_EMAIL = `acme+${Date.now()}@test.dev`;
-const EC2_EMAIL = `beta+${Date.now()}@test.dev`;
+const DEV_EMAIL = `portaldev+${Date.now()}@test.invalid`;
+const EC_EMAIL = `acme+${Date.now()}@test.invalid`;
+const EC2_EMAIL = `beta+${Date.now()}@test.invalid`;
 let developerId = null, devCookie = '', formId = null, form2Id = null, acmeId = null, betaId = null, portalCookie = '', fileObjectPath = null;
 const otherDevs = [];
 
@@ -83,7 +83,7 @@ try {
     const b = await res.json();
     betaId = b.client?.id ?? null;
     check('second client created', res.status === 200 && !!betaId);
-    const res3 = await post('/api/developer/clients', { name: 'Gamma', email: `gamma+${Date.now()}@test.dev`, invite: false }, devCookie);
+    const res3 = await post('/api/developer/clients', { name: 'Gamma', email: `gamma+${Date.now()}@test.invalid`, invite: false }, devCookie);
     const b3 = await res3.json();
     check('third client on free -> 402 paywall (free = 2 clients)', res3.status === 402 && b3.paywall === true, `got ${res3.status}`);
   }
@@ -142,7 +142,7 @@ try {
     const ok = await fetch(`${BASE}/api/developer/clients`, { method: 'PATCH', headers: j(devCookie), body: JSON.stringify({ id: betaId, website: 'beta.example/fr/contact' }) });
     const ob = await ok.json().catch(() => ({}));
     check('client PATCH: "beta.example/fr/contact" → https://beta.example', ok.status === 200 && ob.client?.website === 'https://beta.example', `got ${ok.status} ${ob.client?.website ?? ''}`);
-    const created = await post('/api/developer/clients', { name: 'Delta', email: `delta+${Date.now()}@test.dev`, website: 'ht!tp://', invite: false }, devCookie);
+    const created = await post('/api/developer/clients', { name: 'Delta', email: `delta+${Date.now()}@test.invalid`, website: 'ht!tp://', invite: false }, devCookie);
     const cb = await created.json().catch(() => ({}));
     check('client POST: invalid website → 400 INVALID_WEBSITE', created.status === 400 && cb.code === 'INVALID_WEBSITE', `got ${created.status} ${cb.code ?? ''}`);
   }
@@ -223,7 +223,7 @@ try {
     }
   }
   {
-    const res = await post('/api/portal/forgot-password', { email: `nobody+${Date.now()}@test.dev` });
+    const res = await post('/api/portal/forgot-password', { email: `nobody+${Date.now()}@test.invalid` });
     check('forgot-password never reveals whether an e-mail exists (200)', res.status === 200, `got ${res.status}`);
   }
   {
@@ -234,7 +234,7 @@ try {
     await post('/api/developer/clients/assign', { formId, clientId: acmeId }, devCookie);
   }
   {
-    const otherEmail = `other+${Date.now()}@test.dev`;
+    const otherEmail = `other+${Date.now()}@test.invalid`;
     const su = await post('/api/auth/developer-signup', { name: 'Other Dev', email: otherEmail, password: 'testpass123' });
     const otherCookie = setCookies(su).join('; ');
     const { data: oc } = await sb.from('clients').select('id').eq('email', otherEmail).single();

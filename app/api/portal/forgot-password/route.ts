@@ -5,6 +5,9 @@ import { issueClientInvite, RESET_TTL_MS } from '@/lib/invites';
 import { sendClientInviteEmail } from '@/lib/email';
 import { getLocale } from '@/lib/i18n';
 import { EMAIL_RE, isSyntheticEmail } from '@/lib/domain';
+import { background } from '@/lib/background';
+
+export const maxDuration = 30; // the reset e-mail finishes after the response
 
 /**
  * Client "forgot password". Always answers success (no account enumeration).
@@ -36,8 +39,11 @@ export async function POST(req: Request) {
     supabase.from('clients').select('name, logo_url, primary_color, font_family').eq('id', user.parent_client_id).maybeSingle(),
     getLocale(),
   ]);
-  sendClientInviteEmail(cleanEmail, user.name, brand?.name || 'Client portal', url, true, brand, user.lang || locale, 1).catch((e) =>
-    console.error('portal reset email error:', e)
+  // Tracked (not awaited, so the answer time never reveals whether the address exists).
+  background(
+    sendClientInviteEmail(cleanEmail, user.name, brand?.name || 'Client portal', url, true, brand, user.lang || locale, 1).catch((e) =>
+      console.error('portal reset email error:', e)
+    )
   );
   return ok;
 }

@@ -12,6 +12,7 @@ import { checkRateLimit as dbCheckRateLimit } from '@/lib/rateLimit';
 import { verifyApiKey } from '@/lib/apiKeys';
 import { isSyntheticEmail, normalizeLang } from '@/lib/domain';
 import { SITE_URL } from '@/lib/seo';
+import { background } from '@/lib/background';
 
 export const maxDuration = 30; // attachments + e-mail + webhook can take a while
 
@@ -403,19 +404,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
   if (suspectReason) await logFailure(formId, 'SPAM_KEYWORD', `Stored as suspect: ${suspectReason}`, Object.keys(cleanPayload));
 
-  // AI label (only when the operator enabled a paid provider — A4) and webhook: fire-and-forget.
-  import('@/lib/spamClassifier').then(({ classifySubmission }) => classifySubmission(inserted.id as string, cleanPayload)).catch(() => {});
+  // From here on nothing delays the visitor's answer, yet everything must finish:
+  // each task below is handed to background(), which keeps the invocation alive
+  // until it settles. A bare promise is dropped when the function is suspended.
+
+  // AI label (only when the operator enabled a paid provider — A4) and webhook.
+  background(import('@/lib/spamClassifier').then(({ classifySubmission }) => classifySubmission(inserted.id as string, cleanPayload)).catch(() => {}));
   if (form.webhook_url) {
-    import('@/lib/webhooks')
-      .then(({ dispatchLeadWebhook }) => dispatchLeadWebhook({
-        webhookUrl: form.webhook_url as string,
-        clientId: form.client_id,
-        formId,
-        formName: form.name,
-        submissionId: inserted.id as string,
-        payload: cleanPayload,
-      }))
-      .catch(() => {});
+    background(
+      import('@/lib/webhooks')
+        .then(({ dispatchLeadWebhook }) => dispatchLeadWebhook({
+          webhookUrl: form.webhook_url as string,
+          clientId: form.client_id,
+          formId,
+          formName: form.name,
+          submissionId: inserted.id as string,
+          payload: cleanPayload,
+        }))
+        .catch(() => {})
+    );
   }
 
   // ── Notifications ───────────────────────────────────────────────────────
@@ -423,7 +430,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   let emailBudget = quota.emailBudgetLeft;
   const emailsPaused = quota.submissionsExhausted || emailBudget <= 0;
   if (emailsPaused) {
-    logFailure(formId, 'QUOTA_EMAIL_PAUSED', `Emails paused for plan '${quota.plan.id}': ${quota.submissionsThisMonth} submissions this month (cap ${quota.plan.submissionsPerMonth}), ${quota.emailsToday} emails today (cap ${quota.plan.emailsPerDay}). Lead stored.`);
+    background(logFailure(formId, 'QUOTA_EMAIL_PAUSED', `Emails paused for plan '${quota.plan.id}': ${quota.submissionsThisMonth} submissions this month (cap ${quota.plan.submissionsPerMonth}), ${quota.emailsToday} emails today (cap ${quota.plan.emailsPerDay}). Lead stored.`));
   }
 
   const plan = getPlan(developer?.plan);
@@ -450,24 +457,26 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     for (const r of recipients) {
       if (emailBudget <= 0) break;
       emailBudget -= 1;
-      sendLeadEmail({
-        to: r.to,
-        formName: form.name,
-        payload: cleanPayload,
-        ipAddress,
-        clientName: businessName,
-        branding,
-        lang,
-        suspect: suspectReason,
-        openUrl: r.openUrl,
-        developerCopy: r.developerCopy,
-        replyTo: validVisitorEmail,
-      })
-        .then((res) => {
-          if (res.success) logEmailSend(form.client_id, formId, 'lead');
-          else logFailure(formId, 'SMTP_FAILED', `Lead e-mail to ${r.to} was not sent`);
+      background(
+        sendLeadEmail({
+          to: r.to,
+          formName: form.name,
+          payload: cleanPayload,
+          ipAddress,
+          clientName: businessName,
+          branding,
+          lang,
+          suspect: suspectReason,
+          openUrl: r.openUrl,
+          developerCopy: r.developerCopy,
+          replyTo: validVisitorEmail,
         })
-        .catch((err) => logFailure(formId, 'SMTP_FAILED', `Lead e-mail to ${r.to}: ${err?.message || err}`));
+          // the log row is part of the task: returned, so it is awaited too
+          .then((res) => (res.success
+            ? logEmailSend(form.client_id, formId, 'lead')
+            : logFailure(formId, 'SMTP_FAILED', `Lead e-mail to the ${r.developerCopy ? 'developer' : 'client'} was not sent`)))
+          .catch((err) => logFailure(formId, 'SMTP_FAILED', `Lead e-mail to the ${r.developerCopy ? 'developer' : 'client'}: ${err?.message || err}`))
+      );
     }
   }
 
@@ -481,23 +490,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (checkAutoReplyRateLimit(validVisitorEmail)) {
       emailBudget -= 1;
-      sendAutoReplyEmail(
-        validVisitorEmail,
-        form.name,
-        businessName,
-        form.auto_reply_subject || undefined,
-        form.auto_reply_message || undefined,
-        lang,
-        branding,
-        senderName,
-        customSenderName,
-        customReplyTo || (client?.email && !isSyntheticEmail(client.email) ? client.email : undefined)
-      )
-        .then((ok) => {
-          if (ok) logEmailSend(form.client_id, formId, 'auto_reply');
-          else logFailure(formId, 'SMTP_AUTOREPLY_FAILED', 'Auto-reply was not sent');
-        })
-        .catch((err) => logFailure(formId, 'SMTP_AUTOREPLY_FAILED', `Auto-reply: ${err?.message || err}`));
+      background(
+        sendAutoReplyEmail(
+          validVisitorEmail,
+          form.name,
+          businessName,
+          form.auto_reply_subject || undefined,
+          form.auto_reply_message || undefined,
+          lang,
+          branding,
+          senderName,
+          customSenderName,
+          customReplyTo || (client?.email && !isSyntheticEmail(client.email) ? client.email : undefined)
+        )
+          .then((ok) => (ok
+            ? logEmailSend(form.client_id, formId, 'auto_reply')
+            : logFailure(formId, 'SMTP_AUTOREPLY_FAILED', 'Auto-reply was not sent')))
+          .catch((err) => logFailure(formId, 'SMTP_AUTOREPLY_FAILED', `Auto-reply: ${err?.message || err}`))
+      );
     }
   }
 

@@ -29,7 +29,7 @@ const check = (n, ok, d = '') => ok ? (pass++, console.log(`  PASS  ${n}`)) : (f
 const j = { 'Content-Type': 'application/json' };
 const post = (path, body) => fetch(`${BASE}${path}`, { method: 'POST', headers: j, body: JSON.stringify(body) });
 
-const EMAIL = `pwreset+${Date.now()}@test.dev`;
+const EMAIL = `pwreset+${Date.now()}@test.invalid`;
 const OLD = 'oldpassword123';
 const NEW = 'brandNewPass456';
 let clientId = null;

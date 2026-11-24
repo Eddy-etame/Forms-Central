@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { logSecurityEvent } from './securityEvents';
+import { background } from './background';
 
 /**
  * Device/session registry (migrations/migration_v15) — anti subscription-
@@ -61,9 +62,9 @@ export async function isSessionRevoked(sid: string): Promise<boolean> {
       .eq('id', sid)
       .maybeSingle();
     if (!data) return false; // unknown sid (or table missing) — fail-open
-    // Touch last_seen opportunistically (fire-and-forget).
+    // Touch last_seen without delaying the caller; tracked so it lands.
     if (!data.revoked) {
-      supabase.from('client_sessions').update({ last_seen: new Date().toISOString() }).eq('id', sid).then(() => {}, () => {});
+      background(Promise.resolve(supabase.from('client_sessions').update({ last_seen: new Date().toISOString() }).eq('id', sid)).then(() => {}, () => {}));
     }
     return !!data.revoked;
   } catch {

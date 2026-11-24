@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { background } from './background';
 
 /**
  * Security audit trail (migrations/migration_v12). Every write is
@@ -29,17 +30,21 @@ export interface SecurityEventInput {
 }
 
 export function logSecurityEvent(e: SecurityEventInput): void {
-  supabase
-    .from('security_events')
-    .insert([
-      {
-        event_type: e.type,
-        severity: e.severity || 'info',
-        actor: e.actor ?? null,
-        ip: e.ip ?? null,
-        detail: (e.detail || '').slice(0, 500),
-        meta: e.meta || {},
-      },
-    ])
-    .then(() => {}, () => {});
+  // Tracked, not fire-and-forget: the row must land even when the response is already out.
+  background(
+    Promise.resolve(
+      supabase
+        .from('security_events')
+        .insert([
+          {
+            event_type: e.type,
+            severity: e.severity || 'info',
+            actor: e.actor ?? null,
+            ip: e.ip ?? null,
+            detail: (e.detail || '').slice(0, 500),
+            meta: e.meta || {},
+          },
+        ])
+    ).then(() => {}, () => {})
+  );
 }

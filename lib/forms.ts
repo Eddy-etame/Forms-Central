@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { normalizeLang } from './domain';
+import { AUTO_REPLY_SUBJECTS, normalizeLang } from './domain';
 import type { Plan } from './plans';
 import { deriveOrigins, normalizeOrigins } from './snippets';
 import type { Lang } from './domain';
@@ -14,9 +14,9 @@ export const FORM_SELECT =
   'id, name, is_active, allowed_origins, notify_email, auto_reply_enabled, auto_reply_subject, auto_reply_message, success_url, webhook_url, portal_user_id, client_id, created_at, portal_users(id, name, email, lang)';
 
 export function defaultAutoReply(lang: Lang) {
-  return lang === 'en'
-    ? { subject: 'Thanks — we received your message', message: '' }
-    : { subject: 'Nous avons bien reçu votre message', message: '' };
+  // Stored in the client's language; localized again at send time for each visitor
+  // (lib/domain.ts localizeAutoReplySubject), so a bilingual site needs no setup.
+  return { subject: AUTO_REPLY_SUBJECTS[lang], message: '' };
 }
 
 export type ServiceError = { error: string; status: number; code?: string; paywall?: boolean };

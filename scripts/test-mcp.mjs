@@ -57,8 +57,8 @@ async function tool(key, name, args = {}) {
 const initMsg = { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'test-suite', version: '1.0' } } };
 const EXPECTED_TOOLS = ['assign_form', 'create_client', 'create_form', 'get_embed', 'get_form_health', 'get_lead', 'invite_client', 'list_clients', 'list_forms', 'list_leads', 'set_autoreply', 'set_origins', 'setup_site', 'whoami'];
 
-const EMAIL = `mcptest+${Date.now()}@test.dev`;
-const CLIENT_EMAIL = `mcpclient+${Date.now()}@test.dev`;
+const EMAIL = `mcptest+${Date.now()}@test.invalid`;
+const CLIENT_EMAIL = `mcpclient+${Date.now()}@test.invalid`;
 let developerId = null, cookie = '', apiKey = null, formId = null, clientId = null;
 
 async function cleanup() {

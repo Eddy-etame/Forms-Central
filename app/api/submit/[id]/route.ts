@@ -68,7 +68,11 @@ const MAX_FIELDS = 100;
 
 // Keyword hits never drop a lead (court order A1): the lead is stored as
 // "suspect", the client is told, and the auto-reply is withheld.
-const SPAM_KEYWORDS = ['seo', 'crypto', 'viagra', 'enlarge', 'casino', 'bitcoin', 'investment', 'backlink', 'backlinks', 'guest post'];
+// "seo" and "investment" left the list on 2026-11-25: they are everyday words
+// in a real enquiry to a web studio or an estate agent, and a label on those
+// leads costs the visitor their confirmation e-mail. What remains is rarely
+// written by a genuine prospect.
+const SPAM_KEYWORDS = ['crypto', 'viagra', 'enlarge', 'casino', 'bitcoin', 'backlink', 'backlinks', 'guest post'];
 const SPAM_RE = new RegExp(`\\b(${SPAM_KEYWORDS.map((k) => k.replace(/\s+/g, '\\s+')).join('|')})\\b`, 'i');
 
 const IP_RE = /^(?:(?:\d{1,3}\.){3}\d{1,3}|[0-9a-f:]{2,45})$/i;

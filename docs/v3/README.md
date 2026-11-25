@@ -317,10 +317,33 @@ The pool is one account with five dead spares: re-key or remove 2–6.
   24 November.
 - Suites on production: submit 19, portals 72, MCP 24, UI 33 with zero
   browser errors; unit suites 210 checks.
-- Noted, not yet done: the keyword filter marks any message containing "seo"
-  or "investment" as suspect, which will mislabel real prospects of an
-  agency or a portfolio; `email_log` cannot say which sending account or
-  message id carried a mail; backups are still taken by hand.
+- Noted, not yet done: `email_log` cannot say which sending account or
+  message id carried a mail.
+
+### 2026-11-25 — backups every day, and two words out of the spam list
+
+- **Backups are automatic** (`lib/backupCore.ts`, `/api/cron/backup`, 04:17
+  UTC): accounts, clients, forms and leads, one gzipped file per run in a
+  private bucket, read back and compared before it counts, 14 days kept.
+  Retention deletes nothing unless a backup succeeded in the last 26 hours.
+  `npm run restore:leads` looks first and puts a lead back exactly as it was,
+  only where its form still exists; `npm run test:backup:live` proves backup
+  and restore against the real storage (11 checks). The first live run of
+  the read-back check failed, usefully: a file name reused within a day was
+  served stale by the storage cache. Each backup now has its own name and
+  rotation counts days, not files. First real backup: 2026-11-25 04:24 UTC
+  (10 developers, 10 clients, 22 forms, 15 leads). The privacy policy says
+  what is copied and for how long. Still missing: a copy outside the
+  Supabase project, and the attachment files.
+- **"seo" and "investment" left the keyword list.** They are everyday words in
+  an enquiry to a web studio or an estate agent — the product's own market —
+  and a label withholds the visitor's confirmation e-mail. The submit suite
+  now checks that such an enquiry is stored unlabelled (20 checks).
+- `README-english.md` described an earlier product (a public upload bucket,
+  a filter that dropped messages silently). Its text was replaced by a
+  pointer to `README.md`.
+- The host accepted three daily jobs: backup 04:17, retention 05:41 (report
+  mode), notification sweep 06:23 UTC.
 
 ## 2. The B proposal (what we built beyond the ask)
 

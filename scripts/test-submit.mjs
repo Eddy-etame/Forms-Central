@@ -197,6 +197,18 @@ try {
     check('keyword hit -> success to the visitor, STORED and flagged suspect', (res.status === 303 || res.status === 200) && after === before + 1 && row?.spam_status === 'suspect' && !!row?.spam_reason, `status ${res.status}, ${before}->${after}, status=${row?.spam_status}`);
   }
 
+  // 8a. A real prospect of a web studio or an estate agent is not labelled (2026-11-25: "seo" and
+  //     "investment" are ordinary words in those enquiries)
+  {
+    const res = await fetch(`${BASE}/api/submit/${formId}`, {
+      method: 'POST', redirect: 'manual',
+      headers: { ...baseHeaders(), 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ name: 'Real Prospect', email: 'prospect@selftest.invalid', message: 'Bonjour, je cherche une refonte de mon site avec un bon SEO. We also need a page about our investment property.' }).toString(),
+    });
+    const row = await latest(formId);
+    check('an enquiry about SEO or an investment property is stored without a spam label', (res.status === 303 || res.status === 200) && row?.payload?.name === 'Real Prospect' && !row?.spam_status, `status ${res.status}, spam_status=${row?.spam_status}`);
+  }
+
   // 8b. Notifications really leave (regression: Nov 2026 — every lead e-mail was dropped because the
   //     work ran after the response without being tracked). The client and the visitor use reserved
   //     .invalid addresses: the mail layer verifies the sending account's login instead of sending,

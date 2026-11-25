@@ -14,7 +14,7 @@ export function isLegalDoc(v: string): v is LegalDocId {
 export type LegalSection = { h: string; p?: string[]; ul?: string[] };
 export type LegalDoc = { kicker: string; title: string; lead: string; updatedLabel: string; updated: string; seeAlso: string; sections: LegalSection[] };
 
-const UPDATED = { en: '24 November 2026', fr: '24 novembre 2026' };
+const UPDATED = { en: '25 November 2026', fr: '25 novembre 2026' };
 
 const EN: Record<LegalDocId, LegalDoc> = {
   privacy: {
@@ -50,6 +50,7 @@ const EN: Record<LegalDocId, LegalDoc> = {
         'Hosting, database and file storage run in the European Union.',
         'Account and client data stay as long as the account exists, and are deleted within 30 days after you ask us to close it.',
         'Leads are kept for the retention window of your plan: 30 days on Free, one year on Solo, without limit on Pro and Max. Past the window a lead may be deleted, with its attachments, but never by surprise: the account is e-mailed at least 7 days before, with the dates, and the dashboard repeats it. Export is one click, on every plan, and holds every lead.',
+        'A backup of accounts, clients, forms and leads is taken every day and kept for 14 days, in private storage in the same region as the database. What is deleted from the service is gone from the backups 14 days later at most. Attachments are not part of the backup.',
         'Security logs and automatic bans expire on their own after a limited time.',
         'File attachments are stored at unguessable addresses; anyone holding the exact link can open the file, so treat lead e-mails as confidential.',
       ] },
@@ -158,6 +159,7 @@ const FR: Record<LegalDocId, LegalDoc> = {
         'L’hébergement, la base de données et le stockage de fichiers tournent dans l’Union européenne.',
         'Les données de compte et de clients restent tant que le compte existe, et sont supprimées dans les 30 jours après votre demande de fermeture.',
         'Les leads sont conservés pendant la durée de rétention de votre forfait : 30 jours en Free, un an en Solo, sans limite en Pro et Max. Au-delà, un lead peut être supprimé, avec ses pièces jointes, mais jamais par surprise : le compte reçoit un e-mail au moins 7 jours avant, avec les dates, et le tableau de bord le rappelle. L’export tient en un clic, quel que soit le forfait, et contient tous les leads.',
+        'Une sauvegarde des comptes, des clients, des formulaires et des leads est faite chaque jour et conservée 14 jours, dans un stockage privé de la même région que la base. Ce qui est supprimé du service disparaît des sauvegardes au plus tard 14 jours après. Les pièces jointes ne font pas partie de la sauvegarde.',
         'Les journaux de sécurité et les bannissements automatiques expirent d’eux-mêmes après une durée limitée.',
         'Les pièces jointes sont stockées à des adresses impossibles à deviner ; quiconque détient le lien exact peut ouvrir le fichier : traitez les e-mails de leads comme confidentiels.',
       ] },

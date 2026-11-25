@@ -296,6 +296,21 @@ console.log('\n== An open upgrade request pauses deletion ==');
   eq('no rule was broken', w.violations.length, 0);
 }
 
+console.log('\n== No fresh backup, no deletion ==');
+{
+  const w = new World();
+  w.dev('acme', 'free');
+  const old = w.lead('acme', 70);
+  await w.run();
+  for (let i = 0; i < 9; i++) w.days(1);
+  let s = await runRetention(w.deps(), { now: new Date(w.now), apply: true, holdAll: 'no verified backup in the last 26 hours' });
+  ok('the notice has matured but there is no backup: the lead stays', w.has(old.id));
+  eq('…and the run says why', s.developers[0]?.held, 'no verified backup in the last 26 hours');
+  s = await runRetention(w.deps(), { now: new Date(w.now), apply: true, holdAll: null });
+  ok('with a backup: the announced deletion happens', !w.has(old.id));
+  eq('no rule was broken', w.violations.length, 0);
+}
+
 /* ── 5. unlimited plans and isolation ────────────────────────────────────── */
 console.log('\n== Unlimited plans are never looked at; developers never mix ==');
 {

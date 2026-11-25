@@ -212,10 +212,27 @@ author commits under an e-mail verified on the `EddyEtame` GitHub account;
 or a Pro team with both identities as members.
 
 Scheduled jobs (`vercel.json` → `crons`, authenticated with `CRON_SECRET`):
-`/api/cron/redeliver` runs daily and sends the notifications that never left.
-`/api/cron/retention` runs daily too and does nothing until it is switched on.
+`/api/cron/backup` (04:17 UTC) copies accounts, clients, forms and leads to a
+private bucket, `/api/cron/retention` (05:41) does nothing until it is switched
+on, `/api/cron/redeliver` (06:23) sends the notifications that never left.
 Each run leaves a row in `job_runs`; the operator reads them under
 Logs → Scheduled jobs.
+
+**Backups** (`lib/backupCore.ts`). One gzipped JSON file per run in the private
+`backups` bucket, read back and compared before it counts, 14 days kept. A
+file name is never reused (storage is cached by name). Attachments and logs
+are not included; a copy outside the Supabase project does not exist yet.
+
+```bash
+npm run backup:now                 # take one now (before a migration or a risky query)
+npm run backup:now -- --list       # what is stored
+npm run restore:leads -- --from 2026-11-25                       # what is missing, changes nothing
+npm run restore:leads -- --from 2026-11-25 --developer <id> --apply
+npm run test:backup:live           # backup + restore against the real storage, self-cleaning
+```
+
+`scripts/backup-supabase.mjs` still writes a full local copy (every table,
+optionally the files) for a project move.
 
 **Retention deletes, so it warns first** (`lib/retentionCore.ts`, tested by
 `npm run test:retention`). A lead is deleted for age only when it has outlived
@@ -224,7 +241,8 @@ e-mailed at least 7 days earlier for that same window. A notice is the
 developer's whole deletion calendar; a backlog gets a last call 48 hours
 before. A plan change voids what was announced, an open upgrade request pauses
 it, and a notice whose calendar ended two weeks ago authorises nothing (so a
-job that was off for a while starts again with a fresh notice). Three switches:
+job that was off for a while starts again with a fresh notice). And nothing is
+deleted unless the daily backup succeeded in the last 26 hours. Three switches:
 
 | State | Variables | What happens |
 |---|---|---|

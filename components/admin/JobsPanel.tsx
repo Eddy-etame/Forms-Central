@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CalendarClock, MailCheck, ShieldAlert } from 'lucide-react';
+import { CalendarClock, DatabaseBackup, MailCheck, ShieldAlert } from 'lucide-react';
 import { getOperationsStatus, type OperationsStatus } from '@/lib/actions';
 import { useLocale } from '@/lib/useLocale';
 
@@ -10,7 +10,8 @@ const COPY = {
     title: 'Scheduled jobs',
     sub: 'What ran, when, and what it touched. A job that has not written here in over a day is not running.',
     noSecret: 'CRON_SECRET is not set: no scheduled job can run.',
-    redeliver: 'Notification sweep', retention: 'Retention',
+    redeliver: 'Notification sweep', retention: 'Retention', backup: 'Backup',
+    backupFile: 'Newest file: {name} ({size} kB)', backupNone: 'No backup is stored.', backupRule: 'Accounts, clients, forms and leads, 14 days kept. Retention deletes nothing unless this job succeeded in the last 26 hours.',
     never: 'never ran', late: 'no run for over a day', failed: 'last run failed',
     pending: '{n} lead(s) still waiting for their notification', pendingNone: 'every lead of the last 30 days was notified',
     sweep: 'sent {s}, failed {f}, paused {p}',
@@ -27,7 +28,8 @@ const COPY = {
     title: 'Tâches planifiées',
     sub: 'Ce qui a tourné, quand, et ce que cela a touché. Une tâche qui n’a rien écrit ici depuis plus d’un jour ne tourne pas.',
     noSecret: 'CRON_SECRET n’est pas défini : aucune tâche planifiée ne peut tourner.',
-    redeliver: 'Balayage des notifications', retention: 'Rétention',
+    redeliver: 'Balayage des notifications', retention: 'Rétention', backup: 'Sauvegarde',
+    backupFile: 'Dernier fichier : {name} ({size} ko)', backupNone: 'Aucune sauvegarde enregistrée.', backupRule: 'Comptes, clients, formulaires et leads, 14 jours conservés. La rétention ne supprime rien si cette tâche n’a pas réussi dans les 26 dernières heures.',
     never: 'jamais exécutée', late: 'aucune exécution depuis plus d’un jour', failed: 'dernière exécution en échec',
     pending: '{n} lead(s) attendent encore leur notification', pendingNone: 'tous les leads des 30 derniers jours ont été notifiés',
     sweep: 'envoyés {s}, échecs {f}, en pause {p}',
@@ -71,6 +73,7 @@ export default function JobsPanel() {
 
   const red = state(data.jobs.redeliver);
   const ret = state(data.jobs.retention);
+  const bak = state(data.jobs.backup);
   const rs = data.jobs.retention?.summary ?? {};
   const ds = data.jobs.redeliver?.summary ?? {};
   const modeLine = data.retentionMode === 'apply' ? c.modeApply : data.retentionMode === 'report' ? c.modeReport : c.modeOff;
@@ -85,7 +88,17 @@ export default function JobsPanel() {
         </p>
       )}
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
+      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+        <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+          <p className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white"><DatabaseBackup className="h-4 w-4 text-slate-400" aria-hidden /> {c.backup}</p>
+          <p className={`mt-1 text-sm ${bak.bad ? 'font-medium text-amber-700 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>{bak.text}</p>
+          <p className="mt-1 break-all text-xs text-slate-500 dark:text-slate-400">
+            {data.newestBackup
+              ? c.backupFile.replace('{name}', data.newestBackup.name.replace(/^daily\//, '')).replace('{size}', data.newestBackup.bytes === null ? '?' : (data.newestBackup.bytes / 1024).toFixed(1))
+              : c.backupNone}
+          </p>
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{c.backupRule}</p>
+        </div>
         <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
           <p className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white"><MailCheck className="h-4 w-4 text-slate-400" aria-hidden /> {c.redeliver}</p>
           <p className={`mt-1 text-sm ${red.bad ? 'font-medium text-amber-700 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>{red.text}</p>

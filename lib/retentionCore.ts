@@ -286,7 +286,14 @@ export const MAX_DELETE_PER_RUN = 5000;
 
 export async function runRetention(
   deps: RetentionDeps,
-  opts: { now: Date; apply: boolean; budgetMs?: number; clock?: () => number }
+  opts: {
+    now: Date;
+    apply: boolean;
+    /** a reason to delete nothing at all today (no fresh backup): notices and last calls still go */
+    holdAll?: string | null;
+    budgetMs?: number;
+    clock?: () => number;
+  }
 ): Promise<RetentionSummary> {
   const clock = opts.clock ?? Date.now;
   const started = clock();
@@ -325,8 +332,8 @@ export async function runRetention(
 
       // ── delete what a matured notice announced ──
       if (plan.deletable.length > 0) {
-        if (dev.hold) {
-          out.held = dev.hold;
+        if (opts.holdAll || dev.hold) {
+          out.held = opts.holdAll || dev.hold || null;
         } else if (!opts.apply) {
           summary.totals.wouldDelete += plan.deletable.length;
         } else if (!plan.authority) {

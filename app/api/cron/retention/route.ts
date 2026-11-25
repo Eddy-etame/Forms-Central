@@ -4,6 +4,7 @@ import type { RetentionSummary } from '@/lib/retentionCore';
 import { retentionDeps, retentionMode } from '@/lib/retention';
 import { lastJobRuns, recordJobRun } from '@/lib/jobRuns';
 import { sendOperatorReportEmail } from '@/lib/email';
+import { BACKUP_FRESH_MS } from '@/lib/backupCore';
 
 /**
  * Data retention — makes the pricing table true, without ever surprising anyone.
@@ -17,6 +18,7 @@ import { sendOperatorReportEmail } from '@/lib/email';
  *     to the developer at least seven days earlier, for the same plan window;
  *   - a plan change, a long outage of this job or an open upgrade request
  *     voids or pauses what was announced;
+ *   - nothing is deleted unless the daily backup succeeded in the last 26 hours;
  *   - the operator receives what happened (or, in report mode, what would).
  *
  * Three switches, on purpose (2026-10-30: the first scheduled run purged old
@@ -89,9 +91,17 @@ export async function GET(req: Request) {
     return NextResponse.json({ success: true, skipped: 'RETENTION_ENABLED is not true' });
   }
 
+  // Nothing is deleted unless a backup was taken, read back and found complete in the last day.
+  const lastBackup = (await lastJobRuns('backup', 3)).find((r) => r.ok);
+  const backupFresh = !!lastBackup && startedAt.getTime() - new Date(lastBackup.finished_at || lastBackup.started_at).getTime() < BACKUP_FRESH_MS;
+
   let summary: RetentionSummary;
   try {
-    summary = await runRetention(retentionDeps(), { now: startedAt, apply: mode === 'apply' });
+    summary = await runRetention(retentionDeps(), {
+      now: startedAt,
+      apply: mode === 'apply',
+      holdAll: backupFresh ? null : 'no verified backup in the last 26 hours',
+    });
   } catch (err) {
     const message = (err as Error)?.message || String(err);
     console.error('[RETENTION] run failed:', message);

@@ -490,7 +490,9 @@ export interface OperationsStatus {
   retentionMode: 'off' | 'report' | 'apply';
   cronSecretSet: boolean;
   /** `stale`: nothing written for more than a day (the job runs daily) */
-  jobs: Record<'redeliver' | 'retention', { at: string; ok: boolean; stale: boolean; mode: string | null; summary: Record<string, unknown> } | null>;
+  jobs: Record<'redeliver' | 'retention' | 'backup', { at: string; ok: boolean; stale: boolean; mode: string | null; summary: Record<string, unknown> } | null>;
+  /** newest file in the backup bucket, whoever took it (the daily job or a terminal) */
+  newestBackup: { name: string; bytes: number | null } | null;
   pendingNotifications: number;
   notices: { developer: string; windowDays: number; leadCount: number; overdueCount: number; deletedCount: number; sentAt: string; deleteAfter: string }[];
 }
@@ -502,9 +504,12 @@ export async function getOperationsStatus(): Promise<{ success: true; data: Oper
     const { retentionMode } = await import('./retention');
     const { lastJobRuns } = await import('./jobRuns');
     const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
-    const [redeliver, retention, pending, notices] = await Promise.all([
+    const { listBackups } = await import('./backupCore');
+    const [redeliver, retention, backup, stored, pending, notices] = await Promise.all([
       lastJobRuns('redeliver', 1),
       lastJobRuns('retention', 1),
+      lastJobRuns('backup', 1),
+      listBackups(supabase).catch(() => []),
       supabase.from('submissions').select('id', { count: 'exact', head: true }).is('notified_at', null).gte('created_at', since),
       supabase
         .from('retention_notices')
@@ -520,7 +525,8 @@ export async function getOperationsStatus(): Promise<{ success: true; data: Oper
       data: {
         retentionMode: retentionMode(),
         cronSecretSet: !!process.env.CRON_SECRET,
-        jobs: { redeliver: shape(redeliver[0]), retention: shape(retention[0]) },
+        jobs: { redeliver: shape(redeliver[0]), retention: shape(retention[0]), backup: shape(backup[0]) },
+        newestBackup: stored[0] ?? null,
         pendingNotifications: pending.count ?? 0,
         notices: ((notices.data ?? []) as unknown as NoticeJoin[]).map((n) => ({
           developer: (Array.isArray(n.clients) ? n.clients[0]?.name : n.clients?.name) ?? '—',

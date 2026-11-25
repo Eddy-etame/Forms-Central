@@ -249,6 +249,79 @@ The pool is one account with five dead spares: re-key or remove 2–6.
   as `EAM-agency`, allowed site `http://localhost:3000` (a server-side post
   carries no Origin header, so the list does not gate it), auto-reply off.
 
+### 2026-11-24 (evening) — the portfolio form, a first real e-mail, retention that warns, an export that holds everything
+
+- **Portfolio form created on the author's word** ("portfolio, go ahead"):
+  `Portfolio — Eddy (contact)`, id `a9727b61-c08f-4c41-bfc4-ad9623179783`,
+  same account and client as `EAM-agency`, allowed site
+  `http://localhost:3000`, auto-reply off. The account now holds 4 forms on a
+  3-form plan (the operator's own action has no plan limit; the plan itself
+  is still the author's to change).
+- **First real notification observed leaving the fixed pipeline.** One
+  server-to-server submission through the new form, exactly as the portfolio
+  will post (no Origin header, challenge and submit from the same machine):
+  lead stored at 19:50:08.31 UTC, accepted by the mail server and marked
+  delivered 0.43 s later, logged, no failure row. The recipient is the
+  author's own mailbox; whether it reached the inbox is theirs to confirm.
+- **Retention warns before it deletes** (vision step 1, migration v24).
+  The rule is data, not a comment: a lead is deleted for age only when it has
+  outlived the window of the developer's *current* plan and a notice covering
+  it was e-mailed at least 7 days earlier for that same window.
+  - `lib/retentionCore.ts` holds the rules with no database or mail server in
+    sight. `scripts/test-retention.ts` simulates days passing (99 checks);
+    its fake database verifies the rule on every deletion it is asked for,
+    and each rule was broken on purpose once to see the test fail.
+  - A notice is the developer's whole deletion calendar on the day it is
+    sent. In a steady flow that is one e-mail every 23 days on Free, each
+    lead leaving the day after it turns 30 days old. A backlog (first arming,
+    a downgrade, a long outage of the job) gets a week of nothing and a last
+    call 48 hours before.
+  - What voids or pauses an announcement: a plan change (by date, and by
+    window when the date is missing), an open upgrade request, a notice whose
+    own calendar ended two weeks ago. A run can never delete more than its
+    notice announced; a failed or unrecorded notice authorises nothing.
+  - Whole UTC days everywhere, so the date in the e-mail is the date it
+    happens whatever minute the scheduler picks.
+  - Three states: off; report (`RETENTION_ENABLED=true`: the operator is
+    e-mailed what arming would do, when it changes and weekly); armed
+    (`RETENTION_APPLY=true`). **Report mode is on in production since
+    2026-11-25** — the dry run the author approved on 8 November. Read-only
+    figures that night: arming would notify 4 accounts (EAM-Agency 3 leads,
+    2 past the window; club-de-boxe-blagnac 6, 1 past; Boxing Center 5, none
+    past; Alicia 1, past) and delete nothing that day.
+    `npm run retention:report` prints the same at any time.
+  - Where people see it: the developer dashboard repeats an announced
+    deletion with the export button; the client inbox says how long requests
+    stay; the operator's Logs page has a "Scheduled jobs" panel (last run of
+    each job, retention's state, notices sent) fed by the new `job_runs`
+    table, which the notification sweep writes to as well.
+  - The developer's sign-in language is now stored (`clients.lang`), so an
+    e-mail written by a scheduled job is in the right one.
+- **The export was neither complete nor safe.** The dashboards built their
+  CSV in the browser from the rows on screen (1000 for a developer, 500 for a
+  client) under a button that showed the all-time count, and wrote visitors'
+  text as it came — `=HYPERLINK(...)` typed into a contact form became a live
+  formula for whoever opened the file. Now: `/api/developer/leads/export`
+  (all forms or `?form=`) and `/api/portal/leads/export` page through every
+  lead, scoped by owner inside the query; every cell is quoted and anything a
+  spreadsheet would execute stays text, phone numbers left alone; byte-order
+  mark and CRLF. The portals suite exports 1,010 leads across the database's
+  page size and checks isolation both ways.
+- **Three public statements did not match the code** and were corrected:
+  export was listed as a Solo feature (pricing table, Solo card, docs,
+  `llms.txt`, the assistant) while the terms promised it on every plan and
+  the code never gated it; the docs said a daily job deleted leads past the
+  window while nothing was scheduled; "every lead kept" could be read as kept
+  for ever, which the Free plan's 30 days contradict (now "every lead
+  stored"). Privacy policy and terms describe the notice and are dated
+  24 November.
+- Suites on production: submit 19, portals 72, MCP 24, UI 33 with zero
+  browser errors; unit suites 210 checks.
+- Noted, not yet done: the keyword filter marks any message containing "seo"
+  or "investment" as suspect, which will mislabel real prospects of an
+  agency or a portfolio; `email_log` cannot say which sending account or
+  message id carried a mail; backups are still taken by hand.
+
 ## 2. The B proposal (what we built beyond the ask)
 
 The author asked for A: developers → clients → forms, no e-mail in the code,

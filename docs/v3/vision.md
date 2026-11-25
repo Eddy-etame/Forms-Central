@@ -86,11 +86,11 @@ checked by a stranger in ten minutes:
 | Landing | A studio owner understands the client model in 5 seconds, sees the MCP setup live, and finds nothing untrue or generic. | Model clear; MCP not demonstrated; copy honest. |
 | Onboarding | From signup to the first lead in the client's inbox in under 4 minutes, with no reading. | 3 steps, works; the invite e-mail is the weak step. |
 | Dashboard | A developer with 12 clients finds any lead in 2 clicks; nothing mixes clients. | Done; search by client missing. |
-| Client inbox | A business owner prefers it to their mailbox: handled/unhandled, reply, weekly view, their brand everywhere. | Table + CSV only. |
+| Client inbox | A business owner prefers it to their mailbox: handled/unhandled, reply, weekly view, their brand everywhere. | Since 2026-11-24: what is waiting and for how long, handled state, reply by e-mail, call, the week at a glance, a complete export. Reply still leaves through the client's own mail program. |
 | E-mails | Notification and auto-reply look like the client's own, render in Gmail/Outlook/Apple Mail, never land in spam. | Branded; deliverability unproven at volume. |
 | API + MCP | An AI assistant can set up a site, read leads and verify webhooks without reading docs. | 14 tools, proven; needs the showcase. |
 | Security | Nothing leaks across tenants; every secret is hashed, rotated or scoped. | Audited; private bucket done. |
-| Operations | Backups durable and automatic; retention reports before it deletes; health visible; no notification can fail silently. | Backups manual; dry-run report missing; delivery tracked per lead and retried daily since 2026-11-24. |
+| Operations | Backups durable and automatic; retention reports before it deletes; health visible; no notification can fail silently. | Backups manual. Retention: notice 7 days ahead, operator report, report mode on since 2026-11-25. Job runs visible to the operator. Delivery tracked per lead and retried daily since 2026-11-24. |
 | Business | A card pays for a plan the same minute; invoices exist; the free plan converts. | Manual activation. |
 | Trust | Legal pages, a status of what is and is not promised, a real contact. | Pages live; contact is a personal mailbox. |
 

@@ -17,6 +17,7 @@
 // chromium` once if the browser is missing).
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
 const crypto = require('crypto');
 
 function env(name) {
@@ -173,6 +174,42 @@ let devId = null, formId = null, clientId = null;
     const r = await page.request.post(`${B}/api/submit/${formId}`, { form: { name: 'Jane Lead', email: 'jane@example.com', message: 'Hello from the UI test' }, maxRedirects: 0 });
     step('native submit answers 303', r.status() === 303, `status ${r.status()}`);
 
+    // 5b. the same, the way a visitor does it: a real page on another site, a real form, no script.
+    //     Until 2026-11-26 this ended on a page of raw JSON: every browser sends an Origin header
+    //     on a POST, and the endpoint took that header to mean "a script is calling".
+    {
+      const site = http.createServer((req, res) => {
+        const id = req.url.startsWith('/missing') ? '00000000-0000-4000-8000-000000000000' : formId;
+        res.setHeader('content-type', 'text/html; charset=utf-8');
+        res.end(`<!doctype html><title>Acme</title><h1>Contact</h1><form method="post" action="${B}/api/submit/${id}"><input name="name" value="Native Visitor"><input name="email" value="native@example.com"><textarea name="message">typed</textarea><button id="go">Send</button></form>`);
+      });
+      await new Promise((resolve) => site.listen(0, '127.0.0.1', resolve));
+      const SITE = `http://127.0.0.1:${site.address().port}`;
+      const visitor = await ctx.newPage(); // not watched: the failed post below is a 404 by design
+      await visitor.addInitScript(() => { window.__v = []; document.addEventListener('securitypolicyviolation', (e) => window.__v.push(e.violatedDirective)); });
+      await visitor.goto(`${SITE}/contact`);
+      await Promise.all([visitor.waitForURL(/submitted=true/, { timeout: 20000 }).catch(() => {}), visitor.click('#go')]);
+      step('a plain HTML form, posted by a real browser, brings the visitor back to the site', visitor.url().startsWith(SITE) && /submitted=true/.test(visitor.url()), visitor.url().replace(formId, '<form>'));
+      const nativeLead = await sb(`submissions?form_id=eq.${formId}&payload->>name=eq.Native%20Visitor&select=id`);
+      step('…and the lead is stored', Array.isArray(nativeLead.body) && nativeLead.body.length === 1, JSON.stringify(nativeLead.body).slice(0, 80));
+      await sb(`submissions?form_id=eq.${formId}&payload->>name=eq.Native%20Visitor`, { method: 'DELETE' }); // the steps below count this form's leads
+
+      await visitor.goto(`${SITE}/missing`);
+      await visitor.fill('textarea', 'typed and edited');
+      const [answer] = await Promise.all([visitor.waitForResponse((res) => res.url().includes('/api/submit/') && res.request().method() === 'POST'), visitor.click('#go')]);
+      await visitor.waitForLoadState('load').catch(() => {});
+      await visitor.waitForTimeout(600);
+      const seen = await text(visitor);
+      const answerCsp = answer.headers()['content-security-policy'] || '';
+      step('a failed plain post shows a page a person can read, not JSON', answer.status() === 404 && /text\/html/.test(answer.headers()['content-type'] || '') && /Your message could not be sent|Votre message n’a pas pu être envoyé/.test(seen) && /FORM_NOT_FOUND/.test(seen) && !seen.trim().startsWith('{'), `${answer.status()} ${answer.headers()['content-type']} ${seen.slice(0, 50)}`);
+      step('…under a policy with no inline script, and nothing is refused', /default-src 'none'/.test(answerCsp) && /script-src 'self'(;|$)/.test(answerCsp) && (await visitor.evaluate(() => window.__v.length)) === 0, answerCsp.slice(0, 90));
+      await visitor.locator('a[data-back]').click();
+      await visitor.waitForURL(`${SITE}/missing`, { timeout: 10000 }).catch(() => {});
+      await visitor.waitForTimeout(300);
+      step('…and its Back link returns to the form with what was typed', visitor.url() === `${SITE}/missing` && (await visitor.locator('textarea').inputValue().catch(() => '')) === 'typed and edited', visitor.url());
+      await visitor.close();
+      await new Promise((resolve) => site.close(resolve));
+    }
     await page.goto(`${B}/developer/dashboard`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(800);
     await shot(page, '07-dashboard-first-lead');

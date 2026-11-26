@@ -158,7 +158,7 @@ const DOC: Record<Locale, DocDict> = {
         { t: "Paste the code", d: "The form page shows working code for HTML, React, Astro, Vue, Svelte, WordPress and two server relays. Copy, paste, submit once. The lead appears in the dashboard and in the client's e-mail." },
       ],
       curlTitle: "Test it from a terminal",
-      curlNote: "A native POST (no JavaScript) skips the proof-of-work and is answered with a redirect; the other spam gates still apply. Replace YOUR_FORM_ID with the id from the form page.",
+      curlNote: "A native POST (no JavaScript) skips the proof-of-work and is answered with a redirect: back to the page it came from with ?submitted=true, or to the success page of the form. If it is refused, the visitor sees a plain page in their language with a way back to the form — never JSON. The other spam gates still apply. Replace YOUR_FORM_ID with the id from the form page.",
     },
     code: {
       title: "Code for your stack",
@@ -305,7 +305,7 @@ const DOC: Record<Locale, DocDict> = {
         { t: "Collez le code", d: "La page du formulaire affiche du code prêt à l’emploi pour HTML, React, Astro, Vue, Svelte, WordPress et deux relais serveur. Copiez, collez, envoyez une fois. Le lead apparaît dans le tableau de bord et dans l’e-mail du client." },
       ],
       curlTitle: "Testez depuis un terminal",
-      curlNote: "Un POST natif (sans JavaScript) saute la preuve de travail et reçoit une redirection ; les autres barrières anti-spam s’appliquent. Remplacez YOUR_FORM_ID par l’identifiant de la page du formulaire.",
+      curlNote: "Un POST natif (sans JavaScript) saute la preuve de travail et reçoit une redirection : retour à la page d’où il vient avec ?submitted=true, ou vers la page de succès du formulaire. S’il est refusé, le visiteur voit une page simple dans sa langue, avec un retour au formulaire — jamais du JSON. Les autres barrières anti-spam s’appliquent. Remplacez YOUR_FORM_ID par l’identifiant de la page du formulaire.",
     },
     code: {
       title: "Code pour votre stack",

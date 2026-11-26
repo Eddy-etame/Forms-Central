@@ -32,7 +32,8 @@
     "housekeeping": "node --experimental-strip-types scripts/housekeeping.ts",
     "test:housekeeping": "node --experimental-strip-types scripts/test-housekeeping.ts",
     "test:csp": "node --experimental-strip-types scripts/test-csp.ts",
-    "test:unit": "npm run test:mail && npm run test:security && npm run test:otp && npm run test:crypto && npm run test:spam && npm run test:autoreply && npm run test:retention && npm run test:csv && npm run test:backup && npm run test:attachments && npm run test:tokens && npm run test:netguard && npm run test:housekeeping && npm run test:csp"
+    "test:form-answers": "node --experimental-strip-types scripts/test-form-answers.ts",
+    "test:unit": "npm run test:mail && npm run test:security && npm run test:otp && npm run test:crypto && npm run test:spam && npm run test:autoreply && npm run test:retention && npm run test:csv && npm run test:backup && npm run test:attachments && npm run test:tokens && npm run test:netguard && npm run test:housekeeping && npm run test:csp && npm run test:form-answers"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",

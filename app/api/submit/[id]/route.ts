@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { headers as requestHeaders } from 'next/headers';
 import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { isBlacklisted, blacklistTarget, AUTO_BAN_TTL_MS } from '@/lib/blacklist';
 import { handleHoneypotTrigger, resolveHostDomain } from '@/lib/dnsLookup';
 import { attachmentUrl, UPLOADS_BUCKET } from '@/lib/storage';
 import { stripStorageLinks, sniffUpload, UPLOAD_CONTENT_TYPE } from '@/lib/attachments';
+import { answerLang, successPageHtml, errorPageHtml, type AnswerLang } from '@/lib/formAnswerPages';
 import { verifyChallenge } from '@/lib/pow';
 import { sendLeadEmail, sendAutoReplyEmail } from '@/lib/email';
 import { getQuotaState, logEmailSend } from '@/lib/quota';
 import { getPlan } from '@/lib/plans';
 import { checkRateLimit as dbCheckRateLimit } from '@/lib/rateLimit';
 import { verifyApiKey } from '@/lib/apiKeys';
-import { isSyntheticEmail, normalizeLang, safePersonName } from '@/lib/domain';
+import { isSyntheticEmail, normalizeLang, safePersonName, answersJson } from '@/lib/domain';
 import { background } from '@/lib/background';
 import { leadRecipients, markNotified, redeliverPending } from '@/lib/delivery';
 
@@ -58,10 +60,6 @@ function checkAutoReplyRateLimit(email: string, limit = 3, timeframeMs = 10 * 60
   recent.push(now);
   autoReplyRateLimitMap.set(key, recent);
   return true;
-}
-
-function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m] as string));
 }
 
 const MAX_BODY_BYTES = 6 * 1024 * 1024; // 6 MB — leaves room for a few base64 photos
@@ -124,31 +122,23 @@ async function logFailure(formId: string | null, errorType: string, errorMessage
  * 2026-11-26 it was a `javascript:` link, which forced every API answer to
  * allow inline script.
  */
-function successPage(): NextResponse {
-  return new NextResponse(
-    `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Message envoyé / Message sent</title>
-<style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#F9FAFB;color:#0F172A}.card{background:#fff;padding:2.5rem;border-radius:1.5rem;border:1px solid #F1F5F9;box-shadow:0 10px 15px -3px rgba(0,0,0,.05);text-align:center;max-width:400px}.icon{font-size:3rem;margin-bottom:1rem}h1{font-size:1.25rem;font-weight:700;margin:0 0 .5rem}p{font-size:.875rem;color:#64748B;line-height:1.6;margin:0}.back{display:inline-block;margin-top:1.5rem;padding:.625rem 1.25rem;background:#0F172A;color:#fff;text-decoration:none;border-radius:.75rem;font-size:.875rem;font-weight:600}</style></head>
-<body><div class="card"><div class="icon">✓</div><h1>Message envoyé !</h1><p>Votre message a bien été enregistré. Le destinataire a été notifié.</p><a href="#" data-back class="back">Retour / Back</a></div><script src="/form-back.js" defer></script></body></html>`,
-    { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
-  );
+function successPage(lang: AnswerLang): NextResponse {
+  return new NextResponse(successPageHtml(lang), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 }
 
-function createErrorResponse(status: number, code: string, message: string, remedy: string | null, origin: string | null, isJson: boolean): NextResponse {
+async function createErrorResponse(status: number, code: string, message: string, remedy: string | null, origin: string | null, asJson: boolean): Promise<NextResponse> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (origin) {
     headers['Access-Control-Allow-Origin'] = origin;
     headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
     headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Inlet-Visitor-IP, x-client-fingerprint';
   }
-  if (isJson || origin) {
+  if (asJson) {
     return new NextResponse(JSON.stringify({ success: false, code, error: message, ...(remedy ? { remedy } : {}) }), { status, headers });
   }
-  return new NextResponse(
-    `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Erreur de soumission / Submission error</title>
-<style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#FFF5F5;color:#9B2C2C}.card{background:#fff;padding:2.5rem;border-radius:1.5rem;border:1px solid #FED7D7;box-shadow:0 10px 15px -3px rgba(0,0,0,.05);text-align:center;max-width:450px}.icon{font-size:3rem;margin-bottom:1rem;color:#E53E3E}h1{font-size:1.25rem;font-weight:700;margin:0 0 .5rem}p{font-size:.875rem;color:#C53030;line-height:1.6;margin:0}.code{font-family:monospace;background:#FEEBC8;color:#C05621;padding:.2rem .4rem;border-radius:.25rem;font-size:.75rem;display:inline-block;margin-top:.5rem}.remedy{margin-top:1rem;font-size:.875rem;color:#742A2A;background:#FED7D7;padding:.75rem;border-radius:.5rem;border:1px solid #FC8181}.back{display:inline-block;margin-top:1.5rem;padding:.625rem 1.25rem;background:#E53E3E;color:#fff;text-decoration:none;border-radius:.75rem;font-size:.875rem;font-weight:600}</style></head>
-<body><div class="card"><div class="icon">⚠</div><h1>Erreur de soumission</h1><p>${escapeHtml(message)}</p>${remedy ? `<div class="remedy"><strong>Solution :</strong> ${escapeHtml(remedy)}</div>` : ''}<div class="code">Code: ${escapeHtml(code)}</div><br /><a href="#" data-back class="back">Retour / Back</a></div><script src="/form-back.js" defer></script></body></html>`,
-    { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
-  );
+  // A browser is waiting on this answer: a page for the visitor, in the visitor's language.
+  const lang = answerLang((await requestHeaders()).get('accept-language'));
+  return new NextResponse(errorPageHtml(lang, { code, message, remedy }), { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 }
 
 export async function OPTIONS(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -198,10 +188,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const referer = request.headers.get('referer');
   const contentType = request.headers.get('content-type') || '';
   const isJson = contentType.includes('application/json');
+  // JSON for a script; a redirect or a plain page for a browser that posted a
+  // form and is waiting to be sent somewhere (lib/domain.ts → answersJson).
+  const answerJson = answersJson({ contentType, origin, secFetchMode: request.headers.get('sec-fetch-mode'), accept: request.headers.get('accept') });
 
   const declaredLen = parseInt(request.headers.get('content-length') || '0', 10);
   if (declaredLen > MAX_BODY_BYTES) {
-    return createErrorResponse(413, 'PAYLOAD_TOO_LARGE', 'Submission body is too large.', 'Reduce the size of your submission or file attachments.', origin, isJson);
+    return createErrorResponse(413, 'PAYLOAD_TOO_LARGE', 'Submission body is too large.', 'Reduce the size of your submission or file attachments.', origin, answerJson);
   }
 
   // ── Form + server-to-server auth ────────────────────────────────────────
@@ -228,13 +221,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   if (formError) {
     console.error('[SUBMIT] Database query error:', formError);
-    return createErrorResponse(500, 'DATABASE_QUERY_ERROR', 'A database error occurred while fetching the form.', 'Check that every migration in migrations/README.md has been applied.', origin, isJson);
+    return createErrorResponse(500, 'DATABASE_QUERY_ERROR', 'A database error occurred while fetching the form.', 'Check that every migration in migrations/README.md has been applied.', origin, answerJson);
   }
   if (!form) {
-    return createErrorResponse(404, 'FORM_NOT_FOUND', `The form id '${formId}' does not exist.`, 'Copy the form id again from your Inlet dashboard (Forms → your form).', origin, isJson);
+    return createErrorResponse(404, 'FORM_NOT_FOUND', `The form id '${formId}' does not exist.`, 'Copy the form id again from your Inlet dashboard (Forms → your form).', origin, answerJson);
   }
   if (!form.is_active) {
-    return createErrorResponse(403, 'FORM_INACTIVE', 'This form is paused.', 'Open the form in your Inlet dashboard and switch it back on.', origin, isJson);
+    return createErrorResponse(403, 'FORM_INACTIVE', 'This form is paused.', 'Open the form in your Inlet dashboard and switch it back on.', origin, answerJson);
   }
 
   const bearer = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
@@ -242,7 +235,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (bearer) {
     const auth = bearer.startsWith('kef_') ? await verifyApiKey(bearer) : null;
     if (!auth || auth.clientId !== form.client_id) {
-      return createErrorResponse(401, 'INVALID_API_KEY', 'The API key is invalid, revoked, or does not own this form.', 'Create a key in Inlet → Developer and store it as INLET_API_KEY on your server.', origin, isJson);
+      return createErrorResponse(401, 'INVALID_API_KEY', 'The API key is invalid, revoked, or does not own this form.', 'Create a key in Inlet → Developer and store it as INLET_API_KEY on your server.', origin, answerJson);
     }
     trusted = true;
   }
@@ -257,11 +250,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   // ── Blacklist (on the visitor, never on the relay) ──────────────────────
   if (await isBlacklisted(ipAddress) || (fingerprint !== 'no_fingerprint' && await isBlacklisted(fingerprint))) {
     await logFailure(formId, 'BLACKLIST_TRIGGER', `Blocked IP/Fingerprint: ${ipAddress}`);
-    return createErrorResponse(403, 'SENDER_BLACKLISTED', 'Your address has been blocked for 24 hours because of suspicious activity.', 'Try again later, without a VPN or automated tool.', origin, isJson);
+    return createErrorResponse(403, 'SENDER_BLACKLISTED', 'Your address has been blocked for 24 hours because of suspicious activity.', 'Try again later, without a VPN or automated tool.', origin, answerJson);
   }
   const resolvedHost = await resolveHostDomain(ipAddress);
   if (resolvedHost && await isBlacklisted(resolvedHost)) {
-    return createErrorResponse(403, 'HOST_BLACKLISTED', 'This submission was blocked by security filters (hosting/VPN block).', 'Please disable your VPN or proxy to submit this form.', origin, isJson);
+    return createErrorResponse(403, 'HOST_BLACKLISTED', 'This submission was blocked by security filters (hosting/VPN block).', 'Please disable your VPN or proxy to submit this form.', origin, answerJson);
   }
 
   // ── CORS (waived for authenticated server submits) ──────────────────────
@@ -271,7 +264,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         403, 'CORS_NOT_ALLOWED',
         `Origin '${origin}' is not authorized to submit to this form.`,
         `In your Inlet dashboard, open this form's settings and add "${origin}" to its allowed sites.`,
-        origin, isJson
+        origin, answerJson
       );
     }
   }
@@ -281,7 +274,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   // authoritative, database-backed limit below — never by a counter that
   // differs from one server instance to the next.
   if (!checkBurst(`${ipAddress}:${fingerprint}`)) {
-    return createErrorResponse(429, 'RATE_LIMIT_EXCEEDED', 'Too many submissions. Please wait a minute.', 'Stop submitting forms rapidly. Try again in a few minutes.', origin, isJson);
+    return createErrorResponse(429, 'RATE_LIMIT_EXCEEDED', 'Too many submissions. Please wait a minute.', 'Stop submitting forms rapidly. Try again in a few minutes.', origin, answerJson);
   }
   if (!(await dbCheckRateLimit(`submit:${ipAddress}`, 12, 60_000))) {
     await logFailure(formId, 'RATE_LIMIT_GLOBAL', `IP ${ipAddress} exceeded 12 submissions/min`);
@@ -290,7 +283,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // merely claims is never put on it: one account could otherwise have any
     // address refused everywhere.
     if (!trusted) await blacklistTarget(ipAddress, 'ip', 'Rate limit exceeded (global)', AUTO_BAN_TTL_MS);
-    return createErrorResponse(429, 'RATE_LIMIT_EXCEEDED', 'Too many submissions. Please wait a minute.', 'Stop submitting forms rapidly. Try again in a few minutes.', origin, isJson);
+    return createErrorResponse(429, 'RATE_LIMIT_EXCEEDED', 'Too many submissions. Please wait a minute.', 'Stop submitting forms rapidly. Try again in a few minutes.', origin, answerJson);
   }
 
   // ── Body ────────────────────────────────────────────────────────────────
@@ -321,15 +314,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       tooLarge ? 'PAYLOAD_TOO_LARGE' : 'INVALID_REQUEST_BODY',
       tooLarge ? 'Submission body is too large.' : 'Could not parse the submission body.',
       tooLarge ? 'Reduce the size of your submission or file attachments.' : 'Send JSON with a Content-Type: application/json header, or a standard form post.',
-      origin, isJson
+      origin, answerJson
     );
   }
 
   const respondSuccess = () => {
-    if (isJson || origin) {
+    if (answerJson) {
       return NextResponse.json({ success: true, message: 'Submission logged successfully' }, { headers: origin ? { 'Access-Control-Allow-Origin': origin } : {} });
     }
-    if (redirectUrl.startsWith('file://') || redirectUrl.startsWith('chrome-error://')) return successPage();
+    if (redirectUrl.startsWith('file://') || redirectUrl.startsWith('chrome-error://')) return successPage(answerLang(request.headers.get('accept-language')));
     const url = new URL(redirectUrl, request.url);
     url.searchParams.set('submitted', 'true');
     return NextResponse.redirect(url, 303);
@@ -392,18 +385,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const powTimestamp = parseInt(payload.pow_timestamp || '0', 10);
     const powNonce = payload.pow_nonce;
     if (!powChallenge || !powTimestamp || !powNonce) {
-      return createErrorResponse(400, 'POW_PARAMETERS_MISSING', 'Missing proof-of-work parameters.', 'Fetch GET /api/challenge, solve it, and send pow_challenge, pow_timestamp and pow_nonce — or submit from your server with an API key.', origin, isJson);
+      return createErrorResponse(400, 'POW_PARAMETERS_MISSING', 'Missing proof-of-work parameters.', 'Fetch GET /api/challenge, solve it, and send pow_challenge, pow_timestamp and pow_nonce — or submit from your server with an API key.', origin, answerJson);
     }
     if (typeof powChallenge !== 'string' || !/^[0-9a-f]{64}$/.test(powChallenge) || challengeReplayCache.has(powChallenge)) {
-      return createErrorResponse(400, typeof powChallenge === 'string' && challengeReplayCache.has(powChallenge) ? 'POW_REPLAY_DETECTED' : 'POW_SOLUTION_INVALID', 'This proof-of-work challenge was already used or is malformed.', 'Fetch a new challenge before each submission. Never cache one.', origin, isJson);
+      return createErrorResponse(400, typeof powChallenge === 'string' && challengeReplayCache.has(powChallenge) ? 'POW_REPLAY_DETECTED' : 'POW_SOLUTION_INVALID', 'This proof-of-work challenge was already used or is malformed.', 'Fetch a new challenge before each submission. Never cache one.', origin, answerJson);
     }
     if (!(await verifyChallenge(powChallenge, powTimestamp, String(powNonce), requestIp))) {
-      return createErrorResponse(400, 'POW_SOLUTION_INVALID', 'Proof-of-work verification failed (wrong solution or expired challenge).', 'Solve the challenge for the required difficulty and submit within 5 minutes.', origin, isJson);
+      return createErrorResponse(400, 'POW_SOLUTION_INVALID', 'Proof-of-work verification failed (wrong solution or expired challenge).', 'Solve the challenge for the required difficulty and submit within 5 minutes.', origin, answerJson);
     }
     // "Works once" has to hold on every server instance, not only this one:
     // the first use is recorded in the database for the challenge's lifetime.
     if (!(await dbCheckRateLimit(`pow:${powChallenge}`, 1, 5 * 60_000))) {
-      return createErrorResponse(400, 'POW_REPLAY_DETECTED', 'This proof-of-work challenge was already used.', 'Fetch a new challenge before each submission. Never cache one.', origin, isJson);
+      return createErrorResponse(400, 'POW_REPLAY_DETECTED', 'This proof-of-work challenge was already used.', 'Fetch a new challenge before each submission. Never cache one.', origin, answerJson);
     }
     challengeReplayCache.add(powChallenge);
     setTimeout(() => challengeReplayCache.delete(powChallenge), 5 * 60 * 1000);
@@ -424,7 +417,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   if (insertError || !inserted) {
     console.error('Error inserting submission:', insertError);
-    return createErrorResponse(500, 'DATABASE_INSERT_FAILED', 'The submission could not be stored.', 'Try again in a moment. If it persists, the service owner has been alerted through the logs.', origin, isJson);
+    return createErrorResponse(500, 'DATABASE_INSERT_FAILED', 'The submission could not be stored.', 'Try again in a moment. If it persists, the service owner has been alerted through the logs.', origin, answerJson);
   }
   if (suspectReason) await logFailure(formId, 'SPAM_KEYWORD', `Stored as suspect: ${suspectReason}`, Object.keys(cleanPayload));
 

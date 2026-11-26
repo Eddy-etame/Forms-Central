@@ -2,7 +2,7 @@
  * Unit test for the auto-reply subject a visitor receives.
  * Run: node --experimental-strip-types scripts/test-autoreply.ts
  */
-import { localizeAutoReplySubject, AUTO_REPLY_SUBJECTS, safePersonName } from '../lib/domain.ts';
+import { localizeAutoReplySubject, AUTO_REPLY_SUBJECTS, safePersonName, answersJson } from '../lib/domain.ts';
 
 let pass = 0, fail = 0;
 const failures: string[] = [];
@@ -49,6 +49,28 @@ nm('sixty characters at most', safePersonName('A'.repeat(200)), 'A'.repeat(60));
 nm('nothing left means no name', safePersonName('https://evil.example'), undefined);
 nm('not a string means no name', safePersonName(42 as unknown as string), undefined);
 nm('empty means no name', safePersonName('   '), undefined);
+
+console.log('\n== JSON for a script, a destination for a browser ==');
+{
+  const FORM = 'application/x-www-form-urlencoded';
+  const NAV = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8';
+  const is = (label: string, got: boolean, want: boolean) => nm(label, String(got), String(want));
+  // the case that was broken: every browser puts an Origin header on a POST
+  is('a plain HTML form posted by a browser is a navigation', answersJson({ contentType: FORM, origin: 'https://acme.com', secFetchMode: 'navigate', accept: NAV }), false);
+  is('…with a file field too (multipart)', answersJson({ contentType: 'multipart/form-data; boundary=x', origin: 'https://acme.com', secFetchMode: 'navigate', accept: NAV }), false);
+  is('…from a browser that sends no fetch metadata yet (it still asks for a page)', answersJson({ contentType: FORM, origin: 'https://acme.com', secFetchMode: null, accept: NAV }), false);
+  is('…from a page whose origin the browser withholds ("null")', answersJson({ contentType: FORM, origin: 'null', secFetchMode: 'navigate', accept: NAV }), false);
+  // scripts
+  is('fetch() with a JSON body', answersJson({ contentType: 'application/json', origin: 'https://acme.com', secFetchMode: 'cors', accept: '*/*' }), true);
+  is('fetch() with a form-encoded body', answersJson({ contentType: FORM, origin: 'https://acme.com', secFetchMode: 'cors', accept: '*/*' }), true);
+  is('fetch() from a browser without fetch metadata', answersJson({ contentType: FORM, origin: 'https://acme.com', secFetchMode: null, accept: '*/*' }), true);
+  is('a JSON body is a script even when everything else looks like a page', answersJson({ contentType: 'application/json; charset=utf-8', origin: 'https://acme.com', secFetchMode: 'navigate', accept: NAV }), true);
+  is('a server relay posting JSON, no Origin', answersJson({ contentType: 'application/json', origin: null, secFetchMode: null, accept: null }), true);
+  // tools and servers without an Origin keep the redirect they always got
+  is('curl with form fields', answersJson({ contentType: FORM, origin: null, secFetchMode: null, accept: '*/*' }), false);
+  is('a server-side fetch with form fields (it announces "cors" but has no Origin)', answersJson({ contentType: FORM, origin: null, secFetchMode: 'cors', accept: '*/*' }), false);
+  is('nothing known at all', answersJson({}), false);
+}
 
 console.log(`\n== RESULT: ${pass} passed, ${fail} failed ==`);
 if (fail) { console.log('Failures:', failures); process.exit(1); }

@@ -177,3 +177,27 @@ export function safePersonName(v: unknown): string | undefined {
     .trim();
   return cleaned.length >= 1 ? cleaned : undefined;
 }
+
+/**
+ * Does this submission expect JSON back, or is a browser waiting to be sent
+ * somewhere?
+ *
+ * Until 2026-11-26 the rule was "JSON body, or an Origin header". But every
+ * browser puts an Origin header on a POST — including the plainest HTML form.
+ * So a visitor who submitted a form without JavaScript was never redirected:
+ * they were left on this service's address, reading
+ * `{"success":true,"message":"Submission logged successfully"}`. Only tools
+ * that send no Origin (curl, the test suites) ever saw the documented 303.
+ *
+ * A form posted the plain way is a navigation, and browsers say so: fetch
+ * metadata (`Sec-Fetch-Mode: navigate`) where they send it, otherwise the
+ * Accept header of a navigation (it asks for text/html; a script's fetch asks
+ * for anything). A JSON body is always a script. No Origin at all is a
+ * server or a tool, which gets the redirect it always got.
+ */
+export function answersJson(h: { contentType?: string | null; origin?: string | null; secFetchMode?: string | null; accept?: string | null }): boolean {
+  if ((h.contentType || '').includes('application/json')) return true;
+  if (!h.origin) return false;
+  const navigation = h.secFetchMode ? h.secFetchMode === 'navigate' : (h.accept || '').includes('text/html');
+  return !navigation;
+}

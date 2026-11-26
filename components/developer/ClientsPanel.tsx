@@ -103,7 +103,12 @@ export default function ClientsPanel({ t }: { t: ECDict }) {
   async function saveEdit(id: string) {
     const res = await fetch('/api/developer/clients', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...edit }) });
     const data = await res.json();
-    if (res.ok && data.success) { setEditing(null); load(); } else toast.error(data.error || t.couldNotCreate);
+    if (res.ok && data.success) {
+      setEditing(null);
+      load();
+      // The address changed: say plainly that the old access is gone and where the new link went.
+      if (data.accessReset) toast.success(data.invited ? t.accessResetSent.replace('{email}', data.client?.email || '') : t.accessResetNotSent);
+    } else toast.error(data.error || t.couldNotCreate);
   }
 
   const atLimit = limit !== null && clients.length >= limit;

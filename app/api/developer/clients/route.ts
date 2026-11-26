@@ -3,8 +3,8 @@ import { supabase } from '@/lib/supabase';
 import { getDeveloperContext } from '@/lib/developerAuth';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 import { getLocale } from '@/lib/i18n';
-import { EMAIL_RE, normalizeLang, normalizeWebsite } from '@/lib/domain';
-import { createClientForDeveloper } from '@/lib/clients';
+import { EMAIL_RE, isSyntheticEmail, normalizeLang, normalizeWebsite } from '@/lib/domain';
+import { createClientForDeveloper, inviteClient } from '@/lib/clients';
 import { isServiceError } from '@/lib/forms';
 
 /**
@@ -12,7 +12,8 @@ import { isServiceError } from '@/lib/forms';
  *
  *   GET    → the developer's clients with their forms and the plan limit
  *   POST   → create a client; optionally e-mail a set-password invite
- *   PATCH  → edit name / e-mail / website / language / lead notifications
+ *   PATCH  → edit name / e-mail / website / language / lead notifications;
+ *            a new e-mail address ends the old address's access (see PATCH)
  *   DELETE → remove a client that has no forms left
  *
  * Every form belongs to a client (migration v22), so this is the first thing
@@ -117,13 +118,44 @@ export async function PATCH(req: Request) {
   if (body.notifyLeads !== undefined) patch.notify_leads = !!body.notifyLeads;
   if (Object.keys(patch).length === 0) return NextResponse.json({ success: false, error: 'Nothing to update.' }, { status: 400 });
 
-  const { data, error } = await supabase
+  // A new address hands the inbox to someone else. Whoever held the old one
+  // must not keep a way in: the password, any access link already e-mailed to
+  // the old address and every open session end with it. (Until 2026-11-26 all
+  // three survived the change.) The dashboard sends the address on every
+  // save, so "changed" is decided against the stored value.
+  let addressChanged = false;
+  let hadAccess = false;
+  if (typeof patch.email === 'string') {
+    const { data: current } = await supabase
+      .from('portal_users')
+      .select('email, encrypted_password, invite_token_hash, invite_expires')
+      .eq('id', id)
+      .eq('parent_client_id', dev.developerId)
+      .maybeSingle();
+    if (!current) return NextResponse.json({ success: false, error: 'Client not found.' }, { status: 404 });
+    addressChanged = String(current.email || '').trim().toLowerCase() !== patch.email;
+    if (addressChanged) {
+      const pendingLink = !!current.invite_token_hash && !!current.invite_expires && new Date(current.invite_expires as string) > new Date();
+      hadAccess = !!current.encrypted_password || pendingLink;
+      Object.assign(patch, { encrypted_password: null, invite_token_hash: null, invite_expires: null, sessions_valid_after: new Date().toISOString() });
+    }
+  }
+
+  const write = (values: Record<string, unknown>) => supabase
     .from('portal_users')
-    .update(patch)
+    .update(values)
     .eq('id', id)
     .eq('parent_client_id', dev.developerId) // scope: never another developer's client
     .select(CLIENT_SELECT)
     .maybeSingle();
+
+  let { data, error } = await write(patch);
+  if (error && addressChanged && /sessions_valid_after|schema cache/i.test(error.message || '')) {
+    // Migration v25 not applied: the password and the links still go; sessions cannot be cut off.
+    const { sessions_valid_after: _unused, ...withoutCutoff } = patch;
+    void _unused;
+    ({ data, error } = await write(withoutCutoff));
+  }
 
   if (error) {
     if ((error as { code?: string }).code === '23505') {
@@ -132,7 +164,18 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: false, error: 'Could not update the client.' }, { status: 500 });
   }
   if (!data) return NextResponse.json({ success: false, error: 'Client not found.' }, { status: 404 });
-  return NextResponse.json({ success: true, client: shape(data as Record<string, unknown>) });
+
+  // The person at the new address gets their own link — when the client had an
+  // inbox to lose. A client who was never invited is not invited by an edit.
+  let invited = false;
+  if (addressChanged && hadAccess && !isSyntheticEmail(String(patch.email))) {
+    invited = await inviteClient({ developerId: dev.developerId, developerName: dev.name, clientId: id, origin: new URL(req.url).origin, locale: await getLocale() });
+  }
+  return NextResponse.json({
+    success: true,
+    client: shape(data as Record<string, unknown>),
+    ...(addressChanged && hadAccess ? { accessReset: true, invited } : {}),
+  });
 }
 
 export async function DELETE(req: Request) {

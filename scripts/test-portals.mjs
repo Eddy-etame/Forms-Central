@@ -452,6 +452,55 @@ try {
     await sb.from('portal_users').delete().eq('id', acmeId).eq('parent_client_id', '00000000-0000-0000-0000-000000000000'); // no-op guard: the client is removed with its developer in cleanup
     const gone = await fetch(`${BASE}/api/portal/leads`, { headers: j(`portal_access_token=not.a.token`) });
     check('a made-up client token opens nothing (401)', gone.status === 401, `got ${gone.status}`);
+
+    // 2026-11-26: a new address hands a client's inbox to someone else. Until then the password, a link
+    // already e-mailed to the old address and every open session all survived the change.
+    console.log(`\n== A client's address changes hands ==`);
+    const sha = (v) => crypto.createHash('sha256').update(v).digest('hex');
+    const patchClient = (body) => fetch(`${BASE}/api/developer/clients`, { method: 'PATCH', headers: j(devCookie), body: JSON.stringify(body) });
+    const inbox = (cookie) => fetch(`${BASE}/api/portal/leads`, { headers: j(cookie) }).then((r) => r.status);
+    const signIn = (email, password) => post('/api/portal/login', { email, password }).then((r) => r.status);
+
+    // The dashboard sends the address on every save: the same address must reset nothing.
+    const same = await patchClient({ id: acmeId, email: EC_EMAIL.toUpperCase() });
+    const sameBody = await same.json();
+    check('saving a client with the same address resets nothing', same.status === 200 && !sameBody.accessReset && (await inbox(newPortalCookie)) === 200 && (await signIn(EC_EMAIL, 'clientpass789')) === 200,
+      `status ${same.status} reset ${sameBody.accessReset}`);
+
+    const rawOld = crypto.randomBytes(32).toString('base64url'); // a link sitting in the old mailbox
+    await sb.from('portal_users').update({ invite_token_hash: sha(rawOld), invite_expires: new Date(Date.now() + 3600_000).toISOString() }).eq('id', acmeId);
+    await new Promise((r) => setTimeout(r, 1100)); // the cut-off is compared to the second
+    const NEW_EMAIL = `acme-new+${Date.now()}@test.invalid`;
+    const moved = await patchClient({ id: acmeId, email: NEW_EMAIL });
+    const movedBody = await moved.json();
+    check('a new address is saved and reported as an access reset', moved.status === 200 && movedBody.accessReset === true && movedBody.client?.email === NEW_EMAIL && movedBody.client?.has_access === false,
+      `status ${moved.status} ${JSON.stringify(movedBody).slice(0, 160)}`);
+    check('the session opened under the old address ends (401)', (await inbox(newPortalCookie)) === 401, `got ${await inbox(newPortalCookie)}`);
+    check('the old address no longer signs in', (await signIn(EC_EMAIL, 'clientpass789')) === 401);
+    check('the old password does not open the new address either', (await signIn(NEW_EMAIL, 'clientpass789')) === 401);
+    const takeover = await post('/api/portal/set-password', { token: rawOld, password: 'takeover-123' });
+    check('a link e-mailed to the old address is dead (400)', takeover.status === 400, `got ${takeover.status}`);
+    const { data: after } = await sb.from('portal_users').select('encrypted_password, invite_token_hash, invite_expires').eq('id', acmeId).single();
+    check('no password is left, and the new address has its own fresh link', after?.encrypted_password === null && !!after?.invite_token_hash && after.invite_token_hash !== sha(rawOld) && new Date(after.invite_expires) > new Date(),
+      JSON.stringify({ pw: after?.encrypted_password === null, link: !!after?.invite_token_hash }));
+
+    // A client who never had an inbox is not invited because its address was corrected.
+    const before = await sb.from('portal_users').select('email, encrypted_password, invite_token_hash').eq('id', betaId).single();
+    const fixed = await patchClient({ id: betaId, email: `beta-fixed+${Date.now()}@test.invalid` });
+    const fixedBody = await fixed.json();
+    const { data: betaAfter } = await sb.from('portal_users').select('invite_token_hash').eq('id', betaId).single();
+    check('correcting the address of a client who was never invited invites nobody', before.data?.encrypted_password === null && !before.data?.invite_token_hash ? (fixed.status === 200 && !fixedBody.accessReset && betaAfter?.invite_token_hash === null) : true,
+      `status ${fixed.status} reset ${fixedBody.accessReset}`);
+
+    const otherDev = otherDevs[0];
+    if (otherDev) {
+      const { data: foreign } = await sb.from('portal_users').insert({ parent_client_id: otherDev, name: 'Not yours', email: `foreign+${Date.now()}@test.invalid` }).select('id, email').single();
+      if (foreign?.id) {
+        const res = await patchClient({ id: foreign.id, email: `stolen+${Date.now()}@test.invalid` });
+        const { data: still } = await sb.from('portal_users').select('email').eq('id', foreign.id).single();
+        check('ISOLATION: another developer\'s client cannot be re-addressed (404, untouched)', res.status === 404 && still?.email === foreign.email, `got ${res.status}`);
+      }
+    }
   }
 } catch (e) {
   fail++; failures.push(`suite crashed: ${e.message}`); console.error('SUITE ERROR:', e);

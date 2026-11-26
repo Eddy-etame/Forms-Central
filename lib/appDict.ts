@@ -118,6 +118,7 @@ interface AppDict {
     emptyTitle: string; emptyBody: string;
     formsTheySee: string; noneAssigned: string; assignForm: string;
     couldNotCreate: string; couldNotReach: string;
+    accessResetSent: string; accessResetNotSent: string;
     resetBtn: string; resetConfirmTitle: string; resetConfirmBody: string; resetConfirmBtn: string; cancel: string;
     resetting: string; resetOk: string; resetErr: string;
     websiteLabel: string; websitePlaceholder: string; langLabel: string; inviteNow: string; inviteHint: string;
@@ -462,6 +463,8 @@ export const appDictionaries: Record<Locale, AppDict> = {
       emptyTitle: 'No clients yet', emptyBody: 'Create the first business you build for. Every form you create belongs to one of your clients.',
       formsTheySee: 'Their forms', noneAssigned: 'No form yet — create one from the overview.', assignForm: '+ Move a form here…',
       couldNotCreate: 'Could not create the client.', couldNotReach: 'Could not reach the server.',
+      accessResetSent: 'New address saved. The old password, links and sessions no longer work; a new access link was e-mailed to {email}.',
+      accessResetNotSent: 'New address saved. The old password, links and sessions no longer work. The new link could not be e-mailed — send the invite again.',
       resetBtn: 'Send access link', resetConfirmTitle: 'Send a new access link?', resetConfirmBody: 'They receive a single-use link to choose a new password. Their current password keeps working until they use it.', resetConfirmBtn: 'Send link', cancel: 'Cancel',
       resetting: 'Sending…', resetOk: 'Access link sent.', resetErr: 'Could not send the link.',
       websiteLabel: 'Website', websitePlaceholder: 'https://acme.com (optional)', langLabel: 'Language', inviteNow: 'E-mail them their inbox access now', inviteHint: 'A single-use link; they pick their password. Nothing is sent if unchecked.',
@@ -814,6 +817,8 @@ export const appDictionaries: Record<Locale, AppDict> = {
       emptyTitle: 'Aucun client pour l’instant', emptyBody: 'Créez la première entreprise pour laquelle vous travaillez. Chaque formulaire que vous créez appartient à l’un de vos clients.',
       formsTheySee: 'Ses formulaires', noneAssigned: 'Aucun formulaire — créez-en un depuis la vue d’ensemble.', assignForm: '+ Déplacer un formulaire ici…',
       couldNotCreate: 'Impossible de créer le client.', couldNotReach: 'Impossible de joindre le serveur.',
+      accessResetSent: 'Nouvelle adresse enregistrée. L’ancien mot de passe, les anciens liens et les sessions ne fonctionnent plus ; un nouveau lien d’accès a été envoyé à {email}.',
+      accessResetNotSent: 'Nouvelle adresse enregistrée. L’ancien mot de passe, les anciens liens et les sessions ne fonctionnent plus. Le nouveau lien n’a pas pu être envoyé — renvoyez l’invitation.',
       resetBtn: 'Envoyer un lien d’accès', resetConfirmTitle: 'Envoyer un nouveau lien d’accès ?', resetConfirmBody: 'Il reçoit un lien à usage unique pour choisir un nouveau mot de passe. Son mot de passe actuel continue de fonctionner tant qu’il ne l’utilise pas.', resetConfirmBtn: 'Envoyer le lien', cancel: 'Annuler',
       resetting: 'Envoi…', resetOk: 'Lien d’accès envoyé.', resetErr: 'Impossible d’envoyer le lien.',
       websiteLabel: 'Site web', websitePlaceholder: 'https://acme.com (optionnel)', langLabel: 'Langue', inviteNow: 'Lui envoyer dès maintenant l’accès à sa boîte', inviteHint: 'Un lien à usage unique ; il choisit son mot de passe. Rien n’est envoyé si décoché.',

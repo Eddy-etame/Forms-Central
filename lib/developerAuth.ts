@@ -20,8 +20,8 @@ import { getPlan, type Plan } from './plans';
  *   - the account still exists;
  *   - the token was issued after the account's `sessions_valid_after`
  *     (a password reset moves that instant to "now");
- *   - its device session, when it has one, was not revoked (sign-out,
- *     device limit).
+ *   - its device session, when it has one, still exists and was not revoked
+ *     (sign-out, device limit, removal).
  */
 
 export const DEVELOPER_COOKIE = 'client_access_token';
@@ -52,7 +52,7 @@ async function resolve(): Promise<{ session: DeveloperSession; account: AccountR
 
   const [account, device] = await Promise.all([
     supabase.from('clients').select('name, email, plan, sessions_valid_after').eq('id', developerId).maybeSingle(),
-    sid ? supabase.from('client_sessions').select('revoked').eq('id', sid).maybeSingle() : Promise.resolve({ data: null }),
+    sid ? supabase.from('client_sessions').select('revoked').eq('id', sid).maybeSingle() : Promise.resolve({ data: null, error: null }),
   ]);
   if (account.error) {
     // Migration v25 not applied yet: the account still has to exist; the cut-off cannot be checked.
@@ -64,7 +64,13 @@ async function resolve(): Promise<{ session: DeveloperSession; account: AccountR
   const row = account.data as AccountRow | null;
   if (!row) return null;                                         // the account is gone
   if (issuedBefore(payload.iat, row.sessions_valid_after)) return null; // ended by a password reset
-  if (sid && (device.data as { revoked?: boolean } | null)?.revoked) return null; // signed out or evicted
+  if (sid && !device.error) {
+    // The token names a device session. Revoked: signed out or evicted. Gone:
+    // removed by the operator or by housekeeping — a session that no longer
+    // exists opens nothing. (A read error is not an answer; it does not sign anyone out.)
+    const row = device.data as { revoked?: boolean } | null;
+    if (!row || row.revoked) return null;
+  }
   return { session: { developerId, ...(sid ? { sid } : {}) }, account: row };
 }
 

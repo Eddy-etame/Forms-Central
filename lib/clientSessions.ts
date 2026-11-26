@@ -59,25 +59,6 @@ export async function registerClientSession(
   }
 }
 
-/** True when the session exists and has been revoked (evicted / signed out). */
-export async function isSessionRevoked(sid: string): Promise<boolean> {
-  try {
-    const { data } = await supabase
-      .from('client_sessions')
-      .select('revoked')
-      .eq('id', sid)
-      .maybeSingle();
-    if (!data) return false; // unknown sid (or table missing) — fail-open
-    // Touch last_seen without delaying the caller; tracked so it lands.
-    if (!data.revoked) {
-      background(Promise.resolve(supabase.from('client_sessions').update({ last_seen: new Date().toISOString() }).eq('id', sid)).then(() => {}, () => {}));
-    }
-    return !!data.revoked;
-  } catch {
-    return false;
-  }
-}
-
 /** Record that a session was just used (shown in the device list). Never delays the caller. */
 export function touchClientSession(sid: string): void {
   background(Promise.resolve(supabase.from('client_sessions').update({ last_seen: new Date().toISOString() }).eq('id', sid)).then(() => {}, () => {}));

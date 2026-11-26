@@ -2,7 +2,7 @@
  * Unit test for the content security policy builder (lib/csp.ts).
  * Run: node --experimental-strip-types scripts/test-csp.ts
  */
-import { newNonce, cleanNonce, pageCsp, staticCsp, NONCE_HEADER } from '../lib/csp.ts';
+import { newNonce, cleanNonce, pageCsp, staticCsp, API_CSP, FILE_CSP, FORM_ANSWER_CSP, NONCE_HEADER } from '../lib/csp.ts';
 
 let pass = 0, fail = 0;
 const failures: string[] = [];
@@ -41,6 +41,24 @@ for (const [label, csp] of [['page', page], ['fixed', staticCsp()]] as const) {
   ok(`${label}: http is upgraded`, csp.split('; ').includes('upgrade-insecure-requests'));
   ok(`${label}: one line, no stray separator`, !/[\r\n,]/.test(csp));
 }
+
+console.log('\n== Styles on a page ==');
+ok('a <style> element needs the nonce, like a script', directive(page, 'style-src-elem') === `style-src-elem 'self' 'nonce-${nonce}'`);
+ok('style attributes stay allowed (React writes them)', directive(page, 'style-src-attr') === "style-src-attr 'unsafe-inline'");
+ok('browsers without the split fall back to the old line', directive(page, 'style-src') === "style-src 'self' 'unsafe-inline'");
+ok('development lets its own tooling inject styles', directive(pageCsp(nonce, true), 'style-src-elem') === "style-src-elem 'self' 'unsafe-inline'");
+
+console.log('\n== What is not a page ==');
+for (const [label, csp] of [['an API answer', API_CSP], ['a downloaded file', FILE_CSP], ['a plain form answer', FORM_ANSWER_CSP]] as const) {
+  ok(`${label}: nothing loads by default`, directive(csp, 'default-src') === "default-src 'none'");
+  ok(`${label}: cannot be framed, re-based or made to post`, csp.includes("frame-ancestors 'none'") && csp.includes("base-uri 'none'") && csp.includes("form-action 'none'"));
+  ok(`${label}: no inline script, no eval, no nonce`, !/script-src[^;]*(unsafe-inline|unsafe-eval|nonce-)/.test(csp));
+  ok(`${label}: one line, no stray separator`, !/[\r\n,]/.test(csp));
+}
+ok('an API answer allows no script and no style at all', !API_CSP.includes('script-src') && !API_CSP.includes('style-src'));
+ok('a downloaded file is sandboxed', FILE_CSP.split('; ').includes('sandbox'));
+ok('a plain form answer may load one kind of script: a file of this site', directive(FORM_ANSWER_CSP, 'script-src') === "script-src 'self'");
+ok('…and style itself inline, nothing else', directive(FORM_ANSWER_CSP, 'style-src') === "style-src 'unsafe-inline'" && !FORM_ANSWER_CSP.includes('img-src') && !FORM_ANSWER_CSP.includes('connect-src'));
 
 console.log('\n== The fixed policy ==');
 const fixed = directive(staticCsp(), 'script-src');

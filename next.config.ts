@@ -1,16 +1,18 @@
 import type { NextConfig } from "next";
-import { staticCsp } from "./lib/csp";
+import { staticCsp, API_CSP, FILE_CSP, FORM_ANSWER_CSP } from "./lib/csp";
 
 /**
  * Security headers.
  *
- * Content-Security-Policy comes from two places that never overlap
- * (lib/csp.ts explains both):
+ * Content-Security-Policy comes from places that never overlap (lib/csp.ts
+ * explains each):
  *  - pages: proxy.ts, a policy built around a nonce minted per request;
- *  - everything the proxy does not see — the API, /_next, any path with a
- *    dot: the fixed policy below.
- * The three `source` patterns for the fixed policy are the exact complement
- * of the proxy's page test, so no response ever carries two policies.
+ *  - API answers: data only — nothing loads, runs or is framed;
+ *  - /api/download: the same, sandboxed (the route sets it too, identically);
+ *  - /api/submit: its plain-HTML answers, with their style and one script file;
+ *  - /_next and any other path with a dot: the fixed policy.
+ * The `source` patterns below are the exact complement of the proxy's page
+ * test and exclude one another, so no response ever carries two policies.
  *
  * 'unsafe-eval' is added in DEVELOPMENT ONLY — React/Turbopack dev mode uses
  * eval() for fast-refresh + callstack reconstruction. React never uses eval()
@@ -18,7 +20,10 @@ import { staticCsp } from "./lib/csp";
  */
 const isDev = process.env.NODE_ENV === "development";
 
-const fixedCsp = [{ key: "Content-Security-Policy", value: staticCsp(isDev) }];
+const csp = (value: string) => [{ key: "Content-Security-Policy", value }];
+const fixedCsp = csp(staticCsp(isDev));
+// What a signed-in browser is told must not linger in a cache it shares.
+const noStore = [{ key: "Cache-Control", value: "no-store" }];
 
 const securityHeaders = [
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
@@ -49,9 +54,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/(.*)", headers: securityHeaders },
-      { source: "/api/:path+", headers: fixedCsp },
+      { source: "/api/((?!submit/|download).*)", headers: [...csp(API_CSP), ...noStore] },
+      { source: "/api/submit/:path*", headers: [...csp(FORM_ANSWER_CSP), ...noStore] },
+      { source: "/api/download", headers: [...csp(FILE_CSP), ...noStore] },
       { source: "/_next/:path+", headers: fixedCsp },
-      { source: "/:path(.*\\..*)", headers: fixedCsp },
+      { source: "/:path((?!api/).*\\..*)", headers: fixedCsp },
     ];
   },
   // The developer workspace moved from /client/* to /developer/* (the word

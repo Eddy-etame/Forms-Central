@@ -7,13 +7,21 @@
  * text, a form name, a file name — is not a script the browser will run,
  * even if a rendering mistake one day lets it through as HTML.
  *
- * Everything the proxy does not see (API answers, static files, paths with a
- * dot) keeps the fixed policy, set in next.config.ts. The two never meet on
- * the same response: next.config.ts applies the fixed one only where the
- * proxy matcher does not reach.
+ * What the proxy does not see gets a policy by kind, set in next.config.ts on
+ * patterns that never overlap the proxy's or each other's:
+ *   - an API answer is data: nothing may load, run or be framed (API_CSP);
+ *   - a file handed back by /api/download is a stranger's bytes: the same,
+ *     in a sandbox (FILE_CSP);
+ *   - the submit endpoint also answers plain HTML to a form posted without
+ *     JavaScript: its own inline style, one script file of this site, nothing
+ *     else (FORM_ANSWER_CSP);
+ *   - static files and the not-found page of a path with a dot keep the fixed
+ *     policy (staticCsp): nothing there repeats what a visitor sent.
  *
- * Styles keep 'unsafe-inline' on purpose: React writes style attributes
- * (bar widths, chart colours) and a nonce cannot cover an attribute.
+ * Styles: a <style> element needs the nonce like a script does, so markup
+ * that slips into a page cannot restyle it or read it through selectors.
+ * Style *attributes* stay allowed: React writes them (bar widths, chart
+ * colours) and a nonce cannot cover an attribute.
  *
  * Pure module: no imports, so the proxy, next.config.ts and the unit tests
  * all read the same lines.
@@ -35,11 +43,11 @@ export function cleanNonce(value: string | null | undefined): string | undefined
   return typeof value === 'string' && /^[A-Za-z0-9+/]{22}==$/.test(value) ? value : undefined;
 }
 
-function policy(scriptSrc: string): string {
+function policy(scriptSrc: string, styleSrc: string[] = ["style-src 'self' 'unsafe-inline'"]): string {
   return [
     "default-src 'self'",
     scriptSrc,
-    "style-src 'self' 'unsafe-inline'",
+    ...styleSrc,
     "img-src 'self' https: data: blob:",
     "font-src 'self' data:",
     "connect-src 'self'",
@@ -58,14 +66,37 @@ function policy(scriptSrc: string): string {
  * evaluates code for fast refresh, production never does.
  */
 export function pageCsp(nonce: string, dev = false): string {
-  return policy(`script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ''}`);
+  return policy(`script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ''}`, [
+    // The first line is what a browser without the -elem/-attr split falls back to.
+    "style-src 'self' 'unsafe-inline'",
+    // Development injects its own <style> elements (fast refresh, the error overlay) without a nonce.
+    dev ? "style-src-elem 'self' 'unsafe-inline'" : `style-src-elem 'self' 'nonce-${nonce}'`,
+    "style-src-attr 'unsafe-inline'",
+  ]);
 }
 
 /**
- * The policy of everything that is not a page. The no-JavaScript answers of
- * the submit endpoint carry a "back" link that needs inline script; nothing
- * else under it renders as a document.
+ * The fixed policy: static files, and the two kinds of document found at a
+ * path with a dot — the not-found page (rendered without a nonce, so its
+ * inline scripts need 'unsafe-inline') and the browser preview of the agent
+ * docs. Neither repeats anything a visitor sent.
  */
 export function staticCsp(dev = false): string {
   return policy(`script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ''}`);
 }
+
+const INERT = "frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
+
+/** An API answer is data. Rendered as a document by mistake, it loads nothing and runs nothing. */
+export const API_CSP = `default-src 'none'; ${INERT}`;
+
+/** A file from a stranger, handed back by /api/download: the same, and sandboxed. */
+export const FILE_CSP = `default-src 'none'; sandbox; ${INERT}`;
+
+/**
+ * The plain HTML the submit endpoint answers to a form posted without
+ * JavaScript: its own inline style and the one script file behind the "back"
+ * link (public/form-back.js). No inline script: the page repeats a server
+ * message, and must stay unable to run anything a message might carry.
+ */
+export const FORM_ANSWER_CSP = `default-src 'none'; style-src 'unsafe-inline'; script-src 'self'; ${INERT}`;

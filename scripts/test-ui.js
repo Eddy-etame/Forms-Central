@@ -78,8 +78,12 @@ let devId = null, formId = null, clientId = null;
       step('pages: the nonce changes with every request', !!n1 && !!n2 && n1 !== n2);
       // Two policies on one answer would arrive joined by a comma: there must be exactly one.
       step('pages: one policy, never two', csp1.split('default-src').length === 2);
-      const apiCsp = (await head('/api/challenge')).get('content-security-policy') || '';
-      step('API answers: the fixed policy, once', apiCsp.split('default-src').length === 2 && !apiCsp.includes('nonce-'));
+      const api = await head('/api/challenge');
+      const apiCsp = api.get('content-security-policy') || '';
+      step('API answers are data: one policy, under which nothing loads or runs', apiCsp.split('default-src').length === 2 && apiCsp.includes("default-src 'none'") && !/script-src|style-src|nonce-/.test(apiCsp), apiCsp.slice(0, 60));
+      step('API answers are not kept by a cache', /no-store/.test(api.get('cache-control') || ''), api.get('cache-control') || 'no cache-control');
+      const pageStyle = (csp1.match(/style-src-elem[^;]*/) || [''])[0];
+      step('pages: a <style> element needs the nonce too', !!n1 && pageStyle.includes(`'nonce-${n1}'`) && !pageStyle.includes('unsafe-inline'), pageStyle.replace(n1 || '§', '…'));
       const must = { 'strict-transport-security': /max-age=\d{8,}/, 'x-content-type-options': /^nosniff$/i, 'x-frame-options': /^SAMEORIGIN$/i, 'referrer-policy': /strict-origin/, 'permissions-policy': /camera=\(\)/ };
       const missing = Object.entries(must).filter(([k, re]) => !re.test(h1.get(k) || '')).map(([k]) => k);
       step('transport, framing and sniffing headers are present', missing.length === 0 && !h1.get('x-powered-by'), missing.join(', '));
@@ -168,6 +172,7 @@ let devId = null, formId = null, clientId = null;
     // 5. a lead arrives through a plain HTML form POST
     const r = await page.request.post(`${B}/api/submit/${formId}`, { form: { name: 'Jane Lead', email: 'jane@example.com', message: 'Hello from the UI test' }, maxRedirects: 0 });
     step('native submit answers 303', r.status() === 303, `status ${r.status()}`);
+
     await page.goto(`${B}/developer/dashboard`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(800);
     await shot(page, '07-dashboard-first-lead');

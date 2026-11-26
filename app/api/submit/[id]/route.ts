@@ -116,11 +116,19 @@ async function logFailure(formId: string | null, errorType: string, errorMessage
   }
 }
 
+/*
+ * The two plain-HTML answers below are what a visitor sees when a form is
+ * posted without JavaScript and no redirect applies. They carry no inline
+ * script: the "back" link is wired by public/form-back.js, the one script the
+ * policy of this endpoint allows (FORM_ANSWER_CSP in lib/csp.ts). Until
+ * 2026-11-26 it was a `javascript:` link, which forced every API answer to
+ * allow inline script.
+ */
 function successPage(): NextResponse {
   return new NextResponse(
     `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Message envoyé / Message sent</title>
 <style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#F9FAFB;color:#0F172A}.card{background:#fff;padding:2.5rem;border-radius:1.5rem;border:1px solid #F1F5F9;box-shadow:0 10px 15px -3px rgba(0,0,0,.05);text-align:center;max-width:400px}.icon{font-size:3rem;margin-bottom:1rem}h1{font-size:1.25rem;font-weight:700;margin:0 0 .5rem}p{font-size:.875rem;color:#64748B;line-height:1.6;margin:0}.back{display:inline-block;margin-top:1.5rem;padding:.625rem 1.25rem;background:#0F172A;color:#fff;text-decoration:none;border-radius:.75rem;font-size:.875rem;font-weight:600}</style></head>
-<body><div class="card"><div class="icon">✓</div><h1>Message envoyé !</h1><p>Votre message a bien été enregistré. Le destinataire a été notifié.</p><a href="javascript:history.back()" class="back">Retour / Back</a></div></body></html>`,
+<body><div class="card"><div class="icon">✓</div><h1>Message envoyé !</h1><p>Votre message a bien été enregistré. Le destinataire a été notifié.</p><a href="#" data-back class="back">Retour / Back</a></div><script src="/form-back.js" defer></script></body></html>`,
     { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
   );
 }
@@ -138,7 +146,7 @@ function createErrorResponse(status: number, code: string, message: string, reme
   return new NextResponse(
     `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Erreur de soumission / Submission error</title>
 <style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#FFF5F5;color:#9B2C2C}.card{background:#fff;padding:2.5rem;border-radius:1.5rem;border:1px solid #FED7D7;box-shadow:0 10px 15px -3px rgba(0,0,0,.05);text-align:center;max-width:450px}.icon{font-size:3rem;margin-bottom:1rem;color:#E53E3E}h1{font-size:1.25rem;font-weight:700;margin:0 0 .5rem}p{font-size:.875rem;color:#C53030;line-height:1.6;margin:0}.code{font-family:monospace;background:#FEEBC8;color:#C05621;padding:.2rem .4rem;border-radius:.25rem;font-size:.75rem;display:inline-block;margin-top:.5rem}.remedy{margin-top:1rem;font-size:.875rem;color:#742A2A;background:#FED7D7;padding:.75rem;border-radius:.5rem;border:1px solid #FC8181}.back{display:inline-block;margin-top:1.5rem;padding:.625rem 1.25rem;background:#E53E3E;color:#fff;text-decoration:none;border-radius:.75rem;font-size:.875rem;font-weight:600}</style></head>
-<body><div class="card"><div class="icon">⚠</div><h1>Erreur de soumission</h1><p>${escapeHtml(message)}</p>${remedy ? `<div class="remedy"><strong>Solution :</strong> ${escapeHtml(remedy)}</div>` : ''}<div class="code">Code: ${escapeHtml(code)}</div><br /><a href="javascript:history.back()" class="back">Retour / Back</a></div></body></html>`,
+<body><div class="card"><div class="icon">⚠</div><h1>Erreur de soumission</h1><p>${escapeHtml(message)}</p>${remedy ? `<div class="remedy"><strong>Solution :</strong> ${escapeHtml(remedy)}</div>` : ''}<div class="code">Code: ${escapeHtml(code)}</div><br /><a href="#" data-back class="back">Retour / Back</a></div><script src="/form-back.js" defer></script></body></html>`,
     { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
   );
 }

@@ -1,7 +1,9 @@
 import crypto from 'crypto';
-import { isPublicHttpsUrl } from './domain';
+import dns from 'dns';
+import { isPublicHttpsUrl, isPublicIp, isIpLiteral } from './netGuard';
 import { withSignedAttachments } from './storage';
 import { supabase } from './supabase';
+import { encryptPassword, decryptPassword } from './crypto';
 
 /**
  * Outbound webhooks (migrations/migration_v17). Signed Stripe-style:
@@ -16,6 +18,13 @@ import { supabase } from './supabase';
  *
  * Fire-and-forget with ONE retry; failures are logged to failures_log so
  * they surface on /admin/logs. A webhook can never block or lose a lead.
+ *
+ * Where the server will not go (2026-11-26):
+ *  - a name that resolves to a private, loopback or link-local address;
+ *  - a redirect: the first answer is the answer. A public https endpoint
+ *    could otherwise send this server on to any internal address.
+ * The signing secret is stored encrypted; a copy of the database (a backup)
+ * does not let anyone forge an event.
  */
 
 const TIMEOUT_MS = 5000;
@@ -29,12 +38,34 @@ export function signWebhook(secret: string, timestamp: number, rawBody: string):
 export async function getOrCreateSecret(clientId: string): Promise<string | null> {
   try {
     const { data } = await supabase.from('clients').select('webhook_secret').eq('id', clientId).maybeSingle();
-    if (data?.webhook_secret) return data.webhook_secret;
+    const stored = data?.webhook_secret as string | null | undefined;
+    if (stored) {
+      if (stored.startsWith('whsec_')) {
+        // Written before secrets were encrypted at rest: same secret, now stored encrypted.
+        await supabase.from('clients').update({ webhook_secret: encryptPassword(stored) }).eq('id', clientId);
+        return stored;
+      }
+      const plain = decryptPassword(stored);
+      if (plain) return plain;
+      // Unreadable (the encryption key changed): fall through to a new secret rather than sign with garbage.
+    }
     const secret = 'whsec_' + crypto.randomBytes(24).toString('hex');
-    const { error } = await supabase.from('clients').update({ webhook_secret: secret }).eq('id', clientId);
+    const { error } = await supabase.from('clients').update({ webhook_secret: encryptPassword(secret) }).eq('id', clientId);
     return error ? null : secret;
   } catch {
     return null;
+  }
+}
+
+/** Every address the name resolves to must be public; an IP literal is judged as it is. */
+async function resolvesToPublic(hostname: string): Promise<boolean> {
+  const host = hostname.replace(/^\[|\]$/g, '');
+  if (isIpLiteral(host)) return isPublicIp(host);
+  try {
+    const found = await dns.promises.lookup(host, { all: true, verbatim: true });
+    return found.length > 0 && found.every((a) => isPublicIp(a.address));
+  } catch {
+    return false;
   }
 }
 
@@ -42,7 +73,8 @@ async function postOnce(url: string, body: string, headers: Record<string, strin
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
-    return await fetch(url, { method: 'POST', headers, body, signal: ctrl.signal });
+    // redirect: 'manual' — a 3xx is reported as a failure, never followed.
+    return await fetch(url, { method: 'POST', headers, body, signal: ctrl.signal, redirect: 'manual' });
   } finally {
     clearTimeout(timer);
   }
@@ -61,8 +93,16 @@ export async function dispatchLeadWebhook(args: {
 }): Promise<void> {
   const { webhookUrl, clientId, formId, formName, submissionId, payload } = args;
   try {
-    // Only public https endpoints: no plaintext, no loopback or private hosts.
+    // Only public https endpoints: no plaintext, no loopback or private hosts —
+    // by what the URL says, then by what its name actually resolves to.
     if (!isPublicHttpsUrl(webhookUrl)) return;
+    if (!(await resolvesToPublic(new URL(webhookUrl).hostname))) {
+      await supabase
+        .from('failures_log')
+        .insert([{ form_id: formId, error_type: 'WEBHOOK_FAILED', error_message: `${new URL(webhookUrl).host}: does not resolve to a public address`, payload: {} }])
+        .then(() => {}, () => {});
+      return;
+    }
 
     const secret = await getOrCreateSecret(clientId);
     if (!secret) return;
@@ -85,7 +125,7 @@ export async function dispatchLeadWebhook(args: {
       try {
         const res = await postOnce(webhookUrl, body, headers);
         if (res.ok) return;
-        lastErr = `HTTP ${res.status}`;
+        lastErr = res.status >= 300 && res.status < 400 ? `HTTP ${res.status} (redirects are not followed)` : `HTTP ${res.status}`;
       } catch (err) {
         lastErr = (err as Error)?.message || 'network error';
       }
@@ -105,6 +145,6 @@ export async function dispatchLeadWebhook(args: {
 /** Replace the developer's signing secret (every form signs with it). */
 export async function rotateWebhookSecret(clientId: string): Promise<string | null> {
   const secret = 'whsec_' + crypto.randomBytes(24).toString('hex');
-  const { error } = await supabase.from('clients').update({ webhook_secret: secret }).eq('id', clientId);
+  const { error } = await supabase.from('clients').update({ webhook_secret: encryptPassword(secret) }).eq('id', clientId);
   return error ? null : secret;
 }

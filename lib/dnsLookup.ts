@@ -1,10 +1,7 @@
 import dns from 'dns';
-import { promisify } from 'util';
 import { blacklistTarget, AUTO_BAN_TTL_MS } from './blacklist';
 
-const reverseDns = promisify(dns.reverse);
-
-// Common VPS/VPN/Hosting keywords in hostname
+// Hosting, VPS and VPN keywords in a host name
 const HOSTING_KEYWORDS = [
   'vps', 'vpn', 'server', 'cloud', 'host', 'dedi', 'ovh', 'aws', 'amazon',
   'digitalocean', 'linode', 'hetzner', 'leaseweb', 'scalyr', 'scaleway',
@@ -13,52 +10,59 @@ const HOSTING_KEYWORDS = [
   'datacenter', 'proxy', 'rackspace', 'softlayer', 'googleusercontent'
 ];
 
-/**
- * Resolves an IP to its hostnames and returns the primary domain host or null.
- * (Runs only on Node.js Server runtime).
- */
-export async function resolveHostDomain(ip: string): Promise<string | null> {
-  try {
-    // Basic validation to avoid looking up local addresses
-    if (ip === '::1' || ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
-      return null;
-    }
-    
-    const hostnames = await reverseDns(ip);
-    if (hostnames && hostnames.length > 0) {
-      // Return the first resolved hostname
-      return hostnames[0].toLowerCase();
-    }
-  } catch (err) {
-    // DNS resolution failure is expected for residential IPs or missing PTR records
-  }
-  return null;
+const LOOKUP_TIMEOUT_MS = 1500;
+
+function withTimeout<T>(p: Promise<T>, fallback: T): Promise<T> {
+  return Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), LOOKUP_TIMEOUT_MS))]);
 }
 
 /**
- * Fully handles the Honeypot trigger scenario:
- * 1. Blacklists the IP address.
- * 2. Attempts reverse DNS lookup to identify VPN/VPS hosts.
- * 3. Blacklists the resolved host if hosting keywords are present.
- * 4. Logs everything as honeypot trigger.
- * (Runs only on Node.js Server runtime).
+ * The host name of an address — only when that name points back at the
+ * address (forward-confirmed reverse DNS).
+ *
+ * Whoever controls an address controls its reverse record and can make it
+ * say anything, including the name of somebody else's machine. Until
+ * 2026-11-26 that unverified name was used as a ban key: a bot could set its
+ * reverse record to a victim's host name, trip the honeypot, and have the
+ * victim refused on every form for a day. A name is now believed only if
+ * resolving it leads back to the same address. Lookups are bounded in time: a
+ * slow resolver must not delay a visitor's submission.
+ */
+export async function resolveHostDomain(ip: string): Promise<string | null> {
+  try {
+    if (ip === '::1' || ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.')) return null;
+    const names = await withTimeout(dns.promises.reverse(ip), [] as string[]);
+    const name = names[0]?.toLowerCase();
+    if (!name) return null;
+    const forward = await withTimeout(
+      Promise.allSettled([dns.promises.resolve4(name), dns.promises.resolve6(name)]).then((r) =>
+        r.flatMap((x) => (x.status === 'fulfilled' ? x.value : []))
+      ),
+      [] as string[]
+    );
+    return forward.includes(ip) ? name : null;
+  } catch {
+    // No reverse record is the normal case for most residential addresses.
+    return null;
+  }
+}
+
+/**
+ * A filled honeypot: ban the address for a day, and its host when the address
+ * really belongs to a hosting or VPN provider.
+ *
+ * What is NOT banned any more (2026-11-26): the browser fingerprint. It is a
+ * header the sender writes; a bot can put anyone's fingerprint there, and
+ * every visitor with the same browser profile would then be refused on every
+ * form. It is still recorded with the lead, and an operator can still block
+ * one by hand.
  */
 export async function handleHoneypotTrigger(ipAddress: string, fingerprint: string): Promise<void> {
   console.warn(`[SECURITY WARN] Honeypot triggered by IP: ${ipAddress}, Fingerprint: ${fingerprint}`);
-  
-  // 1. Blacklist the IP address immediately
   await blacklistTarget(ipAddress, 'ip', 'Honeypot Triggered', AUTO_BAN_TTL_MS);
-  
-  // 2. Blacklist the fingerprint
-  if (fingerprint) {
-    await blacklistTarget(fingerprint, 'fingerprint', 'Honeypot Triggered', AUTO_BAN_TTL_MS);
-  }
 
-  // 3. Reverse lookup and blacklist host domain if matches keywords
-  const resolvedHost = await resolveHostDomain(ipAddress);
-  if (resolvedHost) {
-    const isHostingOrVpn = HOSTING_KEYWORDS.some(keyword => resolvedHost.includes(keyword));
-    const reason = isHostingOrVpn ? 'Honeypot Triggered (Hosting/VPN Host)' : 'Honeypot Triggered (Host)';
-    await blacklistTarget(resolvedHost, 'host', reason, AUTO_BAN_TTL_MS);
+  const host = await resolveHostDomain(ipAddress);
+  if (host && HOSTING_KEYWORDS.some((keyword) => host.includes(keyword))) {
+    await blacklistTarget(host, 'host', 'Honeypot Triggered (Hosting/VPN Host)', AUTO_BAN_TTL_MS);
   }
 }

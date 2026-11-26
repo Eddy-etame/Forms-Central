@@ -37,7 +37,7 @@ const ALLOWED_ORIGIN = 'https://allowed.example';
 let fpCounter = 0;
 const baseHeaders = () => ({ 'x-forwarded-for': TEST_IP, 'x-client-fingerprint': `fp-${TEST_IP}-${fpCounter++}` });
 
-let developerId = null, clientId = null, formId = null, inactiveFormId = null, notifyFormId = null, rawKey = null;
+let developerId = null, clientId = null, formId = null, inactiveFormId = null, notifyFormId = null, rawKey = null, realIp = null, directFp = null;
 
 async function countSubmissions(fid) {
   const { count } = await sb.from('submissions').select('id', { count: 'exact', head: true }).eq('form_id', fid);
@@ -55,6 +55,8 @@ async function getChallenge() {
 async function cleanup() {
   try {
     await sb.from('blacklist').delete().eq('target', TEST_IP);
+    if (realIp) await sb.from('blacklist').delete().eq('target', realIp);
+    if (directFp) await sb.from('blacklist').delete().eq('target', directFp);
     await sb.from('blacklist').delete().eq('target', RELAY_VISITOR_IP);
     await sb.from('blacklist').delete().like('target', `fp-${TEST_IP}-%`);
     for (const fid of [formId, inactiveFormId, notifyFormId].filter(Boolean)) {
@@ -254,9 +256,34 @@ try {
     });
     const after = await countSubmissions(formId);
     check('honeypot -> silent success, NOT stored', (res.status === 303 || res.status === 200) && after === before, `status ${res.status}, ${before}->${after}`);
-    await new Promise((r) => setTimeout(r, 500)); // let the async ban land
-    const { data: bl } = await sb.from('blacklist').select('id, expires_at').eq('target', TEST_IP).limit(1);
-    check('honeypot banned the offending IP with an expiry (temporary, court order A2)', (bl?.length ?? 0) > 0 && !!bl[0].expires_at, JSON.stringify(bl));
+    await new Promise((r) => setTimeout(r, 500));
+    // 2026-11-26: a relay only CLAIMS its visitor's address, and the ban list is shared by every form
+    // of every developer. Nothing a relay says may put an address on it.
+    const { data: bl } = await sb.from('blacklist').select('id').eq('target', TEST_IP).limit(1);
+    check('honeypot through a key relay: the claimed address is NOT put on the shared ban list', (bl?.length ?? 0) === 0, JSON.stringify(bl));
+  }
+
+  // 9b. A direct visitor who fills the honeypot IS banned — by the address the platform saw, for a
+  //     day — and never by the browser fingerprint, which is a header the sender writes.
+  //     This bans the test runner's own address: it is lifted in the same breath (and in cleanup).
+  {
+    const { data: mine } = await sb.from('submissions').select('ip_address').eq('form_id', formId).neq('ip_address', RELAY_VISITOR_IP).neq('ip_address', TEST_IP).limit(1);
+    realIp = mine?.[0]?.ip_address ?? null;
+    directFp = `fp-direct-${Date.now()}`;
+    const before = await countSubmissions(formId);
+    const res = await fetch(`${BASE}/api/submit/${formId}`, {
+      method: 'POST', redirect: 'manual',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: ALLOWED_ORIGIN, Referer: `${ALLOWED_ORIGIN}/contact`, 'x-client-fingerprint': directFp },
+      body: new URLSearchParams({ name: 'Bot', email: 'bot@x.com', _gotcha: 'i-am-a-bot' }).toString(),
+    });
+    const after = await countSubmissions(formId);
+    await new Promise((r) => setTimeout(r, 700));
+    const { data: ipBan } = realIp ? await sb.from('blacklist').select('id, expires_at').eq('target', realIp).limit(1) : { data: [] };
+    const { data: fpBan } = await sb.from('blacklist').select('id').eq('target', directFp).limit(1);
+    if (realIp) await sb.from('blacklist').delete().eq('target', realIp);
+    check('honeypot -> silent success, NOT stored', (res.status === 303 || res.status === 200) && after === before, `status ${res.status}, ${before}->${after}`);
+    check('a direct honeypot hit bans the address the platform saw, with an expiry (temporary, court order A2)', !!realIp && (ipBan?.length ?? 0) > 0 && !!ipBan[0].expires_at, `ip known: ${!!realIp} ${JSON.stringify(ipBan)}`);
+    check('…and never the fingerprint the sender wrote', (fpBan?.length ?? 0) === 0, JSON.stringify(fpBan));
   }
 } catch (e) {
   fail++; failures.push(`crashed: ${e.message}`); console.error('SUITE ERROR:', e);

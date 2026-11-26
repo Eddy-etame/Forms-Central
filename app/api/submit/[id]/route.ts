@@ -11,7 +11,7 @@ import { getQuotaState, logEmailSend } from '@/lib/quota';
 import { getPlan } from '@/lib/plans';
 import { checkRateLimit as dbCheckRateLimit } from '@/lib/rateLimit';
 import { verifyApiKey } from '@/lib/apiKeys';
-import { isSyntheticEmail, normalizeLang } from '@/lib/domain';
+import { isSyntheticEmail, normalizeLang, safePersonName } from '@/lib/domain';
 import { background } from '@/lib/background';
 import { leadRecipients, markNotified, redeliverPending } from '@/lib/delivery';
 
@@ -39,7 +39,7 @@ const challengeReplayCache = new Set<string>();
 const rateLimitMap = new Map<string, { count: number; timestamp: number }>();
 const autoReplyRateLimitMap = new Map<string, number[]>();
 
-function checkBurst(key: string, limit = 5): boolean {
+function checkBurst(key: string, limit = 12): boolean {
   const now = Date.now();
   const entry = rateLimitMap.get(key);
   if (!entry || now - entry.timestamp > 60 * 1000) {
@@ -269,13 +269,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   // ── Rate limits: burst (per instance) + authoritative (DB, cross-instance) ─
+  // The per-instance counter only answers 429. A ban is decided by the
+  // authoritative, database-backed limit below — never by a counter that
+  // differs from one server instance to the next.
   if (!checkBurst(`${ipAddress}:${fingerprint}`)) {
-    await blacklistTarget(ipAddress, 'ip', 'Rate limit exceeded (burst)', AUTO_BAN_TTL_MS);
     return createErrorResponse(429, 'RATE_LIMIT_EXCEEDED', 'Too many submissions. Please wait a minute.', 'Stop submitting forms rapidly. Try again in a few minutes.', origin, isJson);
   }
   if (!(await dbCheckRateLimit(`submit:${ipAddress}`, 12, 60_000))) {
     await logFailure(formId, 'RATE_LIMIT_GLOBAL', `IP ${ipAddress} exceeded 12 submissions/min`);
-    await blacklistTarget(ipAddress, 'ip', 'Rate limit exceeded (global)', AUTO_BAN_TTL_MS);
+    // A relay names the visitor's address itself (X-Inlet-Visitor-IP). The ban
+    // list is shared by every form of every developer, so an address a relay
+    // merely claims is never put on it: one account could otherwise have any
+    // address refused everywhere.
+    if (!trusted) await blacklistTarget(ipAddress, 'ip', 'Rate limit exceeded (global)', AUTO_BAN_TTL_MS);
     return createErrorResponse(429, 'RATE_LIMIT_EXCEEDED', 'Too many submissions. Please wait a minute.', 'Stop submitting forms rapidly. Try again in a few minutes.', origin, isJson);
   }
 
@@ -324,7 +330,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   // ── Honeypot: silent fake success, temporary ban ────────────────────────
   if (payload._gotcha !== undefined && payload._gotcha !== '') {
     await logFailure(formId, 'HONEYPOT_TRIGGER', 'Honeypot field was filled out', Object.keys(payload));
-    await handleHoneypotTrigger(ipAddress, fingerprint);
+    // Same rule as above: no shared ban on an address a relay only claims.
+    if (!trusted) await handleHoneypotTrigger(ipAddress, fingerprint);
     return respondSuccess();
   }
 
@@ -382,11 +389,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!powChallenge || !powTimestamp || !powNonce) {
       return createErrorResponse(400, 'POW_PARAMETERS_MISSING', 'Missing proof-of-work parameters.', 'Fetch GET /api/challenge, solve it, and send pow_challenge, pow_timestamp and pow_nonce — or submit from your server with an API key.', origin, isJson);
     }
-    if (challengeReplayCache.has(powChallenge)) {
-      return createErrorResponse(400, 'POW_REPLAY_DETECTED', 'This proof-of-work challenge was already used.', 'Fetch a new challenge before each submission. Never cache one.', origin, isJson);
+    if (typeof powChallenge !== 'string' || !/^[0-9a-f]{64}$/.test(powChallenge) || challengeReplayCache.has(powChallenge)) {
+      return createErrorResponse(400, typeof powChallenge === 'string' && challengeReplayCache.has(powChallenge) ? 'POW_REPLAY_DETECTED' : 'POW_SOLUTION_INVALID', 'This proof-of-work challenge was already used or is malformed.', 'Fetch a new challenge before each submission. Never cache one.', origin, isJson);
     }
-    if (!(await verifyChallenge(powChallenge, powTimestamp, powNonce, requestIp))) {
+    if (!(await verifyChallenge(powChallenge, powTimestamp, String(powNonce), requestIp))) {
       return createErrorResponse(400, 'POW_SOLUTION_INVALID', 'Proof-of-work verification failed (wrong solution or expired challenge).', 'Solve the challenge for the required difficulty and submit within 5 minutes.', origin, isJson);
+    }
+    // "Works once" has to hold on every server instance, not only this one:
+    // the first use is recorded in the database for the challenge's lifetime.
+    if (!(await dbCheckRateLimit(`pow:${powChallenge}`, 1, 5 * 60_000))) {
+      return createErrorResponse(400, 'POW_REPLAY_DETECTED', 'This proof-of-work challenge was already used.', 'Fetch a new challenge before each submission. Never cache one.', origin, isJson);
     }
     challengeReplayCache.add(powChallenge);
     setTimeout(() => challengeReplayCache.delete(powChallenge), 5 * 60 * 1000);
@@ -490,9 +502,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const customSenderName = canCustomSender ? developer?.sender_name?.trim() || undefined : undefined;
     const customReplyTo = canCustomSender ? developer?.reply_to_email?.trim() || undefined : undefined;
     const senderNameKey = Object.keys(cleanPayload).find((k) => k.toLowerCase() === 'nom' || k.toLowerCase() === 'name');
-    const senderName = senderNameKey ? String(cleanPayload[senderNameKey]).trim() : undefined;
+    const senderName = senderNameKey ? safePersonName(cleanPayload[senderNameKey]) : undefined;
 
-    if (checkAutoReplyRateLimit(validVisitorEmail)) {
+    // An auto-reply goes to whatever address the visitor typed — possibly
+    // somebody else's. Three per address per ten minutes, counted in the
+    // database (the in-memory counter alone resets with every instance).
+    const recipientKey = crypto.createHash('sha256').update(validVisitorEmail.toLowerCase()).digest('hex').slice(0, 32);
+    if (checkAutoReplyRateLimit(validVisitorEmail) && (await dbCheckRateLimit(`autoreply:${recipientKey}`, 3, 10 * 60_000))) {
       emailBudget -= 1;
       background(
         sendAutoReplyEmail(

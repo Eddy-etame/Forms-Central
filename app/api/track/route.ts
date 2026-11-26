@@ -44,15 +44,21 @@ export async function POST(req: Request) {
     const fresh = !sid;
     if (!sid) sid = crypto.randomUUID();
 
-    // per-session flood guard (fail-open)
-    if (!(await checkRateLimit(`track:${sid}`, 80, 60_000))) {
-      return new NextResponse(null, { status: 204 });
-    }
-
     const h = await headers();
     const ip = (h.get('x-forwarded-for') || '').split(',')[0].trim();
     const salt = process.env.JWT_SECRET || 'track_salt';
     const ipHash = ip ? crypto.createHash('sha256').update(ip + salt).digest('hex').slice(0, 32) : null;
+
+    // Flood guards (fail-open). The session id comes from a cookie the sender
+    // can simply not send — every request would then be a "new session" with a
+    // fresh allowance — so the address is limited as well.
+    const [okSession, okAddress] = await Promise.all([
+      checkRateLimit(`track:${sid}`, 80, 60_000),
+      checkRateLimit(`track-ip:${ipHash ?? 'unknown'}`, 120, 60_000),
+    ]);
+    if (!okSession || !okAddress) {
+      return new NextResponse(null, { status: 204 });
+    }
     const ua = (h.get('user-agent') || '').slice(0, 300);
     const country = h.get('x-vercel-ip-country') || null;
 

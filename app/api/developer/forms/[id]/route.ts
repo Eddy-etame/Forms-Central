@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { getDeveloperContext } from '@/lib/developerAuth';
 import { normalizeOrigins } from '@/lib/snippets';
 import { FORM_SELECT } from '@/lib/forms';
-import { isPublicHttpsUrl } from '@/lib/domain';
+import { isPublicHttpsUrl } from '@/lib/netGuard';
 
 /**
  * One form: read, change its settings, delete it. Developer-scoped.

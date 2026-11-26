@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getDeveloperContext } from '@/lib/developerAuth';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
-import { isPublicHttpsUrl, normalizeLang } from '@/lib/domain';
+import { normalizeLang } from '@/lib/domain';
+import { isPublicHttpsUrl } from '@/lib/netGuard';
 import { FORM_SELECT, createFormForDeveloper, isServiceError } from '@/lib/forms';
 
 /**
@@ -81,7 +82,7 @@ export async function PATCH(req: Request) {
   const { data: form } = await supabase.from('forms').select('id').eq('id', formId).eq('client_id', dev.developerId).maybeSingle();
   if (!form) return NextResponse.json({ success: false, error: 'Form not found.' }, { status: 404 });
 
-  const { error } = await supabase.from('forms').update({ webhook_url: webhookUrl || null }).eq('id', formId);
+  const { error } = await supabase.from('forms').update({ webhook_url: webhookUrl || null }).eq('id', formId).eq('client_id', dev.developerId);
   if (error) return NextResponse.json({ success: false, error: 'Could not save.' }, { status: 500 });
   return NextResponse.json({ success: true });
 }

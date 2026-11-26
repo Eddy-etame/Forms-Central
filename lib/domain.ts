@@ -121,24 +121,6 @@ export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** Passwords are hashed with scrypt; a megabyte of input is a CPU bill, not a password. */
 export const MAX_PASSWORD_LENGTH = 128;
 
-/**
- * A public https URL the server may POST to (webhooks): no credentials in the
- * URL, no loopback / private / link-local / carrier-grade NAT hosts. Hostnames
- * are judged literally (no DNS lookup), which keeps the check synchronous.
- */
-export function isPublicHttpsUrl(v: string): boolean {
-  let u: URL;
-  try { u = new URL(v); } catch { return false; }
-  if (u.protocol !== 'https:' || u.username || u.password) return false;
-  const h = u.hostname.toLowerCase().replace(/^\[|\]$/g, '');
-  if (!h || h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local') || h.endsWith('.internal') || h === '0.0.0.0') return false;
-  if (/^(\d{1,3}\.){3}\d{1,3}$/.test(h)) {
-    const [a, b] = h.split('.').map(Number);
-    if (a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127)) return false;
-  }
-  if (h === '::1' || h.startsWith('fc') || h.startsWith('fd') || h.startsWith('fe80') || h.startsWith('::ffff:')) return false;
-  return true;
-}
 
 /**
  * A client's website, normalised to its origin ("acme.com" → "https://acme.com").
@@ -171,4 +153,27 @@ export function isUndeliverableEmail(email: string | null | undefined): boolean 
 /** Addresses that must never be e-mailed (synthetic rows from the v22 backfill). */
 export function isSyntheticEmail(email: string | null | undefined): boolean {
   return !email || /@clients\.invalid$/i.test(email);
+}
+
+/**
+ * A visitor's name, as it may appear in an e-mail sent in a business's name.
+ *
+ * The auto-reply greets the visitor by the name they typed and goes to the
+ * address they typed — which can be anyone's. Left as it came, that name is a
+ * free text slot in a branded e-mail to a stranger: "Jean — your account is
+ * locked, sign in at http://…". What survives here can only read as a name:
+ * one line, no links, no markup, sixty characters.
+ */
+export function safePersonName(v: unknown): string | undefined {
+  if (typeof v !== 'string') return undefined;
+  const cleaned = v
+    .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+    .replace(/(?:https?:\/\/|www\.)\S+/gi, ' ')
+    .replace(/\S+\.(?:com|net|org|io|fr|co|ru|cn|xyz|top|info|biz|app|dev|link|click)\b\S*/gi, ' ')
+    .replace(/[<>{}\[\]|\\^`"@:/]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 60)
+    .trim();
+  return cleaned.length >= 1 ? cleaned : undefined;
 }

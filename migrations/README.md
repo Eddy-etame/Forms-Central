@@ -31,6 +31,7 @@ re-running one is safe.
 | 23 | `migration_v22_platform.sql` | **the client model**: every form belongs to a client (`portal_user_id NOT NULL`, orphan forms backfilled onto a default client per developer), client website / lang / notify_leads, set-password invites, temporary bans (`blacklist.expires_at`), `plan_requests` |
 | 24 | `migration_v23_delivery_and_handling.sql` | **delivery state**: `submissions.notified_at` / `notify_attempts` (backfilled from the e-mail log) so a lead whose notification never left is flagged and retried; `handled_at` / `handled_by` for the inbox |
 | 25 | `migration_v24_retention_notices.sql` | **retention that warns**: `retention_notices` (a lead is deleted for age only under a notice e-mailed at least 7 days earlier, for the same plan window), `job_runs` (what each scheduled job last did), `clients.lang` (language of scheduled e-mails) |
+| 26 | `migration_v25_sessions_and_ownership.sql` | **sessions that end**: `sessions_valid_after` on developers and clients (a password reset ends every earlier session, checked on every request), `clients.email_verified_at` (an account whose address was never proven loses its earlier password and sessions the first time ownership is proven) |
 
 Also create a **public Storage bucket named `uploads`** (attachments).
 

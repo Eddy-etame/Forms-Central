@@ -14,7 +14,7 @@ import { pendingNotificationIds } from './delivery';
 // Helper: Ensure the request is authenticated via cookies (read on the server)
 async function verifyAdminAuth() {
   const { cookies } = await import('next/headers');
-  const { verifyJWT } = await import('./jwt');
+  const { verifyJWT, isAdminAccess } = await import('./jwt');
   
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('access_token')?.value;
@@ -24,8 +24,8 @@ async function verifyAdminAuth() {
     throw new Error('Unauthorized access');
   }
   
-  const payload = await verifyJWT(accessToken, JWT_SECRET);
-  if (!payload || payload.sub !== 'admin') {
+  // An access token only: the seven-day refresh token is not a session.
+  if (!isAdminAccess(await verifyJWT(accessToken, JWT_SECRET))) {
     throw new Error('Unauthorized session');
   }
 }
@@ -697,23 +697,11 @@ export async function getSecurityEvents() {
 // ==================== CLIENT PORTAL STATS ====================
 
 export async function getClientDashboardStats() {
-  const { cookies } = await import('next/headers');
-  const { verifyJWT } = await import('./jwt');
-  
-  const cookieStore = await cookies();
-  const token = cookieStore.get('client_access_token')?.value;
-  const JWT_SECRET = process.env.JWT_SECRET;
-  
-  if (!token || !JWT_SECRET) {
-    throw new Error('Unauthorized');
-  }
-  
-  const payload = await verifyJWT(token, JWT_SECRET);
-  if (!payload || payload.sub !== 'client' || !payload.clientId) {
-    throw new Error('Unauthorized');
-  }
+  const { getDeveloperSession } = await import('./developerAuth');
+  const session = await getDeveloperSession();
+  if (!session) throw new Error('Unauthorized');
 
-  const clientId = payload.clientId as string;
+  const clientId = session.developerId;
 
   // 1. Get all forms owned by this client
   const { data: forms, error: formsError } = await supabase
@@ -800,39 +788,24 @@ export async function getClientDashboardStats() {
 }
 
 export async function getClientForms() {
-  const { cookies } = await import('next/headers');
-  const { verifyJWT } = await import('./jwt');
-  
-  const cookieStore = await cookies();
-  const token = cookieStore.get('client_access_token')?.value;
-  const JWT_SECRET = process.env.JWT_SECRET;
-  
-  if (!token || !JWT_SECRET) return [];
-  
-  const payload = await verifyJWT(token, JWT_SECRET);
-  if (!payload || payload.sub !== 'client' || !payload.clientId) return [];
+  const { getDeveloperSession } = await import('./developerAuth');
+  const session = await getDeveloperSession();
+  if (!session) return [];
 
   const { data: forms } = await supabase
     .from('forms')
     .select('id, name')
-    .eq('client_id', payload.clientId as string)
+    .eq('client_id', session.developerId)
     .order('created_at', { ascending: false });
 
   return forms || [];
 }
 
 export async function getClientSingleFormStats(formId: string) {
-  const { cookies } = await import('next/headers');
-  const { verifyJWT } = await import('./jwt');
-  
-  const cookieStore = await cookies();
-  const token = cookieStore.get('client_access_token')?.value;
-  const JWT_SECRET = process.env.JWT_SECRET;
-  
-  if (!token || !JWT_SECRET) throw new Error('Unauthorized');
-  
-  const payload = await verifyJWT(token, JWT_SECRET);
-  if (!payload || payload.sub !== 'client' || !payload.clientId) throw new Error('Unauthorized');
+  const { getDeveloperSession } = await import('./developerAuth');
+  const session = await getDeveloperSession();
+  if (!session) throw new Error('Unauthorized');
+  const payload = { clientId: session.developerId };
 
   // Verify form belongs to client
   const { data: formCheck } = await supabase

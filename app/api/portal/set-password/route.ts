@@ -39,6 +39,8 @@ export async function POST(req: Request) {
     .update({ encrypted_password: hashPassword(pwd), invite_token_hash: null, invite_expires: null, last_login_at: new Date().toISOString() })
     .eq('id', user.id);
   if (error) return NextResponse.json({ success: false, error: 'Could not save your password. Try again.' }, { status: 500 });
+  // A new password ends every session opened before it (the one issued below is newer).
+  await supabase.from('portal_users').update({ sessions_valid_after: new Date().toISOString() }).eq('id', user.id);
 
   const session = await signPortalToken({ portalUserId: user.id, parentClientId: user.parent_client_id });
   (await cookies()).set(PORTAL_COOKIE, session, {

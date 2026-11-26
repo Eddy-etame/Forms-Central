@@ -1,8 +1,6 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import { verifyJWT } from '@/lib/jwt';
-import { supabase } from '@/lib/supabase';
+import { getDeveloperContext } from '@/lib/developerAuth';
 import { getLocale } from '@/lib/i18n';
 import ChoosePlan from '@/components/developer/ChoosePlan';
 
@@ -16,17 +14,8 @@ export const metadata: Metadata = {
  * a full, focused canvas — but still requires a valid client session.
  */
 export default async function ChoosePlanPage() {
-  const token = (await cookies()).get('client_access_token')?.value;
-  const secret = process.env.JWT_SECRET;
-  if (!token || !secret) redirect('/developer/login');
+  const [dev, locale] = await Promise.all([getDeveloperContext(), getLocale()]);
+  if (!dev) redirect('/developer/login');
 
-  const payload = await verifyJWT(token, secret!);
-  if (!payload || payload.sub !== 'client' || !payload.clientId) redirect('/developer/login');
-
-  const [{ data: client }, locale] = await Promise.all([
-    supabase.from('clients').select('email').eq('id', payload.clientId as string).maybeSingle(),
-    getLocale(),
-  ]);
-
-  return <ChoosePlan locale={locale} accountEmail={client?.email ?? ''} />;
+  return <ChoosePlan locale={locale} accountEmail={dev.email} />;
 }

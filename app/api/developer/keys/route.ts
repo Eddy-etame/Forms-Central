@@ -1,24 +1,18 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { supabase } from '@/lib/supabase';
-import { verifyJWT } from '@/lib/jwt';
+import { getDeveloperContext } from '@/lib/developerAuth';
 import { generateApiKey } from '@/lib/apiKeys';
-import { getPlan } from '@/lib/plans';
+import type { Plan } from '@/lib/plans';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 
 /** API key management for signed-in developers. Gated by plan.apiAccess (every plan today). */
 
 const MAX_KEYS = 5;
 
-async function authed(): Promise<{ clientId: string; plan: ReturnType<typeof getPlan> } | null> {
-  const jar = await cookies();
-  const token = jar.get('client_access_token')?.value;
-  const secret = process.env.JWT_SECRET;
-  if (!token || !secret) return null;
-  const payload = await verifyJWT(token, secret);
-  if (!payload || payload.sub !== 'client' || !payload.clientId) return null;
-  const { data } = await supabase.from('clients').select('plan').eq('id', payload.clientId as string).maybeSingle();
-  return { clientId: payload.clientId as string, plan: getPlan(data?.plan) };
+/** The signed-in developer, through the one validated session path (revocation included). */
+async function authed(): Promise<{ clientId: string; plan: Plan } | null> {
+  const dev = await getDeveloperContext();
+  return dev ? { clientId: dev.developerId, plan: dev.plan } : null;
 }
 
 export async function GET() {

@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { hashPassword } from '@/lib/passwords';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
+import { endAllDeveloperSessions } from '@/lib/developerAuth';
 
 /**
  * Complete a password reset. Verifies the single-use token (by hash) and its
@@ -49,6 +50,11 @@ export async function POST(req: Request) {
     console.error('reset-password update error:', error);
     return NextResponse.json({ success: false, error: 'Could not update your password. Try again.' }, { status: 500 });
   }
+
+  // Opening the link proves the mailbox: the address counts as verified from now on.
+  await supabase.from('clients').update({ email_verified_at: new Date().toISOString() }).eq('id', client.id).is('email_verified_at', null);
+  // A new password ends every session opened with the old one, on every device.
+  await endAllDeveloperSessions(client.id);
 
   return NextResponse.json({ success: true });
 }

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { supabase } from '@/lib/supabase';
-import { verifyJWT, signJWT } from '@/lib/jwt';
+import { verifyJWT, isAdminAccess } from '@/lib/jwt';
+import { issueDeveloperToken, developerCookieOptions, DEVELOPER_COOKIE } from '@/lib/developerAuth';
 import { hashPassword } from '@/lib/passwords';
 
 /**
@@ -26,7 +27,7 @@ export async function GET(req: Request) {
   const jar = await cookies();
   const adminToken = jar.get('access_token')?.value;
   const adminPayload = adminToken ? await verifyJWT(adminToken, JWT_SECRET) : null;
-  if (!adminPayload || adminPayload.sub !== 'admin') {
+  if (!isAdminAccess(adminPayload)) {
     // Not an admin — behave like any missing route (hidden), send to admin login.
     return NextResponse.redirect(new URL('/login', req.url));
   }
@@ -65,21 +66,11 @@ export async function GET(req: Request) {
   }
 
   // 3. Mint a normal client session for that account.
-  const payload = {
-    sub: 'client',
-    clientId: client.id,
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 7 days
-  };
-  const token = await signJWT(payload, JWT_SECRET);
+  const fwd = req.headers.get('x-forwarded-for');
+  const token = await issueDeveloperToken(client.id, fwd ? fwd.split(',')[0].trim() : null, req.headers.get('user-agent'));
+  if (!token) return NextResponse.redirect(new URL('/admin?atelier=error', req.url));
 
   const res = NextResponse.redirect(new URL('/developer/dashboard', req.url));
-  res.cookies.set('client_access_token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
-  });
+  res.cookies.set(DEVELOPER_COOKIE, token, developerCookieOptions());
   return res;
 }

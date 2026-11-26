@@ -17,7 +17,7 @@ export async function issueAdminSession(): Promise<NextResponse> {
   // Access token — 15 minutes
   const accessExp = Math.floor(Date.now() / 1000) + 15 * 60;
   const accessToken = await signJWT(
-    { sub: 'admin', iat: Math.floor(Date.now() / 1000), exp: accessExp },
+    { sub: 'admin', use: 'access', iat: Math.floor(Date.now() / 1000), exp: accessExp },
     JWT_SECRET
   );
 
@@ -27,7 +27,7 @@ export async function issueAdminSession(): Promise<NextResponse> {
   const refreshTokenHash = crypto.createHash('sha256').update(rawRefreshToken).digest('hex');
 
   const refreshToken = await signJWT(
-    { sub: 'admin', token_id: rawRefreshToken, iat: Math.floor(Date.now() / 1000), exp: refreshExp },
+    { sub: 'admin', use: 'refresh', token_id: rawRefreshToken, iat: Math.floor(Date.now() / 1000), exp: refreshExp },
     JWT_SECRET
   );
 

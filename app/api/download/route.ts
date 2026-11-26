@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { supabase } from '@/lib/supabase';
-import { verifyJWT } from '@/lib/jwt';
+import { verifyJWT, isAdminAccess } from '@/lib/jwt';
 import { getDeveloperSession } from '@/lib/developerAuth';
 import { getPortalSession } from '@/lib/portalAuth';
 import { attachmentPath, downloadAttachment } from '@/lib/storage';
@@ -24,8 +24,7 @@ async function isOperator(): Promise<boolean> {
   if (!secret) return false;
   const token = (await cookies()).get('access_token')?.value;
   if (!token) return false;
-  const payload = await verifyJWT(token, secret);
-  return !!payload && payload.sub === 'admin';
+  return isAdminAccess(await verifyJWT(token, secret));
 }
 
 export async function GET(request: Request) {

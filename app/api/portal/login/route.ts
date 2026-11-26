@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { MAX_PASSWORD_LENGTH } from '@/lib/domain';
 import { cookies } from 'next/headers';
 import { supabase } from '@/lib/supabase';
-import { verifyPassword, needsRehash, hashPassword } from '@/lib/passwords';
+import { verifyPassword, needsRehash, hashPassword, DUMMY_HASH } from '@/lib/passwords';
 import { signPortalToken, PORTAL_COOKIE } from '@/lib/portalAuth';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 
@@ -19,11 +19,12 @@ export async function POST(req: Request) {
   }
 
   const ip = clientIp(req.headers);
-  const [okPair, okIp] = await Promise.all([
+  const [okPair, okIp, okAccount] = await Promise.all([
     checkRateLimit(`portal-login:${ip}:${cleanEmail}`, 5, 60_000),
     checkRateLimit(`portal-login-ip:${ip}`, 20, 60_000),
+    checkRateLimit(`portal-login-acct:${cleanEmail}`, 30, 15 * 60_000),
   ]);
-  if (!okPair || !okIp) {
+  if (!okPair || !okIp || !okAccount) {
     return NextResponse.json({ success: false, error: 'Too many attempts. Try again in a minute.' }, { status: 429 });
   }
 
@@ -45,6 +46,8 @@ export async function POST(req: Request) {
     user = fb.data as unknown as PortalUser | null;
   }
 
+  // An unknown account costs the same time as a wrong password.
+  if (!user || !user.encrypted_password) verifyPassword(cleanPassword, DUMMY_HASH);
   if (!user || !user.encrypted_password || !verifyPassword(cleanPassword, user.encrypted_password)) {
     return NextResponse.json({ success: false, error: 'Incorrect email or password.' }, { status: 401 });
   }

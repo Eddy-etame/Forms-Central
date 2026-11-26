@@ -380,12 +380,16 @@ try {
     const oneRecs = one.ok ? parseCsv((await one.text()).replace(/^\uFEFF/, '')) : [];
     check('export of one form holds that form only', one.status === 200 && oneRecs.length === (totalAcme ?? -1) + 1 && oneRecs.slice(1).every((r) => r[oneRecs[0].indexOf('Form')] === 'Acme site') && /filename="leads-acme-site-/.test(one.headers.get('content-disposition') || ''), `got ${one.status}, ${oneRecs.length - 1} rows, want ${totalAcme}`);
 
+    // A second developer, created in the database and signed in with its password: sign-up is limited
+    // to three accounts per ten minutes per address, and this suite already uses its share.
     const otherCookie = await (async () => {
       const email = `exporter+${Date.now()}@test.invalid`;
-      const su = await post('/api/auth/developer-signup', { name: 'Export Dev', email, password: 'testpass123' });
-      const { data: oc } = await sb.from('clients').select('id').eq('email', email).single();
+      const salt = crypto.randomBytes(16);
+      const hash = `scrypt:16384:${salt.toString('hex')}:${crypto.scryptSync('testpass123', salt, 64, { N: 16384 }).toString('hex')}`;
+      const { data: oc } = await sb.from('clients').insert({ name: 'Export Dev', email, plan: 'free', encrypted_password: hash }).select('id').single();
       if (oc?.id) otherDevs.push(oc.id);
-      return setCookies(su).join('; ');
+      const li = await post('/api/auth/developer-login', { email, password: 'testpass123' });
+      return setCookies(li).join('; ');
     })();
     const foreign = await fetch(`${BASE}/api/developer/leads/export?form=${formId}`, { headers: { cookie: otherCookie } });
     check('cross-tenant: another developer asking for this form gets 404', foreign.status === 404, `got ${foreign.status}`);
@@ -400,6 +404,54 @@ try {
     const mh = mineRecs[0] ?? [];
     check('client export: its own requests, all of them, with their status', mine.status === 200 && mineRecs.length === (totalAcme ?? -1) + 1 && mh.includes('Status') && !mh.includes('Client'), `got ${mine.status}, ${mineRecs.length - 1} rows, want ${totalAcme}, head ${JSON.stringify(mh.slice(0, 5))}`);
     check("ISOLATION: the client's export holds nothing of the other client", !mineRecs.some((r) => r.some((c) => c.startsWith('Bulk ') || c === 'Lead on Beta')), `(${totalBeta} rows on the other form)`);
+  }
+  {
+    // 2026-11-26: a session token is a signed statement that lives seven days. The API used to check
+    // only the signature, so a token kept working after sign-out, after a password reset, even after
+    // the account was deleted. Every one of those must now end it — for developers and for clients.
+    console.log(`\n== Sessions end when they should ==`);
+    const scrypt = (pw) => { const salt = crypto.randomBytes(16); return `scrypt:16384:${salt.toString('hex')}:${crypto.scryptSync(pw, salt, 64, { N: 16384 }).toString('hex')}`; };
+    const email = `sessions+${Date.now()}@test.invalid`;
+    const { data: acct } = await sb.from('clients').insert({ name: 'Session Dev', email, plan: 'free', encrypted_password: scrypt('first-password-1') }).select('id').single();
+    if (acct?.id) otherDevs.push(acct.id);
+    const login = async (password) => { const r = await post('/api/auth/developer-login', { email, password }); return { status: r.status, cookie: setCookies(r).join('; ') }; };
+    const whoami = (cookie) => fetch(`${BASE}/api/developer/clients`, { headers: j(cookie) }).then((r) => r.status);
+
+    const a = await login('first-password-1');
+    check('a developer signs in and the session opens the API', a.status === 200 && (await whoami(a.cookie)) === 200, `login ${a.status}`);
+    const b = await login('first-password-1'); // a second device
+    await fetch(`${BASE}/api/auth/logout`, { method: 'POST', headers: { cookie: a.cookie } });
+    check('after sign-out, the same token no longer opens the API (401)', (await whoami(a.cookie)) === 401, `got ${await whoami(a.cookie)}`);
+    check('…and the other device is not affected', (await whoami(b.cookie)) === 200);
+
+    const rawReset = crypto.randomBytes(32).toString('base64url');
+    await sb.from('clients').update({ reset_token: crypto.createHash('sha256').update(rawReset).digest('hex'), reset_token_expires: new Date(Date.now() + 3600_000).toISOString() }).eq('id', acct.id);
+    await new Promise((r) => setTimeout(r, 1100)); // the cut-off is compared to the second
+    const reset = await post('/api/auth/reset-password', { token: rawReset, password: 'second-password-2' });
+    check('a password reset succeeds', reset.status === 200, `got ${reset.status}`);
+    check('…and ends every session opened before it (401)', (await whoami(b.cookie)) === 401, `got ${await whoami(b.cookie)}`);
+    check('the old password no longer signs in', (await login('first-password-1')).status === 401);
+    const c = await login('second-password-2');
+    check('the new password does, and its session works', c.status === 200 && (await whoami(c.cookie)) === 200, `login ${c.status}`);
+    const again = await post('/api/auth/reset-password', { token: rawReset, password: 'third-password-3' });
+    check('the reset link is single-use (400)', again.status === 400, `got ${again.status}`);
+
+    await sb.from('clients').delete().eq('id', acct.id);
+    check('a token whose account was deleted opens nothing (401)', (await whoami(c.cookie)) === 401, `got ${await whoami(c.cookie)}`);
+
+    // the client side: choosing a new password ends the earlier client session
+    const stillOpen = await fetch(`${BASE}/api/portal/leads`, { headers: j(portalCookie) });
+    const raw2 = crypto.randomBytes(32).toString('base64url');
+    await sb.from('portal_users').update({ invite_token_hash: crypto.createHash('sha256').update(raw2).digest('hex'), invite_expires: new Date(Date.now() + 3600_000).toISOString() }).eq('id', acmeId);
+    await new Promise((r) => setTimeout(r, 1100));
+    const setAgain = await post('/api/portal/set-password', { token: raw2, password: 'clientpass789' });
+    const newPortalCookie = setCookies(setAgain).join('; ');
+    const oldNow = await fetch(`${BASE}/api/portal/leads`, { headers: j(portalCookie) });
+    const newNow = await fetch(`${BASE}/api/portal/leads`, { headers: j(newPortalCookie) });
+    check('a client who chooses a new password: the earlier session ends (401), the new one works', stillOpen.status === 200 && setAgain.status === 200 && oldNow.status === 401 && newNow.status === 200, `before ${stillOpen.status}, set ${setAgain.status}, old ${oldNow.status}, new ${newNow.status}`);
+    await sb.from('portal_users').delete().eq('id', acmeId).eq('parent_client_id', '00000000-0000-0000-0000-000000000000'); // no-op guard: the client is removed with its developer in cleanup
+    const gone = await fetch(`${BASE}/api/portal/leads`, { headers: j(`portal_access_token=not.a.token`) });
+    check('a made-up client token opens nothing (401)', gone.status === 401, `got ${gone.status}`);
   }
 } catch (e) {
   fail++; failures.push(`suite crashed: ${e.message}`); console.error('SUITE ERROR:', e);

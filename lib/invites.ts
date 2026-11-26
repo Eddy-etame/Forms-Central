@@ -25,8 +25,17 @@ export function hashToken(raw: string): string {
   return crypto.createHash('sha256').update(raw).digest('hex');
 }
 
+/**
+ * The origin written into an e-mailed link. In production it is always the
+ * canonical one: the address a request happened to arrive on (an older
+ * build's own URL, a forwarded host header) is never put into an e-mail, or a
+ * reset link could be made to point somewhere else. Outside production the
+ * request's origin is honoured so a local environment links to itself.
+ */
 function appOrigin(explicit?: string | null): string {
-  return (explicit || process.env.NEXT_PUBLIC_APP_URL || SITE_URL).replace(/\/+$/, '');
+  const canonical = (process.env.NEXT_PUBLIC_APP_URL || SITE_URL).replace(/\/+$/, '');
+  if (process.env.NODE_ENV === 'production') return canonical;
+  return (explicit || canonical).replace(/\/+$/, '');
 }
 
 /** Issue a portal set-password link for a client. Returns the URL to e-mail. */

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { verifyJWT, signJWT } from '@/lib/jwt';
+import { verifyJWT, signJWT, isAdminRefresh } from '@/lib/jwt';
 import { supabase } from '@/lib/supabase';
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -17,12 +17,12 @@ export async function POST(request: NextRequest) {
 
   // 1. Verify custom JWT signature
   const payload = await verifyJWT(refreshTokenCookie, JWT_SECRET);
-  if (!payload || !payload.token_id) {
+  if (!isAdminRefresh(payload)) {
     return NextResponse.json({ error: 'Invalid refresh token' }, { status: 401 });
   }
 
   // 2. Validate token hash from DB
-  const rawTokenId = payload.token_id as string;
+  const rawTokenId = payload.token_id;
   const tokenHash = crypto.createHash('sha256').update(rawTokenId).digest('hex');
 
   const { data: dbToken, error } = await supabase
@@ -34,15 +34,13 @@ export async function POST(request: NextRequest) {
   if (error || !dbToken || dbToken.revoked) {
     // SECURITY RISK: Token Replay / Abuse detected.
     // If token is re-submitted after revocation, invalidate ALL refresh tokens immediately (Safety first)
-    console.warn(`[SECURITY WARN] Replay or abuse detected for refresh token hash ${tokenHash}. Revoking all sessions.`);
-    
-    // Revoke current session
-    if (dbToken) {
-      await supabase
-        .from('refresh_tokens')
-        .update({ revoked: true })
-        .eq('id', dbToken.id);
-    }
+    console.warn('[SECURITY WARN] A refresh token was presented again after use. Revoking every operator session.');
+
+    // A used token coming back means two parties hold the same chain: the
+    // operator and whoever copied it. Neither can be told apart, so the whole
+    // chain ends and the operator signs in again. (Until 2026-11-26 this only
+    // re-revoked the token already revoked: the copy kept working.)
+    await supabase.from('refresh_tokens').update({ revoked: true }).eq('revoked', false);
     
     const response = NextResponse.json({ error: 'Session revoked due to security replay check' }, { status: 401 });
     response.cookies.delete('access_token');
@@ -59,7 +57,7 @@ export async function POST(request: NextRequest) {
   // 4. Generate new Access and Refresh tokens
   const accessExp = Math.floor(Date.now() / 1000) + 15 * 60; // 15 mins
   const newAccessToken = await signJWT(
-    { sub: 'admin', iat: Math.floor(Date.now() / 1000), exp: accessExp },
+    { sub: 'admin', use: 'access', iat: Math.floor(Date.now() / 1000), exp: accessExp },
     JWT_SECRET
   );
 
@@ -68,7 +66,7 @@ export async function POST(request: NextRequest) {
   const newRefreshTokenHash = crypto.createHash('sha256').update(newRawRefreshToken).digest('hex');
 
   const newRefreshToken = await signJWT(
-    { sub: 'admin', token_id: newRawRefreshToken, iat: Math.floor(Date.now() / 1000), exp: refreshExp },
+    { sub: 'admin', use: 'refresh', token_id: newRawRefreshToken, iat: Math.floor(Date.now() / 1000), exp: refreshExp },
     JWT_SECRET
   );
 

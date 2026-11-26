@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { issueDeveloperReset } from '@/lib/invites';
 import { background } from '@/lib/background';
 
 export const maxDuration = 30; // the reset e-mail finishes after the response
@@ -28,12 +28,9 @@ export async function POST(req: Request) {
   const { data: client } = await supabase.from('clients').select('id').eq('email', cleanEmail).maybeSingle();
   if (!client) return ok; // silent: same response as a real account
 
-  const raw = crypto.randomBytes(32).toString('base64url');
-  const hash = crypto.createHash('sha256').update(raw).digest('hex');
-  const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-  await supabase.from('clients').update({ reset_token: hash, reset_token_expires: expires }).eq('id', client.id);
-
-  const resetUrl = `${new URL(req.url).origin}/developer/reset-password?token=${raw}`;
+  // The link carries the canonical origin, never the host this request arrived on.
+  const resetUrl = await issueDeveloperReset(client.id);
+  if (!resetUrl) return ok;
   // Tracked (not awaited, so the answer time never reveals whether the address exists).
   background(sendPasswordResetEmail(cleanEmail, resetUrl, await getLocale()).catch((e) => console.error('reset email error:', e)));
 

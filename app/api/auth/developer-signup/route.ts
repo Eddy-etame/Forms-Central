@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { MAX_PASSWORD_LENGTH } from '@/lib/domain';
 import { supabase } from '@/lib/supabase';
-import { signJWT } from '@/lib/jwt';
+import { issueDeveloperToken, developerCookieOptions, DEVELOPER_COOKIE } from '@/lib/developerAuth';
 import { hashPassword } from '@/lib/passwords';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 import { cookies } from 'next/headers';
@@ -83,8 +83,9 @@ export async function POST(req: Request) {
       client = ins.data;
     }
 
-    const JWT_SECRET = process.env.JWT_SECRET;
-    if (!JWT_SECRET) {
+    // A registered device session, like every other sign-in: it can be revoked.
+    const token = await issueDeveloperToken(client.id, ip, req.headers.get('user-agent'));
+    if (!token) {
       console.error('Missing JWT_SECRET in env variables');
       return NextResponse.json(
         { success: false, error: 'Server configuration error.' },
@@ -92,24 +93,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const token = await signJWT(
-      {
-        sub: 'client',
-        clientId: client.id,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 7 days
-      },
-      JWT_SECRET
-    );
-
     const cookieStore = await cookies();
-    cookieStore.set('client_access_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-    });
+    cookieStore.set(DEVELOPER_COOKIE, token, developerCookieOptions());
 
     return NextResponse.json({ success: true });
   } catch (err) {

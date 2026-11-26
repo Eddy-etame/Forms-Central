@@ -119,13 +119,42 @@ export async function verifyJWT(token: string, secret: string): Promise<JWTPaylo
     const parsedPayload = JSON.parse(base64urlDecode(payload)) as JWTPayload;
     const currentTimestamp = Math.floor(Date.now() / 1000);
     
-    if (parsedPayload.exp && parsedPayload.exp < currentTimestamp) {
-      return null; // Expired
+    // A token without a numeric expiry is not one this server signs: refuse it
+    // rather than treat it as valid for ever.
+    if (!parsedPayload || typeof parsedPayload !== 'object' || typeof parsedPayload.exp !== 'number' || parsedPayload.exp < currentTimestamp) {
+      return null;
     }
     
     return parsedPayload;
-  } catch (error) {
-    console.error('Error verifying JWT:', error);
+  } catch {
+    // A malformed token is simply not a session. Nothing is logged: anyone can
+    // send garbage in a cookie, and a log line per request is a way to fill logs.
     return null;
   }
+}
+
+/**
+ * What a verified payload may be used for.
+ *
+ * Every token is signed with the same secret, so the payload itself has to say
+ * what it is. Until 2026-11-26 the operator's seven-day REFRESH token (which
+ * carries `sub: 'admin'`) was accepted wherever an access token was expected:
+ * signing out, or the fifteen-minute access lifetime, protected nothing against
+ * someone holding an old refresh token. A token carrying `token_id` is a
+ * refresh token and nothing else.
+ */
+export function isAdminAccess(payload: JWTPayload | null): boolean {
+  return !!payload && payload.sub === 'admin' && !payload.token_id && (payload.use === undefined || payload.use === 'access');
+}
+
+/** True when a token issued at `iat` (seconds) predates an account's cut-off (`sessions_valid_after`). */
+export function issuedBefore(iat: unknown, validAfter: string | null | undefined): boolean {
+  if (!validAfter) return false;
+  const cut = Math.floor(new Date(validAfter).getTime() / 1000);
+  if (!Number.isFinite(cut)) return false;
+  return typeof iat !== 'number' || iat < cut;
+}
+
+export function isAdminRefresh(payload: JWTPayload | null): payload is JWTPayload & { token_id: string } {
+  return !!payload && payload.sub === 'admin' && typeof payload.token_id === 'string' && (payload.use === undefined || payload.use === 'refresh');
 }

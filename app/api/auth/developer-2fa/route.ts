@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { supabase } from '@/lib/supabase';
-import { signJWT } from '@/lib/jwt';
+import { issueDeveloperToken, developerCookieOptions, DEVELOPER_COOKIE } from '@/lib/developerAuth';
 import { verifyOtpChallenge } from '@/lib/otp';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 import { logSecurityEvent, SEC } from '@/lib/securityEvents';
@@ -45,30 +45,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Account not found.' }, { status: 401 });
     }
 
-    const JWT_SECRET = process.env.JWT_SECRET;
-    if (!JWT_SECRET) {
+    const token = await issueDeveloperToken(clientId, ip, req.headers.get('user-agent'));
+    if (!token) {
       return NextResponse.json({ success: false, error: 'Server configuration error.' }, { status: 500 });
     }
-
-    // Device registry: cap concurrent devices, evict the oldest (anti-sharing).
-    const { registerClientSession } = await import('@/lib/clientSessions');
-    const sid = await registerClientSession(clientId, ip, req.headers.get('user-agent'));
-
-    const token = await signJWT(
-      { sub: 'client', clientId, ...(sid ? { sid } : {}), iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 },
-      JWT_SECRET
-    );
 
     logSecurityEvent({ type: SEC.CLIENT_LOGIN_OK, severity: 'info', actor: client.email, ip, meta: { clientId, via: '2fa' } });
 
     const cookieStore = await cookies();
-    cookieStore.set('client_access_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-    });
+    cookieStore.set(DEVELOPER_COOKIE, token, developerCookieOptions());
 
     return NextResponse.json({ success: true });
   } catch (err) {

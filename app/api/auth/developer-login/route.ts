@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { MAX_PASSWORD_LENGTH } from '@/lib/domain';
 import { supabase } from '@/lib/supabase';
-import { signJWT } from '@/lib/jwt';
-import { verifyPassword, needsRehash, hashPassword } from '@/lib/passwords';
+import { verifyPassword, needsRehash, hashPassword, DUMMY_HASH } from '@/lib/passwords';
+import { issueDeveloperToken, developerCookieOptions, DEVELOPER_COOKIE } from '@/lib/developerAuth';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 import { logSecurityEvent, SEC } from '@/lib/securityEvents';
 import { cookies } from 'next/headers';
@@ -24,11 +24,14 @@ export async function POST(req: Request) {
 
     // Brute-force guard: 5 attempts/min per IP+email, 20/min per IP.
     const ip = clientIp(req.headers);
-    const [okPair, okIp] = await Promise.all([
+    // Plus 30 per quarter of an hour per account, whatever the address: guessing
+    // one account from many machines is slowed to two tries a minute.
+    const [okPair, okIp, okAccount] = await Promise.all([
       checkRateLimit(`login:${ip}:${String(email).toLowerCase()}`, 5, 60_000),
       checkRateLimit(`login-ip:${ip}`, 20, 60_000),
+      checkRateLimit(`login-acct:${String(email).trim().toLowerCase()}`, 30, 15 * 60_000),
     ]);
-    if (!okPair || !okIp) {
+    if (!okPair || !okIp || !okAccount) {
       logSecurityEvent({ type: SEC.RATE_LIMIT_BLOCK, severity: 'warn', actor: String(email).toLowerCase(), ip, detail: 'client-login throttled' });
       return NextResponse.json(
         { success: false, error: 'Too many attempts. Try again in a minute.' },
@@ -58,6 +61,8 @@ export async function POST(req: Request) {
     }
 
     if (!client || !client.encrypted_password) {
+      // Same work as a real check, so the answer time does not say whether the account exists.
+      verifyPassword(password, DUMMY_HASH);
       logSecurityEvent({ type: SEC.CLIENT_LOGIN_FAILED, severity: 'warn', actor: String(email).toLowerCase(), ip, detail: 'Unknown account' });
       return NextResponse.json(
         { success: false, error: 'Identifiants incorrects.' },
@@ -100,9 +105,9 @@ export async function POST(req: Request) {
       }
     }
 
-    // Passwords match -> Generate JWT
-    const JWT_SECRET = process.env.JWT_SECRET;
-    if (!JWT_SECRET) {
+    // Passwords match: a registered, revocable device session.
+    const token = await issueDeveloperToken(client.id, ip, req.headers.get('user-agent'));
+    if (!token) {
       console.error('Missing JWT_SECRET in env variables');
       return NextResponse.json(
         { success: false, error: 'Erreur de configuration serveur.' },
@@ -110,31 +115,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Device registry: cap concurrent devices, evict the oldest (anti-sharing).
-    const { registerClientSession } = await import('@/lib/clientSessions');
-    const sid = await registerClientSession(client.id, ip, req.headers.get('user-agent'));
-
-    const payload = {
-      sub: 'client',
-      clientId: client.id,
-      ...(sid ? { sid } : {}),
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 7 days expiration
-    };
-
-    const token = await signJWT(payload, JWT_SECRET);
-
     logSecurityEvent({ type: SEC.CLIENT_LOGIN_OK, severity: 'info', actor: String(email).toLowerCase(), ip, meta: { clientId: client.id } });
 
     // Set HTTP-only cookie
     const cookieStore = await cookies();
-    cookieStore.set('client_access_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
+    cookieStore.set(DEVELOPER_COOKIE, token, developerCookieOptions());
 
     return NextResponse.json({ success: true });
   } catch (error) {

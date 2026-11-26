@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { cookies, headers } from 'next/headers';
 import { supabase } from '@/lib/supabase';
-import { verifyJWT } from '@/lib/jwt';
+import { getDeveloperContext } from '@/lib/developerAuth';
 import { askAI, type ChatMessage } from '@/lib/ai';
-import { getPlan, type Plan } from '@/lib/plans';
+import type { Plan } from '@/lib/plans';
 import { checkRateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
@@ -20,16 +20,9 @@ type Caller =
 
 async function identify(): Promise<Caller> {
   const jar = await cookies();
-  const token = jar.get('client_access_token')?.value;
-
-  if (token && process.env.JWT_SECRET) {
-    const payload = await verifyJWT(token, process.env.JWT_SECRET);
-    const clientId = payload?.clientId as string | undefined;
-    if (clientId) {
-      const { data } = await supabase.from('clients').select('plan').eq('id', clientId).maybeSingle();
-      return { kind: 'client', clientId, plan: getPlan(data?.plan) };
-    }
-  }
+  // A developer session counts only when it is a valid one (signed, not ended, account still there).
+  const dev = await getDeveloperContext();
+  if (dev) return { kind: 'client', clientId: dev.developerId, plan: dev.plan };
 
   // Anonymous visitor — stable id in an httpOnly cookie.
   let anonId = jar.get('ke_anon')?.value;

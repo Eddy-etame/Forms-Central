@@ -20,6 +20,13 @@ export function hashPassword(plain: string): string {
   return `scrypt:${SCRYPT_N}:${salt.toString('hex')}:${hash.toString('hex')}`;
 }
 
+/**
+ * A real hash of a password nobody knows. Sign-in routes verify against it
+ * when the account does not exist, so "unknown account" costs the same time
+ * as "wrong password" and the difference cannot be measured from outside.
+ */
+export const DUMMY_HASH = hashPassword(crypto.randomBytes(24).toString('hex'));
+
 export function isScryptHash(stored: string): boolean {
   return typeof stored === 'string' && stored.startsWith('scrypt:');
 }

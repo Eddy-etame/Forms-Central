@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, LayoutDashboard } from "lucide-react";
 import { cookies } from "next/headers";
-import { verifyJWT } from "@/lib/jwt";
+import { getDeveloperSession, DEVELOPER_COOKIE } from "@/lib/developerAuth";
 import { getLocale, type Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/dictionaries";
 import { LogoBadge, ByEam } from "@/components/Logo";
@@ -14,11 +14,9 @@ import { LanguageToggle } from "@/components/marketing/LanguageToggle";
  *  being logged out — when they open /pricing from inside the dashboard). */
 async function hasClientSession(): Promise<boolean> {
   try {
-    const token = (await cookies()).get('client_access_token')?.value;
-    const secret = process.env.JWT_SECRET;
-    if (!token || !secret) return false;
-    const payload = await verifyJWT(token, secret);
-    return !!payload && payload.sub === 'client';
+    // No cookie, no lookup: anonymous visitors cost nothing here.
+    if (!(await cookies()).get(DEVELOPER_COOKIE)?.value) return false;
+    return (await getDeveloperSession()) !== null;
   } catch {
     return false;
   }

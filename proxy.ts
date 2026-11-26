@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyJWT } from '@/lib/jwt';
+import { verifyJWT, isAdminAccess } from '@/lib/jwt';
 import { isBlacklisted } from '@/lib/blacklist';
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -60,7 +60,7 @@ async function guardAdmin(request: NextRequest) {
 
     // Verify JWT access token (HMAC verify via WebCrypto — constant-time)
     const payload = await verifyJWT(accessToken, JWT_SECRET);
-    if (!payload || payload.sub !== 'admin') {
+    if (!isAdminAccess(payload)) {
       if (isPrefetch(request)) return new NextResponse(null, { status: 204 });
       // Invalid/expired token: DO NOT clear cookies here — Set-Cookie on a
       // "404" would reveal the route is special. The dead token just expires.

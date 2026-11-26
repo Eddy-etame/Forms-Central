@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { verifyJWT } from '@/lib/jwt';
+import { getDeveloperSession, DEVELOPER_COOKIE } from '@/lib/developerAuth';
 import { getClientForms } from '@/lib/actions';
 import { getLocale } from '@/lib/i18n';
 import { getAppDict } from '@/lib/appDict';
@@ -14,25 +14,17 @@ import { Toaster } from '@/components/ui/Toaster';
 export const metadata = { robots: { index: false, follow: false } };
 
 export default async function ClientProtectedLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('client_access_token')?.value;
-  const JWT_SECRET = process.env.JWT_SECRET;
-
-  if (!token || !JWT_SECRET) {
-    redirect('/developer/login');
+  // One validated path for pages and API alike: signed, not expired, account
+  // still there, not ended by a password reset, device session not revoked.
+  const session = await getDeveloperSession();
+  if (!session) {
+    // A cookie that no longer opens anything was signed out, replaced by a newer device, or expired.
+    const hadCookie = !!(await cookies()).get(DEVELOPER_COOKIE)?.value;
+    redirect(hadCookie ? '/developer/login?evicted=1' : '/developer/login');
   }
-
-  const payload = await verifyJWT(token, JWT_SECRET);
-  if (!payload || payload.sub !== 'client' || !payload.clientId) {
-    redirect('/developer/login');
-  }
-
-  // Device limit: a session evicted by a newer device stops working here.
-  if (payload.sid) {
-    const { isSessionRevoked } = await import('@/lib/clientSessions');
-    if (await isSessionRevoked(payload.sid as string)) {
-      redirect('/developer/login?evicted=1');
-    }
+  if (session.sid) {
+    const { touchClientSession } = await import('@/lib/clientSessions');
+    touchClientSession(session.sid);
   }
 
   const [forms, locale] = await Promise.all([getClientForms(), getLocale()]);

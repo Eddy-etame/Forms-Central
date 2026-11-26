@@ -55,12 +55,24 @@ export async function verifyOtpChallenge(challengeId: string, code: string): Pro
   if (new Date(row.expires_at).getTime() < Date.now()) return { ok: false, reason: 'expired' };
   if (row.attempts >= OTP_MAX_ATTEMPTS) return { ok: false, reason: 'locked' };
 
-  const expected = hashOtp(code, row.subject_id);
-  if (!safeEqualHex(expected, row.code_hash)) {
-    await supabase.from('email_otps').update({ attempts: row.attempts + 1 }).eq('id', challengeId);
-    return { ok: false, reason: 'mismatch' };
-  }
+  // Claim this attempt before looking at the code: the update only succeeds
+  // for the one request that still sees the attempt count it read. Parallel
+  // guesses on the same challenge lose the race instead of all being judged
+  // against the same "0 attempts so far".
+  const { data: claimed } = await supabase
+    .from('email_otps')
+    .update({ attempts: row.attempts + 1 })
+    .eq('id', challengeId)
+    .eq('attempts', row.attempts)
+    .eq('consumed', false)
+    .select('id');
+  if (!claimed || claimed.length === 0) return { ok: false, reason: 'locked' };
 
-  await supabase.from('email_otps').update({ consumed: true }).eq('id', challengeId);
+  const expected = hashOtp(code, row.subject_id);
+  if (!safeEqualHex(expected, row.code_hash)) return { ok: false, reason: 'mismatch' };
+
+  // Single use: only the request that flips `consumed` gets the session.
+  const { data: used } = await supabase.from('email_otps').update({ consumed: true }).eq('id', challengeId).eq('consumed', false).select('id');
+  if (!used || used.length === 0) return { ok: false, reason: 'used' };
   return { ok: true, subjectType: row.subject_type as OtpSubjectType, subjectId: row.subject_id };
 }

@@ -19,8 +19,14 @@ export function isGoogleConfigured(): boolean {
  */
 export function resolveRedirectUri(req: Request): string {
   if (process.env.GOOGLE_REDIRECT_URI) return process.env.GOOGLE_REDIRECT_URI;
+  // In production the callback lives on the canonical origin, whatever host
+  // header the request carries; request headers are only read in development.
+  if (process.env.NODE_ENV === 'production') {
+    const canonical = (process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://eam-inlet.vercel.app').replace(/\/+$/, '');
+    return `${canonical}/api/auth/google/callback`;
+  }
   const h = req.headers;
-  const proto = h.get('x-forwarded-proto') || 'https';
+  const proto = h.get('x-forwarded-proto') || 'http';
   const host = h.get('x-forwarded-host') || h.get('host') || 'localhost:3000';
   return `${proto}://${host}/api/auth/google/callback`;
 }

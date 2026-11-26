@@ -78,6 +78,11 @@ export async function isSessionRevoked(sid: string): Promise<boolean> {
   }
 }
 
+/** Record that a session was just used (shown in the device list). Never delays the caller. */
+export function touchClientSession(sid: string): void {
+  background(Promise.resolve(supabase.from('client_sessions').update({ last_seen: new Date().toISOString() }).eq('id', sid)).then(() => {}, () => {}));
+}
+
 /** Revoke one session (sign-out). */
 export async function revokeClientSession(sid: string): Promise<void> {
   try {

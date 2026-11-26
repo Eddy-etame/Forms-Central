@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { signJWT } from '@/lib/jwt';
+import { issueDeveloperToken, endAllDeveloperSessions, developerCookieOptions, DEVELOPER_COOKIE } from '@/lib/developerAuth';
 import { hashPassword } from '@/lib/passwords';
 import { generateRandomPassword } from '@/lib/crypto';
 import { clientIp } from '@/lib/rateLimit';
@@ -37,16 +37,26 @@ export async function GET(req: Request) {
   if (!user) return fail('userinfo');
   if (!user.emailVerified) return fail('email not verified');
 
-  const JWT_SECRET = process.env.JWT_SECRET;
-  if (!JWT_SECRET) return fail('server config');
+  if (!process.env.JWT_SECRET) return fail('server config');
 
   // Find or create the client by email.
   let clientId: string;
   let justCreated = false;
-  const { data: existing } = await supabase.from('clients').select('id').eq('email', user.email).maybeSingle();
+  const { data: existing } = await supabase.from('clients').select('id, email_verified_at').eq('email', user.email).maybeSingle();
 
   if (existing) {
     clientId = existing.id;
+    if (!(existing as { email_verified_at?: string | null }).email_verified_at) {
+      // The account was created with a password by someone who never proved
+      // they own this address. Google has just proven who does: whatever
+      // password and sessions existed before are not theirs to keep.
+      await supabase
+        .from('clients')
+        .update({ encrypted_password: hashPassword(generateRandomPassword(24)), reset_token: null, reset_token_expires: null, email_verified_at: new Date().toISOString() })
+        .eq('id', clientId);
+      await endAllDeveloperSessions(clientId);
+      logSecurityEvent({ type: SEC.CLIENT_LOGIN_OK, severity: 'warn', actor: user.email, ip: clientIp(req.headers), detail: 'First proof of ownership (Google): earlier password and sessions of this unverified account were ended', meta: { clientId } });
+    }
   } else {
     justCreated = true;
     // New Google user — create a client with a random password so the account
@@ -54,32 +64,20 @@ export async function GET(req: Request) {
     const encrypted = hashPassword(generateRandomPassword(24));
     const { data: created, error } = await supabase
       .from('clients')
-      .insert([{ name: user.name || user.email.split('@')[0], email: user.email, encrypted_password: encrypted }])
+      .insert([{ name: user.name || user.email.split('@')[0], email: user.email, encrypted_password: encrypted, email_verified_at: new Date().toISOString() }])
       .select('id')
       .single();
     if (error || !created) return fail('create');
     clientId = created.id;
   }
 
-  // Device registry: cap concurrent devices, evict the oldest (anti-sharing).
-  const { registerClientSession } = await import('@/lib/clientSessions');
-  const sid = await registerClientSession(clientId, clientIp(req.headers), req.headers.get('user-agent'));
-
-  const token = await signJWT(
-    { sub: 'client', clientId, ...(sid ? { sid } : {}), iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 },
-    JWT_SECRET
-  );
+  const token = await issueDeveloperToken(clientId, clientIp(req.headers), req.headers.get('user-agent'));
+  if (!token) return fail('server config');
 
   logSecurityEvent({ type: SEC.CLIENT_LOGIN_OK, severity: 'info', actor: user.email, ip: clientIp(req.headers), meta: { clientId, via: 'google' } });
 
   const res = NextResponse.redirect(new URL(justCreated ? '/developer/choose-plan' : '/developer/dashboard', origin));
-  res.cookies.set('client_access_token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
-  });
+  res.cookies.set(DEVELOPER_COOKIE, token, developerCookieOptions());
   res.cookies.set('g_oauth_state', '', { path: '/', maxAge: 0 }); // clear CSRF cookie
   return res;
 }

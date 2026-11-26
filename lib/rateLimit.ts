@@ -14,16 +14,18 @@ export async function checkRateLimit(
   windowMs: number
 ): Promise<boolean> {
   try {
+    // Record first, count after. Counting first let a burst of parallel
+    // requests all read "below the limit" before any of them was recorded.
+    const { error: insErr } = await supabase.from('auth_attempts').insert({ key });
+    if (insErr) return true; // fail-open (table missing / transient error)
     const since = new Date(Date.now() - windowMs).toISOString();
     const { count, error } = await supabase
       .from('auth_attempts')
       .select('id', { count: 'exact', head: true })
       .eq('key', key)
       .gte('created_at', since);
-    if (error) return true; // fail-open (table missing / transient error)
-    if ((count ?? 0) >= limit) return false;
-
-    await supabase.from('auth_attempts').insert({ key });
+    if (error) return true;
+    if ((count ?? 0) > limit) return false;
 
     // Opportunistic cleanup (~2% of calls) so the table never balloons.
     if (Math.random() < 0.02) {

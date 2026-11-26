@@ -30,21 +30,20 @@
     "test:unit": "npm run test:mail && npm run test:security && npm run test:otp && npm run test:crypto && npm run test:spam && npm run test:autoreply && npm run test:retention && npm run test:csv && npm run test:backup && npm run test:attachments"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@supabase/supabase-js": "^2.107.0",
-    "@types/nodemailer": "^8.0.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.17.0",
     "mcp-handler": "^1.1.0",
-    "next": "16.2.7",
-    "nodemailer": "^8.0.10",
+    "next": "16.4.6",
+    "nodemailer": "^10.6.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-email": "^6.5.0",
     "recharts": "^3.8.1",
     "tailwind-merge": "^3.6.0",
-    "zod": "^3.25.76"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -52,8 +51,14 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.7",
+    "eslint-config-next": "16.4.6",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "mcp-handler": {
+      "@modelcontextprotocol/sdk": "$@modelcontextprotocol/sdk"
+    },
+    "@hono/node-server": "^2.1.3"
   }
 }

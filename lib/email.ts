@@ -46,9 +46,19 @@ function logSmtpFailure(errorType: string, label: string, user: string, message:
 // A dead or slow account must not eat the whole invocation: fail fast, try the next.
 const SMTP_TIMEOUTS = { connectionTimeout: 8_000, greetingTimeout: 8_000, socketTimeout: 15_000 };
 
+/** The only message fields this module ever sends. Kept local: the library's own typings are not relied on. */
+interface MailOptions {
+  from?: string;
+  to: string | string[];
+  subject: string;
+  text?: string;
+  html?: string;
+  replyTo?: string;
+}
+
 /** Every recipient is a reserved, undeliverable address (see lib/domain.ts). */
-function onlyUndeliverable(to: nodemailer.SendMailOptions['to']): boolean {
-  const list = (Array.isArray(to) ? to : [to]).map((r) => (typeof r === 'string' ? r : r?.address || ''));
+function onlyUndeliverable(to: MailOptions['to']): boolean {
+  const list = Array.isArray(to) ? to : [to];
   return list.length > 0 && list.every((r) => isUndeliverableEmail(r));
 }
 
@@ -57,7 +67,7 @@ function onlyUndeliverable(to: nodemailer.SendMailOptions['to']): boolean {
 const accountCooldownUntil = new Map<string, number>();
 const SMTP_COOLDOWN_MS = 30 * 60 * 1000;
 
-async function sendWithFallback(mailOptions: nodemailer.SendMailOptions): Promise<SendResult> {
+async function sendWithFallback(mailOptions: MailOptions): Promise<SendResult> {
   const accounts = getMailAccounts();
   if (accounts.length === 0) {
     console.error('[SMTP] No sending accounts configured. Email aborted.');
@@ -65,7 +75,7 @@ async function sendWithFallback(mailOptions: nodemailer.SendMailOptions): Promis
     return { success: false };
   }
 
-  const displayName = extractDisplayName(mailOptions.from as string | undefined);
+  const displayName = extractDisplayName(mailOptions.from);
   // Reserved addresses are never mailed: the account's login is verified instead,
   // which is everything short of handing the message over.
   const verifyOnly = onlyUndeliverable(mailOptions.to);

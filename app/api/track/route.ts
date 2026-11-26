@@ -7,9 +7,19 @@ import { checkRateLimit } from '@/lib/rateLimit';
 export const runtime = 'nodejs';
 
 /**
- * First-party pageview beacon. Privacy-conscious: the raw IP is never stored —
- * only a salted hash. Only public marketing paths are recorded; authed/admin
- * areas are ignored. Always returns 204 (fire-and-forget).
+ * First-party page counter for the public pages. It keeps no cookie and no
+ * address.
+ *
+ * A visit is counted under a value computed from the day, the address, the
+ * browser and a secret: the same browser on the same day gives the same value
+ * (so a visitor is counted once a day), the next day gives another, and
+ * nothing links the two. The raw address is never stored. (Until 2026-11-26
+ * this was a random id in a one-year cookie, and the address hash never
+ * changed: a visitor could be followed across days without having been asked.)
+ *
+ * A browser that sends a Global Privacy Control or Do Not Track signal is not
+ * counted at all. Only public marketing paths are recorded; authed and
+ * operator areas are ignored. Always answers 204.
  */
 
 const IGNORED = ['/admin', '/api', '/developer', '/portal', '/login'];
@@ -28,6 +38,12 @@ function classifyBrowser(ua: string): string {
   return 'Other';
 }
 
+/** Browsers that still carry the old one-year visit cookie drop it on their next visit. */
+function forget(res: NextResponse, jar: Awaited<ReturnType<typeof cookies>>): NextResponse {
+  if (jar.get('ie_sid')) res.cookies.set('ie_sid', '', { path: '/', maxAge: 0 });
+  return res;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -39,19 +55,19 @@ export async function POST(req: Request) {
       return new NextResponse(null, { status: 204 });
     }
 
-    const jar = await cookies();
-    let sid = jar.get('ie_sid')?.value;
-    const fresh = !sid;
-    if (!sid) sid = crypto.randomUUID();
-
     const h = await headers();
-    const ip = (h.get('x-forwarded-for') || '').split(',')[0].trim();
-    const salt = process.env.JWT_SECRET || 'track_salt';
-    const ipHash = ip ? crypto.createHash('sha256').update(ip + salt).digest('hex').slice(0, 32) : null;
+    // The visitor said no: nothing is recorded.
+    if (h.get('sec-gpc') === '1' || h.get('dnt') === '1') return forget(new NextResponse(null, { status: 204 }), await cookies());
 
-    // Flood guards (fail-open). The session id comes from a cookie the sender
-    // can simply not send — every request would then be a "new session" with a
-    // fresh allowance — so the address is limited as well.
+    const ip = (h.get('x-forwarded-for') || '').split(',')[0].trim();
+    const ua = (h.get('user-agent') || '').slice(0, 300);
+    const salt = process.env.JWT_SECRET || 'track_salt';
+    const day = new Date().toISOString().slice(0, 10);
+    const digest = (v: string) => crypto.createHash('sha256').update(v).digest('hex').slice(0, 32);
+    const sid = digest(`visit|${day}|${ip}|${ua}|${salt}`);
+    const ipHash = ip ? digest(`addr|${day}|${ip}|${salt}`) : null;
+
+    // Flood guards (fail-open), per visitor of the day and per address of the day.
     const [okSession, okAddress] = await Promise.all([
       checkRateLimit(`track:${sid}`, 80, 60_000),
       checkRateLimit(`track-ip:${ipHash ?? 'unknown'}`, 120, 60_000),
@@ -59,7 +75,6 @@ export async function POST(req: Request) {
     if (!okSession || !okAddress) {
       return new NextResponse(null, { status: 204 });
     }
-    const ua = (h.get('user-agent') || '').slice(0, 300);
     const country = h.get('x-vercel-ip-country') || null;
 
     let referrer = String(body.referrer ?? '').slice(0, 512) || null;
@@ -79,17 +94,7 @@ export async function POST(req: Request) {
       country,
     });
 
-    const res = new NextResponse(null, { status: 204 });
-    if (fresh) {
-      res.cookies.set('ie_sid', sid, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 365,
-      });
-    }
-    return res;
+    return forget(new NextResponse(null, { status: 204 }), await cookies());
   } catch {
     return new NextResponse(null, { status: 204 });
   }

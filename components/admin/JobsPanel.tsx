@@ -12,6 +12,8 @@ const COPY = {
     noSecret: 'CRON_SECRET is not set: no scheduled job can run.',
     redeliver: 'Notification sweep', retention: 'Retention', backup: 'Backup',
     backupFile: 'Newest file: {name} ({size} kB)', backupNone: 'No backup is stored.', backupRule: 'Accounts, clients, forms and leads, 14 days kept. Retention deletes nothing unless this job succeeded in the last 26 hours.',
+    tidyNone: 'Housekeeping: nothing was old enough to remove.', tidyDone: 'Housekeeping removed: {list}.', tidyErr: 'Housekeeping reported {n} error(s): {first}',
+    tidyNames: { visits: 'visits', securityEvents: 'security events', failures: 'failure lines', emailLog: 'e-mail log lines', oneTimeCodes: 'sign-in codes', rateLimitRows: 'rate-limit counters', expiredBans: 'expired bans', deviceSessions: 'device sessions', deviceSessionsNeverSeen: 'unused sessions', assistantAddress: 'assistant addresses blanked' } as Record<string, string>,
     never: 'never ran', late: 'no run for over a day', failed: 'last run failed',
     pending: '{n} lead(s) still waiting for their notification', pendingNone: 'every lead of the last 30 days was notified',
     sweep: 'sent {s}, failed {f}, paused {p}',
@@ -30,6 +32,8 @@ const COPY = {
     noSecret: 'CRON_SECRET n’est pas défini : aucune tâche planifiée ne peut tourner.',
     redeliver: 'Balayage des notifications', retention: 'Rétention', backup: 'Sauvegarde',
     backupFile: 'Dernier fichier : {name} ({size} ko)', backupNone: 'Aucune sauvegarde enregistrée.', backupRule: 'Comptes, clients, formulaires et leads, 14 jours conservés. La rétention ne supprime rien si cette tâche n’a pas réussi dans les 26 dernières heures.',
+    tidyNone: 'Ménage : rien d’assez ancien à supprimer.', tidyDone: 'Ménage, supprimé : {list}.', tidyErr: 'Le ménage a signalé {n} erreur(s) : {first}',
+    tidyNames: { visits: 'visites', securityEvents: 'événements de sécurité', failures: 'lignes d’échec', emailLog: 'lignes du journal d’e-mails', oneTimeCodes: 'codes de connexion', rateLimitRows: 'compteurs de débit', expiredBans: 'bannissements expirés', deviceSessions: 'sessions d’appareil', deviceSessionsNeverSeen: 'sessions jamais utilisées', assistantAddress: 'adresses de l’assistant effacées' } as Record<string, string>,
     never: 'jamais exécutée', late: 'aucune exécution depuis plus d’un jour', failed: 'dernière exécution en échec',
     pending: '{n} lead(s) attendent encore leur notification', pendingNone: 'tous les leads des 30 derniers jours ont été notifiés',
     sweep: 'envoyés {s}, échecs {f}, en pause {p}',
@@ -75,6 +79,15 @@ export default function JobsPanel() {
   const ret = state(data.jobs.retention);
   const bak = state(data.jobs.backup);
   const rs = data.jobs.retention?.summary ?? {};
+  // What the daily housekeeping let go of (lib/housekeeping.ts), carried by the backup job's diary line.
+  const tidy = (data.jobs.backup?.summary?.housekeeping ?? null) as { removed?: Record<string, number>; errors?: string[] } | null;
+  const tidyLine = !tidy
+    ? null
+    : tidy.errors?.length
+      ? { bad: true, text: c.tidyErr.replace('{n}', String(tidy.errors.length)).replace('{first}', tidy.errors[0].slice(0, 120)) }
+      : Object.keys(tidy.removed ?? {}).length
+        ? { bad: false, text: c.tidyDone.replace('{list}', Object.entries(tidy.removed ?? {}).map(([k, n]) => `${n} ${c.tidyNames[k] ?? k}`).join(', ')) }
+        : { bad: false, text: c.tidyNone };
   const ds = data.jobs.redeliver?.summary ?? {};
   const modeLine = data.retentionMode === 'apply' ? c.modeApply : data.retentionMode === 'report' ? c.modeReport : c.modeOff;
 
@@ -98,6 +111,7 @@ export default function JobsPanel() {
               : c.backupNone}
           </p>
           <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{c.backupRule}</p>
+          {tidyLine && <p className={`mt-2 text-xs ${tidyLine.bad ? 'font-medium text-amber-700 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}`}>{tidyLine.text}</p>}
         </div>
         <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
           <p className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white"><MailCheck className="h-4 w-4 text-slate-400" aria-hidden /> {c.redeliver}</p>

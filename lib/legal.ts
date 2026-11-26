@@ -14,7 +14,7 @@ export function isLegalDoc(v: string): v is LegalDocId {
 export type LegalSection = { h: string; p?: string[]; ul?: string[] };
 export type LegalDoc = { kicker: string; title: string; lead: string; updatedLabel: string; updated: string; seeAlso: string; sections: LegalSection[] };
 
-const UPDATED = { en: '25 November 2026', fr: '25 novembre 2026' };
+const UPDATED = { en: '26 November 2026', fr: '26 novembre 2026' };
 
 const EN: Record<LegalDocId, LegalDoc> = {
   privacy: {
@@ -31,28 +31,28 @@ const EN: Record<LegalDocId, LegalDoc> = {
         'For leads — what visitors type into a form on a site you built — you and your client decide; we only store and deliver them on your instructions, as a processor. The privacy notice those visitors rely on is the one published on that site.',
       ] },
       { h: 'What we collect', ul: [
-        'Developer account: name or company, e-mail address, a password hash (never the password), plan, API keys stored as hashes, the webhook signing secret, and sign-in events (time, IP address) kept for security.',
+        'Developer account: name or company, e-mail address, a password hash (never the password), plan, API keys stored as hashes, the webhook signing secret, and sign-in events and device sessions (time, IP address, browser) kept for security.',
         'Clients you add: business name, e-mail address, website, language, and a password hash once they set one for their inbox.',
         'Leads: the fields the form sends (typically name, e-mail, message, sometimes a file), the time, the visitor’s IP address and a technical fingerprint used only to stop spam, and the spam status we assigned.',
-        'Visits to the public pages: the path, the referring page, the browser’s user agent and a salted hash of the IP address — never the address itself — under a first-party cookie. No advertising network, no cross-site tracking.',
-        'The assistant: the messages you send it, counted against your plan’s quota. Signed-out visitors get a random identifier in a cookie for their trial message.',
+        'Visits to the public pages: the path, the referring page, the kind of device and browser, the country the request came from, and two values computed from the IP address, the day and a secret — never the address itself, and never the same value two days running. No cookie is used for this. A browser that sends a Global Privacy Control or Do Not Track signal is not counted at all. No advertising network, no cross-site tracking.',
+        'The assistant: your messages are passed to the model that answers and are not kept by us. We keep one usage line per message — your account or, for a signed-out visitor, a random identifier held in a cookie; the time; the IP address, erased after 30 days — to count the quota and stop abuse.',
       ] },
       { h: 'Why, and on what basis', ul: [
         'To run the service you signed up for: storing leads, sending notifications and auto-replies, the dashboard, the API and the MCP server (performance of a contract).',
-        'To keep it safe: rate limits, the honeypot, proof-of-work, automatic bans by IP, fingerprint and reverse-DNS host, sign-in protection (our legitimate interest in security, and yours).',
-        'To understand which public pages are read, in aggregate (legitimate interest; the data cannot identify you).',
+        'To keep it safe: rate limits, the honeypot, proof-of-work, temporary automatic bans of an address (and of its hosting provider when it belongs to one), sign-in protection (our legitimate interest in security, and yours).',
+        'To understand which public pages are read, in aggregate (legitimate interest; counted per day, without a cookie, and not traceable to you).',
         'To meet legal obligations, such as keeping invoicing records.',
       ] },
       { h: 'Cookies', p: [
-        'Inlet sets only first-party cookies: a session cookie for developers, one for client inboxes and one for the operator; the language you chose; the visit identifier for the public pages; the assistant identifier for signed-out visitors; and a short-lived state cookie during Google sign-in. None of them is used for advertising.',
+        'Inlet sets only first-party cookies, and only ones the service needs: the session of a developer, of a client inbox or of the operator; the language you chose; the assistant identifier of a signed-out visitor, set when they send their first message; and a short-lived state cookie during Google sign-in. None is used for advertising or to measure visits — the public pages are counted without a cookie.',
       ] },
       { h: 'Where the data lives, and for how long', ul: [
         'Hosting, database and file storage run in the European Union.',
         'Account and client data stay as long as the account exists, and are deleted within 30 days after you ask us to close it.',
         'Leads are kept for the retention window of your plan: 30 days on Free, one year on Solo, without limit on Pro and Max. Past the window a lead may be deleted, with its attachments, but never by surprise: the account is e-mailed at least 7 days before, with the dates, and the dashboard repeats it. Export is one click, on every plan, and holds every lead.',
         'A backup of accounts, clients, forms and leads is taken every day and kept for 14 days, in private storage in the same region as the database. What is deleted from the service is gone from the backups 14 days later at most. Attachments are not part of the backup.',
-        'Security logs and automatic bans expire on their own after a limited time.',
-        'File attachments are stored at unguessable addresses; anyone holding the exact link can open the file, so treat lead e-mails as confidential.',
+        'Logs do not pile up. Sign-in events and refused or failed attempts are deleted after 12 months; visit counts, and the line kept for each e-mail sent (no address, no content), after 13 months; a device session 90 days after its last use; sign-in codes and rate-limit counters after a day. An automatic ban lasts 24 hours and its record is deleted 30 days later.',
+        'File attachments are kept in private storage. A file opens only for the signed-in developer or client the lead belongs to; the e-mail announcing a lead never carries the file or its address. If you set a webhook, it receives a link to each file that stops working after 7 days.',
       ] },
       { h: 'Who else sees the data', ul: [
         'Our hosting and content-delivery provider (Vercel) and our database and storage provider (Supabase), both configured in European regions.',
@@ -66,7 +66,7 @@ const EN: Record<LegalDocId, LegalDoc> = {
         'If you submitted a form on a site built with Inlet, the site owner is your first contact; we help them answer you.',
       ] },
       { h: 'Security', p: [
-        'Traffic is encrypted in transit. Passwords are hashed with scrypt, API keys are stored as hashes, webhooks are signed, sign-in can require a second factor by e-mail, and every read and write is scoped to the account that owns the data. No system is perfect: if you find a weakness, tell us at {contact} — we fix first and talk after.',
+        'Traffic is encrypted in transit. Passwords are hashed with scrypt, API keys are stored as hashes, webhook secrets are stored encrypted and every webhook is signed, sign-in can require a second factor by e-mail, a password reset signs every device out, and every read and write is scoped to the account that owns the data. No system is perfect: if you find a weakness, tell us at {contact} — we fix first and talk after.',
       ] },
       { h: 'Changes', p: ['When this policy changes in a way that matters, we say so in the dashboard and update the date above.'] },
     ],
@@ -140,28 +140,28 @@ const FR: Record<LegalDocId, LegalDoc> = {
         'Pour les leads — ce que les visiteurs saisissent dans un formulaire d’un site que vous avez construit — c’est vous et votre client qui décidez ; nous ne faisons que les stocker et les transmettre selon vos instructions, en tant que sous-traitant. L’information que lisent ces visiteurs est celle publiée sur ce site.',
       ] },
       { h: 'Ce que nous collectons', ul: [
-        'Compte développeur : nom ou entreprise, adresse e-mail, une empreinte du mot de passe (jamais le mot de passe), forfait, clés API stockées sous forme d’empreintes, le secret de signature des webhooks, et les événements de connexion (heure, adresse IP) conservés pour la sécurité.',
+        'Compte développeur : nom ou entreprise, adresse e-mail, une empreinte du mot de passe (jamais le mot de passe), forfait, clés API stockées sous forme d’empreintes, le secret de signature des webhooks, et les événements de connexion et sessions d’appareil (heure, adresse IP, navigateur) conservés pour la sécurité.',
         'Clients que vous ajoutez : nom de l’entreprise, adresse e-mail, site web, langue, et une empreinte de mot de passe dès qu’ils en choisissent un pour leur boîte.',
         'Leads : les champs envoyés par le formulaire (en général nom, e-mail, message, parfois un fichier), l’heure, l’adresse IP du visiteur et une empreinte technique utilisées uniquement contre le spam, et le statut anti-spam attribué.',
-        'Visites des pages publiques : le chemin, la page d’origine, le navigateur et un hachage salé de l’adresse IP — jamais l’adresse elle-même — sous un cookie propre au site. Aucune régie publicitaire, aucun suivi entre sites.',
-        'L’assistant : les messages que vous lui envoyez, décomptés du quota de votre forfait. Les visiteurs non connectés reçoivent un identifiant aléatoire dans un cookie pour leur message d’essai.',
+        'Visites des pages publiques : le chemin, la page d’origine, le type d’appareil et de navigateur, le pays d’où vient la requête, et deux valeurs calculées à partir de l’adresse IP, du jour et d’un secret — jamais l’adresse elle-même, et jamais la même valeur deux jours de suite. Aucun cookie n’est utilisé pour cela. Un navigateur qui envoie un signal Global Privacy Control ou Do Not Track n’est pas compté du tout. Aucune régie publicitaire, aucun suivi entre sites.',
+        'L’assistant : vos messages sont transmis au modèle qui répond et ne sont pas conservés par nous. Nous gardons une ligne d’usage par message — votre compte ou, pour un visiteur non connecté, un identifiant aléatoire placé dans un cookie ; l’heure ; l’adresse IP, effacée au bout de 30 jours — pour décompter le quota et empêcher les abus.',
       ] },
       { h: 'Pourquoi, et sur quelle base', ul: [
         'Pour fournir le service auquel vous avez souscrit : stockage des leads, envoi des notifications et des réponses automatiques, tableau de bord, API et serveur MCP (exécution du contrat).',
-        'Pour le protéger : limites de débit, honeypot, preuve de travail, bannissements automatiques par IP, empreinte et hôte DNS inversé, protection des connexions (notre intérêt légitime à la sécurité, et le vôtre).',
-        'Pour savoir quelles pages publiques sont lues, de façon agrégée (intérêt légitime ; ces données ne permettent pas de vous identifier).',
+        'Pour le protéger : limites de débit, honeypot, preuve de travail, bannissements automatiques et temporaires d’une adresse (et de son hébergeur quand elle appartient à l’un d’eux), protection des connexions (notre intérêt légitime à la sécurité, et le vôtre).',
+        'Pour savoir quelles pages publiques sont lues, de façon agrégée (intérêt légitime ; un décompte par jour, sans cookie, qui ne permet pas de remonter jusqu’à vous).',
         'Pour respecter nos obligations légales, comme la conservation des pièces de facturation.',
       ] },
       { h: 'Cookies', p: [
-        'Inlet ne dépose que des cookies propres au site : un cookie de session pour les développeurs, un pour les boîtes clients et un pour l’opérateur ; la langue choisie ; l’identifiant de visite des pages publiques ; l’identifiant de l’assistant pour les visiteurs non connectés ; et un cookie d’état de courte durée pendant la connexion Google. Aucun ne sert à la publicité.',
+        'Inlet ne dépose que des cookies propres au site, et seulement ceux dont le service a besoin : la session d’un développeur, d’une boîte client ou de l’opérateur ; la langue choisie ; l’identifiant de l’assistant d’un visiteur non connecté, déposé à son premier message ; et un cookie d’état de courte durée pendant la connexion Google. Aucun ne sert à la publicité ni à mesurer les visites — les pages publiques sont comptées sans cookie.',
       ] },
       { h: 'Où sont les données, et combien de temps', ul: [
         'L’hébergement, la base de données et le stockage de fichiers tournent dans l’Union européenne.',
         'Les données de compte et de clients restent tant que le compte existe, et sont supprimées dans les 30 jours après votre demande de fermeture.',
         'Les leads sont conservés pendant la durée de rétention de votre forfait : 30 jours en Free, un an en Solo, sans limite en Pro et Max. Au-delà, un lead peut être supprimé, avec ses pièces jointes, mais jamais par surprise : le compte reçoit un e-mail au moins 7 jours avant, avec les dates, et le tableau de bord le rappelle. L’export tient en un clic, quel que soit le forfait, et contient tous les leads.',
         'Une sauvegarde des comptes, des clients, des formulaires et des leads est faite chaque jour et conservée 14 jours, dans un stockage privé de la même région que la base. Ce qui est supprimé du service disparaît des sauvegardes au plus tard 14 jours après. Les pièces jointes ne font pas partie de la sauvegarde.',
-        'Les journaux de sécurité et les bannissements automatiques expirent d’eux-mêmes après une durée limitée.',
-        'Les pièces jointes sont stockées à des adresses impossibles à deviner ; quiconque détient le lien exact peut ouvrir le fichier : traitez les e-mails de leads comme confidentiels.',
+        'Les journaux ne s’accumulent pas. Les événements de connexion et les tentatives refusées ou échouées sont supprimés au bout de 12 mois ; les décomptes de visites, et la ligne gardée pour chaque e-mail envoyé (ni adresse ni contenu), au bout de 13 mois ; une session d’appareil 90 jours après son dernier usage ; les codes de connexion et les compteurs de limites de débit au bout d’un jour. Un bannissement automatique dure 24 heures et sa trace est supprimée 30 jours plus tard.',
+        'Les pièces jointes sont conservées dans un stockage privé. Un fichier ne s’ouvre que pour le développeur ou le client connecté à qui le lead appartient ; l’e-mail qui annonce un lead ne contient jamais le fichier ni son adresse. Si vous configurez un webhook, il reçoit pour chaque fichier un lien qui cesse de fonctionner au bout de 7 jours.',
       ] },
       { h: 'Qui d’autre voit les données', ul: [
         'Notre hébergeur et réseau de diffusion (Vercel) et notre fournisseur de base de données et de stockage (Supabase), tous deux configurés dans des régions européennes.',
@@ -175,7 +175,7 @@ const FR: Record<LegalDocId, LegalDoc> = {
         'Si vous avez envoyé un formulaire sur un site construit avec Inlet, le propriétaire du site est votre premier interlocuteur ; nous l’aidons à vous répondre.',
       ] },
       { h: 'Sécurité', p: [
-        'Le trafic est chiffré en transit. Les mots de passe sont hachés avec scrypt, les clés API stockées sous forme d’empreintes, les webhooks signés, la connexion peut exiger un second facteur par e-mail, et chaque lecture ou écriture est limitée au compte propriétaire des données. Aucun système n’est parfait : si vous trouvez une faille, écrivez à {contact} — nous corrigeons d’abord et discutons ensuite.',
+        'Le trafic est chiffré en transit. Les mots de passe sont hachés avec scrypt, les clés API stockées sous forme d’empreintes, les secrets de webhook stockés chiffrés et chaque webhook signé, la connexion peut exiger un second facteur par e-mail, une réinitialisation du mot de passe déconnecte tous les appareils, et chaque lecture ou écriture est limitée au compte propriétaire des données. Aucun système n’est parfait : si vous trouvez une faille, écrivez à {contact} — nous corrigeons d’abord et discutons ensuite.',
       ] },
       { h: 'Modifications', p: ['Quand cette politique change de façon significative, nous le disons dans le tableau de bord et mettons à jour la date ci-dessus.'] },
     ],

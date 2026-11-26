@@ -452,6 +452,60 @@ sentence was re-read. What was found, in order of weight, and what changed.
   `scripts/set-admin-password.mjs` is run. No backup copy outside the
   database's own project.
 
+### 2026-11-26 (evening) — second pass: what a browser is handed back
+
+The author: "keep upgrading security". The first pass closed what a request
+could reach; this one looked at what the service *answers* — files, API
+answers, the pages of the submit endpoint — and found a product bug on the way.
+
+- **A plain HTML form never worked for a real visitor.** The submit endpoint
+  answered JSON to "a JSON body, or an Origin header". Every browser puts an
+  Origin header on a POST, including the plainest form, so a visitor who
+  submitted without JavaScript was left on this service's address reading
+  `{"success":true,…}` — since the first commit (6 July). Only tools without
+  an Origin (curl, the suites) ever saw the documented redirect. The lead was
+  stored; the visitor was stranded. Found by posting a real form from a real
+  page in a real browser, which no suite did. Now a navigation is recognised
+  for what it is (fetch metadata, else the Accept header — `answersJson` in
+  `lib/domain.ts`): the visitor goes back to the site with `?submitted=true`
+  or to the form's success page; a refusal shows a page written for a
+  visitor, in French or English, with a way back that keeps what was typed
+  and the code a developer needs set apart (`lib/formAnswerPages.ts`). The
+  browser suite now posts a real form from another origin.
+- **A file was what its sender said it was.** The declared type of an upload
+  chose its extension (`text/html;x=jpeg` made a `.jpg`) and was stored and
+  repeated to the browser on download. The first bytes decide now — JPEG,
+  PNG, PDF or WebP, anything else is opaque `.bin` — and a download is
+  answered with a type from that list, as data to save, under a sandbox
+  policy, readable from this origin only.
+- **Every answer that is not a page allowed inline script**, because two
+  plain pages of the submit endpoint carried a `javascript:` link. That link
+  is now a script file, and each kind of answer has its own policy: an API
+  answer is data (nothing loads or runs, nothing is cached), a download is
+  sandboxed, the plain pages may load one script of this site. On pages, a
+  `<style>` element now needs the nonce as a script does.
+- **Smaller.** The in-memory counter of the submit route kept one entry per
+  fingerprint ever seen — a header the sender writes — and never let go; it
+  is bounded now (`lib/burst.ts`). The MCP endpoint had no ceiling of any
+  kind: 20 bad keys a minute per address, 240 calls a minute per account.
+  The scheduled-job secret is compared in constant time.
+- **Checked and found sound.** No secret value in any of the 71 files a
+  browser downloads (47 secret-like variables searched for). Every cookie is
+  HttpOnly, Secure and SameSite=Lax or Strict, set explicitly. Redirects
+  after a form post go only to the form's own origins. Passwords and codes
+  are compared in constant time; API keys carry 256 random bits. Every API
+  route was listed with its guard and its limits; none is open by accident.
+- **Left as it is, knowingly.** Sign-up says when an address already has an
+  account (three attempts per ten minutes per address). The challenge
+  endpoint has no limit of its own (a database-backed one would cost more
+  than the read it protects).
+- **The 25 old builds are still there.** `scripts/stale-builds.mjs` lists
+  them and deletes them with `--apply`; the session's permissions refused the
+  deletion, so it waits for the author.
+- **Proof.** 16 unit suites (563 checks). Against production: submit 25/25,
+  MCP 24/24, developer-and-client 104/104, browser 50/50 with no browser
+  error; the plain-form flow by hand in a browser, in both languages.
+
 ## 2. The B proposal (what we built beyond the ask)
 
 The author asked for A: developers → clients → forms, no e-mail in the code,

@@ -183,12 +183,14 @@ Other scripts:
 | `scripts/migrate-supabase.mjs [--dry-run]` | copy a whole project to another Supabase project, rewriting attachment URLs |
 | `scripts/build-agent-docs.mjs` | regenerate `lib/agentDocs.ts` from `docs/agent/*.md` |
 | `scripts/set-admin-password.mjs` | operator password hash |
+| `scripts/stale-builds.mjs [--apply]` | list (or delete) old builds on the host that carry `backups/` in their source |
 | `scripts/set-developer-password.mjs` | set a **developer** account password by hand (table `clients`) |
 
 The rules that must not drift each have a unit test that runs without a
-server or a database — `npm run test:unit` (14 suites: mail rotation, tokens,
-one-time codes, encryption, spam labels, auto-reply, retention, CSV, backups,
-attachment references, private addresses, housekeeping, the script policy).
+server or a database — `npm run test:unit` (15 suites: mail rotation, tokens,
+one-time codes, encryption, spam labels, auto-reply and who gets JSON,
+retention, CSV, backups, attachment references and file signatures, private
+addresses, housekeeping, the policies, the in-memory counter).
 
 Before pushing: `npm run lint && npx tsc --noEmit && npm run test:unit && npm run build`.
 
@@ -288,6 +290,9 @@ client inbox says how long requests stay. Export (`/api/developer/leads/export`,
    resolved only if it is a file name this server generated
    (`lib/attachments.ts`) — nothing is decoded, so nothing can step out of
    the bucket — and storage links typed by a visitor are stripped on arrival.
+   A file is what its first bytes say (JPEG, PNG, PDF, WebP — anything else
+   is a `.bin`), never what its sender declared, and it is handed back as
+   data to save, under a sandbox policy.
 6. **Every send is logged; a failed send is a failure**, never reported as
    delivered. Sending accounts (`SMTP_*`, `SMTP_<n>_*`) rotate with a cooldown
    on failure; the daily e-mail budget is charged after success. Work that
@@ -313,8 +318,11 @@ client inbox says how long requests stay. Export (`/api/developer/leads/export`,
 11. **A page runs only the scripts this server sent** (`lib/csp.ts`,
     `proxy.ts`): every page carries a policy built around a nonce minted for
     that request; inline handlers, `javascript:` links and injected tags do
-    not run. A layout that writes an inline script reads the nonce with
-    `getNonce()`. Structured data goes through `jsonLdText()`.
+    not run, and a `<style>` element needs the nonce too. A layout that
+    writes an inline script reads the nonce with `getNonce()`. Structured
+    data goes through `jsonLdText()`. What is not a page has its own policy:
+    an API answer is data (nothing loads or runs), a download is sandboxed,
+    and the plain-HTML answers of the submit endpoint carry no inline script.
 12. **A ban is never handed to someone else to aim**: only on an address this
     server saw itself (never one a relay reports, never a browser
     fingerprint), a host only when forward-confirmed reverse DNS says it is a
@@ -331,6 +339,14 @@ client inbox says how long requests stay. Export (`/api/developer/leads/export`,
 15. **Real data stays out of the repository and out of deploys**: `backups/`
     and `.env*` are gitignored, `.vercelignore` is an allow-list, and docs
     never carry a customer's address, not even masked.
+
+16. **A browser that posts a form is sent somewhere; a script gets JSON**
+    (`answersJson` in `lib/domain.ts`). An `Origin` header proves nothing —
+    every browser sends one on a POST — so the rule reads the fetch metadata
+    of the request, and the `Accept` header where there is none.
+17. **Nothing kept in memory grows with what a stranger sends**
+    (`lib/burst.ts`), and the scheduled-job secret is compared in constant
+    time (`lib/cronAuth.ts`).
 
 Found a weakness? `/.well-known/security.txt` says where to write.
 

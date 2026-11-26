@@ -132,9 +132,14 @@ export default async function RootLayout({
 }>) {
   const [locale, nonce] = await Promise.all([getLocale(), getNonce()]);
   return (
+    // suppressHydrationWarning: the inline script below adds a class to this
+    // element before React attaches, on purpose. Without it, development mode
+    // reports a hydration mismatch on every page (it covers this element's own
+    // attributes only, not its children).
     <html
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
         {/* Arm scroll-reveal before paint so hidden→shown transitions run for JS

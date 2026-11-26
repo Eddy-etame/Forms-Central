@@ -432,10 +432,12 @@ sentence was re-read. What was found, in order of weight, and what changed.
   history until it is rewritten — the author's call, as is making the
   repository private.
 - **Proof.** 14 unit suites (463 checks). Against production on the 15:17 UTC
-  build: MCP 24/24, developer-and-client 97/97, browser 41/41 with no browser
-  error. On the final 15:26 build, which differs only inside the housekeeping
-  module: submit 25/25 and the policy check on 17 pages (every script carries
-  the request's nonce, zero violations, injected markup refused).
+  build: MCP 24/24, developer-and-client 97/97. On the later builds of the
+  day, which differ only in the housekeeping module and in a development-mode
+  attribute: submit 25/25, browser 43/43 with no browser error, and the
+  policy check on 17 pages (every script carries the request's nonce, zero
+  violations, injected markup refused). Development mode and the operator
+  shell were checked on a local server (no error, no violation).
 - **The submit suite was leaving a ban behind.** Its honeypot test bans the
   runner's own address — and, since today, that address's host name when it
   sits at a hosting provider. Only the address was lifted afterwards; the

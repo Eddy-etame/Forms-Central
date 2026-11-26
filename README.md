@@ -246,6 +246,8 @@ npm run backup:now -- --list       # what is stored
 npm run restore:leads -- --from 2026-11-25                       # what is missing, changes nothing
 npm run restore:leads -- --from 2026-11-25 --developer <id> --apply
 npm run test:backup:live           # backup + restore against the real storage, self-cleaning
+npm run housekeeping               # what the daily housekeeping would remove — changes nothing
+npm run housekeeping -- --apply    # the same run the backup job does every day
 ```
 
 `scripts/backup-supabase.mjs` still writes a full local copy (every table,

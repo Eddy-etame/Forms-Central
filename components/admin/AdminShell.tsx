@@ -12,7 +12,7 @@ export default function AdminShell({ children, t, nonce }: { children: React.Rea
   return (
     // Dark-first admin (matches the brand); toggle in the sidebar persists
     // the choice, and the inline script applies it before first paint.
-    <div id="admin-root" className="dark flex h-screen w-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
+    <div id="admin-root" suppressHydrationWarning className="dark flex h-screen w-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
       <script
         nonce={nonce}
         dangerouslySetInnerHTML={{

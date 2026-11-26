@@ -248,6 +248,20 @@ let devId = null, formId = null, clientId = null;
     const psw = await portal.evaluate(() => document.documentElement.scrollWidth);
     step('client inbox on a phone: no horizontal overflow', psw <= 390, `scrollWidth ${psw}`);
 
+    // 6b. the developer changes the client's address: the dashboard says the old access is gone,
+    //     and the inbox opened under the old address is closed.
+    await page.goto(`${B}/developer/dashboard/clients`, { waitUntil: 'networkidle' });
+    await page.getByRole('button', { name: /^edit$|^modifier$/i }).first().click();
+    const newAddress = `acme-ui-new+${ts}@test.invalid`;
+    await page.locator('input[type=email]').last().fill(newAddress);
+    await page.getByRole('button', { name: /^save$|^enregistrer$/i }).first().click();
+    const told = await page.getByText(/New address saved|Nouvelle adresse enregistrée/i).first().waitFor({ state: 'visible', timeout: 15000 }).then(() => true, () => false);
+    await shot(page, '10e-address-changed');
+    const moved = await sb(`portal_users?id=eq.${clientId}&select=email,encrypted_password`);
+    step('changing a client\'s address: the dashboard says the old access is gone', told && moved.body?.[0]?.email === newAddress && moved.body?.[0]?.encrypted_password === null, JSON.stringify({ told, email: moved.body?.[0]?.email === newAddress }));
+    const closed = await portal.request.get(`${B}/api/portal/leads`);
+    step('…and the inbox opened under the old address is closed (401)', closed.status() === 401, `status ${closed.status()}`);
+
     // 7. API & MCP page
     await page.goto(`${B}/developer/dashboard/api`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(800);

@@ -35,7 +35,7 @@ export default async function ClientProtectedLayout({ children }: { children: Re
   return (
     // Dark-first workspace (devs live in dark). ThemeToggle flips the class;
     // the inline script applies the persisted choice before first paint.
-    <div id="dash-root" className="dark flex min-h-screen flex-col lg:flex-row bg-slate-50 dark:bg-slate-950">
+    <div id="dash-root" suppressHydrationWarning className="dark flex min-h-screen flex-col lg:flex-row bg-slate-50 dark:bg-slate-950">
       <script
         nonce={nonce}
         dangerouslySetInnerHTML={{

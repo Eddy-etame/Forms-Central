@@ -240,7 +240,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const requestIp = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
   const forwardedVisitor = (request.headers.get('x-inlet-visitor-ip') || '').trim();
   const ipAddress = trusted && IP_RE.test(forwardedVisitor) ? forwardedVisitor : requestIp;
-  const fingerprint = request.headers.get('x-client-fingerprint') || 'no_fingerprint';
+  // A header the sender writes. It is stored with the lead and used as a counter
+  // key, so it is kept to what a fingerprint can be: 128 printable characters.
+  const fingerprint = (request.headers.get('x-client-fingerprint') || '').replace(/[^\x21-\x7e]/g, '').slice(0, 128) || 'no_fingerprint';
 
   // ── Blacklist (on the visitor, never on the relay) ──────────────────────
   if (await isBlacklisted(ipAddress) || (fingerprint !== 'no_fingerprint' && await isBlacklisted(fingerprint))) {

@@ -29,7 +29,8 @@
     "test:backup:live": "node --experimental-strip-types scripts/test-backup-live.ts",
     "backup:now": "node --experimental-strip-types scripts/backup-now.ts",
     "restore:leads": "node --experimental-strip-types scripts/restore-leads.ts",
-    "test:unit": "npm run test:mail && npm run test:security && npm run test:otp && npm run test:crypto && npm run test:spam && npm run test:autoreply && npm run test:retention && npm run test:csv && npm run test:backup && npm run test:attachments && npm run test:tokens && npm run test:netguard"
+    "test:csp": "node --experimental-strip-types scripts/test-csp.ts",
+    "test:unit": "npm run test:mail && npm run test:security && npm run test:otp && npm run test:crypto && npm run test:spam && npm run test:autoreply && npm run test:retention && npm run test:csv && npm run test:backup && npm run test:attachments && npm run test:tokens && npm run test:netguard && npm run test:csp"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",

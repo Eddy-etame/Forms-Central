@@ -1,34 +1,26 @@
 import type { NextConfig } from "next";
+import { staticCsp } from "./lib/csp";
 
 /**
- * Security headers (addresses the D-grade header scan).
- * CSP: Next.js App Router requires inline scripts for hydration, so
- * script-src keeps 'unsafe-inline' (JSON-LD data blocks are unaffected).
- * Everything else is locked to self; images allow https for client logos.
+ * Security headers.
+ *
+ * Content-Security-Policy comes from two places that never overlap
+ * (lib/csp.ts explains both):
+ *  - pages: proxy.ts, a policy built around a nonce minted per request;
+ *  - everything the proxy does not see — the API, /_next, any path with a
+ *    dot: the fixed policy below.
+ * The three `source` patterns for the fixed policy are the exact complement
+ * of the proxy's page test, so no response ever carries two policies.
  *
  * 'unsafe-eval' is added in DEVELOPMENT ONLY — React/Turbopack dev mode uses
  * eval() for fast-refresh + callstack reconstruction. React never uses eval()
- * in production, so the production CSP stays strict (no eval).
+ * in production, so the production policies carry no eval.
  */
 const isDev = process.env.NODE_ENV === "development";
 
+const fixedCsp = [{ key: "Content-Security-Policy", value: staticCsp(isDev) }];
+
 const securityHeaders = [
-  {
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' https: data: blob:",
-      "font-src 'self' data:",
-      "connect-src 'self'",
-      "frame-ancestors 'self'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "object-src 'none'",
-      "upgrade-insecure-requests",
-    ].join("; "),
-  },
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -55,7 +47,12 @@ const nextConfig: NextConfig = {
   // infer the wrong root.
   outputFileTracingRoot: process.cwd(),
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      { source: "/api/:path+", headers: fixedCsp },
+      { source: "/_next/:path+", headers: fixedCsp },
+      { source: "/:path(.*\\..*)", headers: fixedCsp },
+    ];
   },
   // The developer workspace moved from /client/* to /developer/* (the word
   // "client" now means the businesses a developer builds for). Old links in

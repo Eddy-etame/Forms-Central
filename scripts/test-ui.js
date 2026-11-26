@@ -65,6 +65,41 @@ let devId = null, formId = null, clientId = null;
   const text = async (p) => p.locator('body').innerText();
 
   try {
+    // 0. what every answer carries: the script policy and the transport headers
+    {
+      const head = async (p) => { const r = await fetch(B + p, { redirect: 'manual' }); await r.arrayBuffer(); return r.headers; };
+      const scriptSrc = (csp) => (csp.match(/script-src[^;]*/) || [''])[0];
+      const nonceOf = (csp) => (csp.match(/'nonce-([^']+)'/) || [])[1];
+      const h1 = await head('/'), h2 = await head('/');
+      const csp1 = h1.get('content-security-policy') || '', csp2 = h2.get('content-security-policy') || '';
+      const n1 = nonceOf(csp1), n2 = nonceOf(csp2);
+      step('pages: a script needs this request\'s nonce; inline script is not allowed',
+        !!n1 && scriptSrc(csp1).includes("'strict-dynamic'") && !/unsafe-inline|unsafe-eval/.test(scriptSrc(csp1)), scriptSrc(csp1).replace(n1 || '§', '…'));
+      step('pages: the nonce changes with every request', !!n1 && !!n2 && n1 !== n2);
+      // Two policies on one answer would arrive joined by a comma: there must be exactly one.
+      step('pages: one policy, never two', csp1.split('default-src').length === 2);
+      const apiCsp = (await head('/api/challenge')).get('content-security-policy') || '';
+      step('API answers: the fixed policy, once', apiCsp.split('default-src').length === 2 && !apiCsp.includes('nonce-'));
+      const must = { 'strict-transport-security': /max-age=\d{8,}/, 'x-content-type-options': /^nosniff$/i, 'x-frame-options': /^SAMEORIGIN$/i, 'referrer-policy': /strict-origin/, 'permissions-policy': /camera=\(\)/ };
+      const missing = Object.entries(must).filter(([k, re]) => !re.test(h1.get(k) || '')).map(([k]) => k);
+      step('transport, framing and sniffing headers are present', missing.length === 0 && !h1.get('x-powered-by'), missing.join(', '));
+
+      // The proof: markup that reaches a page as HTML does not run. This page is
+      // not watched — each refusal is a console error, and that is the point.
+      const probe = await ctx.newPage();
+      await probe.goto(`${B}/docs`, { waitUntil: 'networkidle' });
+      const ran = await probe.evaluate(async () => {
+        const d = document.createElement('div');
+        d.innerHTML = '<img src="data:image/gif;base64,AA" onerror="window.__h=1">';
+        document.body.appendChild(d);
+        const a = document.createElement('a'); a.href = 'javascript:window.__j=1'; document.body.appendChild(a); a.click();
+        await new Promise((r) => setTimeout(r, 600));
+        return { handler: !!window.__h, link: !!window.__j };
+      });
+      step('injected markup does not run (inline handler, javascript: link)', !ran.handler && !ran.link, JSON.stringify(ran));
+      await probe.close();
+    }
+
     // 1. sign up (EN UI)
     await page.goto(`${B}/developer/signup?lang=en`, { waitUntil: 'networkidle' });
     await page.locator('input:not([type=email]):not([type=password])').first().fill(DEV.name);
@@ -74,12 +109,17 @@ let devId = null, formId = null, clientId = null;
     await page.waitForURL(/choose-plan|dashboard/, { timeout: 30000 });
     await shot(page, '01-after-signup');
     step('signup lands on choose-plan', /choose-plan/.test(page.url()), page.url());
+    const sessionCookie = (await ctx.cookies(B)).find((c) => c.name === 'client_access_token');
+    step('session cookie is out of reach of scripts and of other sites',
+      !!sessionCookie && sessionCookie.httpOnly && sessionCookie.sameSite === 'Lax' && (!B.startsWith('https') || sessionCookie.secure));
     const dev = await sb(`clients?select=id,plan&email=eq.${encodeURIComponent(DEV.email.toLowerCase())}`);
     devId = dev.body?.[0]?.id ?? null;
     step('developer row exists on the free plan', !!devId && dev.body[0].plan === 'free');
 
     // 2. first-run dashboard → create a form with a new client in the modal
-    await page.goto(`${B}/developer/dashboard`, { waitUntil: 'networkidle' });
+    const dashRes = await page.goto(`${B}/developer/dashboard`, { waitUntil: 'networkidle' });
+    const dashCsp = dashRes?.headers()['content-security-policy'] || '';
+    step('the dashboard — where visitors\' text is shown — is served under the nonce policy', /script-src[^;]*'nonce-[^']+'[^;]*'strict-dynamic'/.test(dashCsp) && !/script-src[^;]*unsafe-inline/.test(dashCsp));
     await shot(page, '02-dashboard-first-run');
     await page.getByRole('button', { name: /^create form$|créer le formulaire/i }).first().click();
     await page.locator('h3', { hasText: /create a form|créer un formulaire/i }).waitFor({ timeout: 15000 });
@@ -121,8 +161,9 @@ let devId = null, formId = null, clientId = null;
     const save = page.getByRole('button', { name: /^save settings$|^enregistrer$/i }).first();
     step('form settings and integration panels render', (await save.count()) > 0 && (await page.locator('[role=tab]').count()) >= 6);
     await save.click();
-    await page.waitForTimeout(1200);
-    step('settings save shows a toast', (await page.getByText(/^saved\.?$|enregistré/i).count()) > 0);
+    // Wait for the answer, not for a fixed delay: the save is four database round trips.
+    const savedToast = await page.getByText(/^saved\.?$|enregistré/i).first().waitFor({ state: 'visible', timeout: 10000 }).then(() => true, () => false);
+    step('settings save shows a toast', savedToast);
 
     // 5. a lead arrives through a plain HTML form POST
     const r = await page.request.post(`${B}/api/submit/${formId}`, { form: { name: 'Jane Lead', email: 'jane@example.com', message: 'Hello from the UI test' }, maxRedirects: 0 });

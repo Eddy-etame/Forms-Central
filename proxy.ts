@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyJWT, isAdminAccess } from '@/lib/jwt';
 import { isBlacklisted } from '@/lib/blacklist';
+import { NONCE_HEADER, newNonce, pageCsp } from '@/lib/csp';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const LOCALE_COOKIE = 'inlet-locale'; // mirrors lib/i18n (which imports next/headers and cannot run here)
@@ -21,8 +22,8 @@ const BOT_USER_AGENTS = [
  * ('Not Found', 404)` — or a 404 that sets cookies — is a fingerprint that
  * tells an attacker the route exists but is guarded.
  */
-function hidden404(request: NextRequest) {
-  return NextResponse.rewrite(new URL('/__no-such-route__', request.url));
+function hidden404(request: NextRequest, headers: Headers) {
+  return NextResponse.rewrite(new URL('/__no-such-route__', request.url), { request: { headers } });
 }
 
 function isPrefetch(request: NextRequest) {
@@ -34,18 +35,18 @@ function isPrefetch(request: NextRequest) {
 }
 
 /** /admin and the refresh endpoint: scraper block, IP blacklist, session guard. */
-async function guardAdmin(request: NextRequest) {
+async function guardAdmin(request: NextRequest, headers: Headers) {
   const url = request.nextUrl.clone();
 
   const userAgent = (request.headers.get('user-agent') || '').toLowerCase();
-  if (BOT_USER_AGENTS.some((bot) => userAgent.includes(bot))) return hidden404(request);
+  if (BOT_USER_AGENTS.some((bot) => userAgent.includes(bot))) return hidden404(request, headers);
 
   const forwardedFor = request.headers.get('x-forwarded-for');
   const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
-  if (await isBlacklisted(ipAddress)) return hidden404(request);
+  if (await isBlacklisted(ipAddress)) return hidden404(request, headers);
 
   if (url.pathname.startsWith('/admin')) {
-    if (!JWT_SECRET) return hidden404(request);
+    if (!JWT_SECRET) return hidden404(request, headers);
 
     const accessToken = request.cookies.get('access_token')?.value;
     if (!accessToken) {
@@ -55,7 +56,7 @@ async function guardAdmin(request: NextRequest) {
         url.pathname = '/login';
         return NextResponse.redirect(url);
       }
-      return hidden404(request);
+      return hidden404(request, headers);
     }
 
     // Verify JWT access token (HMAC verify via WebCrypto — constant-time)
@@ -64,11 +65,11 @@ async function guardAdmin(request: NextRequest) {
       if (isPrefetch(request)) return new NextResponse(null, { status: 204 });
       // Invalid/expired token: DO NOT clear cookies here — Set-Cookie on a
       // "404" would reveal the route is special. The dead token just expires.
-      return hidden404(request);
+      return hidden404(request, headers);
     }
   }
 
-  return NextResponse.next();
+  return NextResponse.next({ request: { headers } });
 }
 
 /**
@@ -78,13 +79,9 @@ async function guardAdmin(request: NextRequest) {
  * in the locale cookie, exactly as the FR/EN toggle does, so the next click
  * stays in that language. The header is never accepted from the outside.
  */
-function withLanguageHint(request: NextRequest) {
+function withLanguageHint(request: NextRequest, headers: Headers) {
   const lang = request.nextUrl.searchParams.get('lang');
-  const headers = new Headers(request.headers);
-  headers.delete(LANG_HEADER);
-  if (lang !== 'en' && lang !== 'fr') {
-    return request.headers.has(LANG_HEADER) ? NextResponse.next({ request: { headers } }) : NextResponse.next();
-  }
+  if (lang !== 'en' && lang !== 'fr') return NextResponse.next({ request: { headers } });
   headers.set(LANG_HEADER, lang);
   const res = NextResponse.next({ request: { headers } });
   if (request.cookies.get(LOCALE_COOKIE)?.value !== lang) {
@@ -93,13 +90,42 @@ function withLanguageHint(request: NextRequest) {
   return res;
 }
 
+/**
+ * Every page leaves with a script policy built around a value minted for this
+ * one request (lib/csp.ts). The same value travels to the server render in two
+ * request headers: the policy itself, where the framework reads the nonce for
+ * its own scripts, and x-nonce, where the layouts read it for theirs. Neither
+ * header, nor the language hint, is ever accepted from the outside: all three
+ * are overwritten or removed here.
+ */
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (pathname.startsWith('/admin') || pathname.startsWith('/api/auth/refresh')) return guardAdmin(request);
-  return withLanguageHint(request);
+  const headers = new Headers(request.headers);
+  headers.delete(LANG_HEADER);
+  headers.delete(NONCE_HEADER);
+  headers.delete('content-security-policy');
+  headers.delete('content-security-policy-report-only');
+
+  const guarded = pathname.startsWith('/admin') || pathname.startsWith('/api/auth/refresh');
+
+  // A page has no dot in its path and is not the API — exactly the paths
+  // next.config.ts leaves without a policy. The refresh endpoint (JSON) and a
+  // dotted path under /admin keep the fixed one.
+  const page = !pathname.startsWith('/api/') && !pathname.includes('.');
+  if (!page) return guarded ? guardAdmin(request, headers) : NextResponse.next({ request: { headers } });
+
+  const nonce = newNonce();
+  const csp = pageCsp(nonce, process.env.NODE_ENV === 'development');
+  headers.set(NONCE_HEADER, nonce);
+  headers.set('content-security-policy', csp);
+
+  const res = guarded ? await guardAdmin(request, headers) : withLanguageHint(request, headers);
+  res.headers.set('Content-Security-Policy', csp);
+  return res;
 }
 
 export const config = {
-  // Admin + refresh (guarded) and every page route (language hint); static files and the API stay out.
+  // Admin + refresh (guarded) and every page route (language hint, script policy); static files and
+  // the rest of the API stay out. next.config.ts sets the fixed policy exactly where this does not reach.
   matcher: ['/admin/:path*', '/api/auth/refresh', '/((?!api/|_next/|.*\\..*).*)'],
 };

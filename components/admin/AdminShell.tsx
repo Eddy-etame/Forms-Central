@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/Toaster';
 import { useAntiScraping } from '@/lib/useAntiScraping';
 import type { AppDict } from '@/lib/appDict';
 
-export default function AdminShell({ children, t }: { children: React.ReactNode; t: AppDict['admin'] }) {
+export default function AdminShell({ children, t, nonce }: { children: React.ReactNode; t: AppDict['admin']; nonce?: string }) {
   // Enforce anti-inspection scripts in production for the entire admin section
   useAntiScraping();
 
@@ -14,6 +14,7 @@ export default function AdminShell({ children, t }: { children: React.ReactNode;
     // the choice, and the inline script applies it before first paint.
     <div id="admin-root" className="dark flex h-screen w-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
       <script
+        nonce={nonce}
         dangerouslySetInnerHTML={{
           __html: `try{if(localStorage.getItem('inlet-admin-theme')==='light')document.getElementById('admin-root').classList.remove('dark')}catch(e){}`,
         }}

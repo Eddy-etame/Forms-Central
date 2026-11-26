@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getDeveloperSession, DEVELOPER_COOKIE } from '@/lib/developerAuth';
 import { getClientForms } from '@/lib/actions';
 import { getLocale } from '@/lib/i18n';
+import { getNonce } from '@/lib/nonce';
 import { getAppDict } from '@/lib/appDict';
 import ClientSidebar from '@/components/developer/ClientSidebar';
 import MobileSidebar from '@/components/developer/MobileSidebar';
@@ -27,7 +28,7 @@ export default async function ClientProtectedLayout({ children }: { children: Re
     touchClientSession(session.sid);
   }
 
-  const [forms, locale] = await Promise.all([getClientForms(), getLocale()]);
+  const [forms, locale, nonce] = await Promise.all([getClientForms(), getLocale(), getNonce()]);
   const dict = getAppDict(locale);
   const t = dict.sidebar;
 
@@ -36,6 +37,7 @@ export default async function ClientProtectedLayout({ children }: { children: Re
     // the inline script applies the persisted choice before first paint.
     <div id="dash-root" className="dark flex min-h-screen flex-col lg:flex-row bg-slate-50 dark:bg-slate-950">
       <script
+        nonce={nonce}
         dangerouslySetInnerHTML={{
           __html: `try{if(localStorage.getItem('inlet-theme')==='light')document.getElementById('dash-root').classList.remove('dark')}catch(e){}`,
         }}

@@ -4,6 +4,7 @@ import "./globals.css";
 import Tracker from "@/components/Tracker";
 import LocaleProvider from '@/components/LocaleProvider';
 import { getLocale } from "@/lib/i18n";
+import { getNonce } from "@/lib/nonce";
 import { SITE_URL } from "@/lib/seo";
 
 const geistSans = Geist({
@@ -129,7 +130,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await getLocale();
+  const [locale, nonce] = await Promise.all([getLocale(), getNonce()]);
   return (
     <html
       lang={locale}
@@ -140,6 +141,7 @@ export default async function RootLayout({
             clients, while crawlers/no-JS (which never add this class) see all
             content fully visible. */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: "document.documentElement.classList.add('reveal-ready')",
           }}

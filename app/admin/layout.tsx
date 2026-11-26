@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import AdminShell from '@/components/admin/AdminShell';
 import { getLocale } from '@/lib/i18n';
+import { getNonce } from '@/lib/nonce';
 import { getAppDict } from '@/lib/appDict';
 import { verifyJWT, isAdminAccess } from '@/lib/jwt';
 
@@ -23,6 +24,6 @@ export default async function AdminLayout({
   const token = (await cookies()).get('access_token')?.value;
   if (!secret || !token || !isAdminAccess(await verifyJWT(token, secret))) notFound();
 
-  const t = getAppDict(await getLocale()).admin;
-  return <AdminShell t={t}>{children}</AdminShell>;
+  const [locale, nonce] = await Promise.all([getLocale(), getNonce()]);
+  return <AdminShell t={getAppDict(locale).admin} nonce={nonce}>{children}</AdminShell>;
 }

@@ -5,6 +5,7 @@ import { verifyJWT } from '@/lib/jwt';
 import { getDeveloperSession } from '@/lib/developerAuth';
 import { getPortalSession } from '@/lib/portalAuth';
 import { attachmentPath, downloadAttachment } from '@/lib/storage';
+import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 
 /**
  * Attachment download — the only way to read a lead's file.
@@ -37,6 +38,9 @@ export async function GET(request: Request) {
 
   const [dev, portal, admin] = await Promise.all([getDeveloperSession(), getPortalSession(), isOperator()]);
   if (!dev && !portal && !admin) return new NextResponse('Sign in required', { status: 401 });
+  if (!(await checkRateLimit(`download:${clientIp(request.headers)}`, 60, 60_000))) {
+    return new NextResponse('Too many downloads. Try again in a minute.', { status: 429 });
+  }
 
   const { data: sub } = await supabase
     .from('submissions')

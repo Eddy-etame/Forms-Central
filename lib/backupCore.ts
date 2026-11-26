@@ -17,6 +17,7 @@
  * project) and operational logs. A copy outside this project is the next step.
  */
 import { gzipSync, gunzipSync } from 'node:zlib';
+import { randomBytes } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const BACKUP_BUCKET = 'backups';
@@ -47,12 +48,17 @@ export interface BackupResult {
 const PAGE = 1000;
 
 /**
- * One name per backup, to the second: `daily/2026-11-25T04-17-03Z.json.gz`.
- * A name is never reused — storage sits behind a cache, and a file overwritten
- * in place can be served stale for a while, which would make the read-back
- * check compare against yesterday's bytes.
+ * One name per backup: `daily/2026-11-25T04-17-03Z-<32 hex>.json.gz`.
+ * - never reused: storage sits behind a cache, and a file overwritten in place
+ *   can be served stale for a while, which would make the read-back check
+ *   compare against yesterday's bytes;
+ * - not guessable: the random part means knowing the day, or even the second,
+ *   is not knowing the name. The bucket is private and nothing in the app
+ *   resolves a path into it, but a backup holds everything, so its name is
+ *   treated as a secret too (2026-11-26).
  */
-export const backupName = (d: Date, prefix = 'daily') => `${prefix}/${d.toISOString().slice(0, 19).replace(/:/g, '-')}Z.json.gz`;
+export const backupName = (d: Date, prefix = 'daily', token: string = randomBytes(16).toString('hex')) =>
+  `${prefix}/${d.toISOString().slice(0, 19).replace(/:/g, '-')}Z-${token}.json.gz`;
 
 /** The UTC day a backup file belongs to (from its name). */
 export const backupDay = (name: string) => name.slice(name.lastIndexOf('/') + 1, name.lastIndexOf('/') + 11);

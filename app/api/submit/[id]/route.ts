@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { isBlacklisted, blacklistTarget, AUTO_BAN_TTL_MS } from '@/lib/blacklist';
 import { handleHoneypotTrigger, resolveHostDomain } from '@/lib/dnsLookup';
 import { attachmentUrl, UPLOADS_BUCKET } from '@/lib/storage';
+import { stripStorageLinks } from '@/lib/attachments';
 import { verifyChallenge } from '@/lib/pow';
 import { sendLeadEmail, sendAutoReplyEmail } from '@/lib/email';
 import { getQuotaState, logEmailSend } from '@/lib/quota';
@@ -328,7 +329,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   // ── Clean the payload ───────────────────────────────────────────────────
-  const cleanPayload: Record<string, string> = { ...payload };
+  // A reference into object storage may only exist because this server wrote
+  // it after storing a file (below). One typed by a visitor is removed first.
+  const cleanPayload: Record<string, string> = stripStorageLinks({ ...payload });
   for (const k of ['_gotcha', 'redirect_url', 'pow_challenge', 'pow_timestamp', 'pow_nonce']) delete cleanPayload[k];
   const client = form.portal_users;
   const developer = form.clients;

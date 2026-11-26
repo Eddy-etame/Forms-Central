@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import { getPlan } from './plans';
 import { SITE_URL } from './seo';
-import { UPLOADS_BUCKET, attachmentPath } from './storage';
+import { attachmentPath, removeAttachments } from './storage';
 import { sendRetentionNoticeEmail, sendRetentionReminderEmail } from './email';
 import { planForDeveloper, NOTICE_DAYS, DAY_MS } from './retentionCore';
 import type { LeadStub, NoticeRow, RetentionDeps, RetentionDeveloper, DeveloperPlan } from './retentionCore';
@@ -22,17 +22,14 @@ export function retentionMode(env: NodeJS.ProcessEnv = process.env): 'off' | 're
   return env.RETENTION_APPLY === 'true' ? 'apply' : 'report';
 }
 
-/** Storage object paths referenced by a payload (this project's bucket, any URL form). */
+/**
+ * The stored files a lead carries: top-level fields only, because that is the
+ * only place the server writes a reference. Text a visitor typed deeper in the
+ * payload is never treated as a file to delete.
+ */
 function attachmentPaths(payload: unknown): string[] {
-  const out: string[] = [];
-  const walk = (v: unknown) => {
-    const path = attachmentPath(v);
-    if (path) out.push(path);
-    else if (Array.isArray(v)) v.forEach(walk);
-    else if (v && typeof v === 'object') Object.values(v as Record<string, unknown>).forEach(walk);
-  };
-  walk(payload);
-  return out;
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return [];
+  return Object.values(payload as Record<string, unknown>).map(attachmentPath).filter((p): p is string => p !== null);
 }
 
 async function listLeads(formIds: string[]): Promise<LeadStub[]> {
@@ -125,10 +122,9 @@ export function retentionDeps(): RetentionDeps {
         // Only the files of rows that are really gone.
         const files = ((rows ?? []) as { id: string; payload: unknown }[]).filter((r) => goneIds.has(r.id)).flatMap((r) => attachmentPaths(r.payload));
         for (let f = 0; f < files.length; f += 100) {
-          const batch = files.slice(f, f + 100);
-          const { error: sErr } = await supabase.storage.from(UPLOADS_BUCKET).remove(batch);
-          if (sErr) res.errors.push(`storage: ${sErr.message}`);
-          else res.files += batch.length;
+          const done = await removeAttachments(files.slice(f, f + 100));
+          if (done.error) res.errors.push(`storage: ${done.error}`);
+          else res.files += done.removed;
         }
       }
       return res;

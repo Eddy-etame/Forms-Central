@@ -41,8 +41,10 @@ ok('an unknown version is refused rather than half-read', threw);
 threw = false;
 try { unpack(new Uint8Array([1, 2, 3])); } catch { threw = true; }
 ok('garbage is refused', threw);
-eq('one name per backup, to the second, never reused', backupName(new Date('2026-11-25T23:59:59.412Z')), 'daily/2026-11-25T23-59-59Z.json.gz');
-eq('the day is read back from the name', backupDay('daily/2026-11-25T23-59-59Z.json.gz'), '2026-11-25');
+eq('a name carries the instant and a random part', backupName(new Date('2026-11-25T23:59:59.412Z'), 'daily', 'ab'.repeat(16)), `daily/2026-11-25T23-59-59Z-${'ab'.repeat(16)}.json.gz`);
+ok('two backups in the same second get different names', backupName(new Date(0)) !== backupName(new Date(0)));
+ok('the random part is 128 bits', /^daily\/1970-01-01T00-00-00Z-[0-9a-f]{32}\.json\.gz$/.test(backupName(new Date(0))));
+eq('the day is read back from the name', backupDay(backupName(new Date('2026-11-25T23:59:59Z'))), '2026-11-25');
 
 console.log('\n== Rotation ==');
 const names = Array.from({ length: 20 }, (_, i) => `daily/2026-11-${String(i + 1).padStart(2, '0')}T04-17-03Z.json.gz`);

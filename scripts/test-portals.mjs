@@ -244,6 +244,38 @@ try {
     }
   }
   {
+    // 2026-11-26: a reference typed into a form field used to be resolved by the server, with its
+    // path decoded — `…/uploads/..%2Fbackups%2F<file>` reached the database backups. Now: a visitor's
+    // storage link is removed on arrival, and a planted one already in the database resolves nothing.
+    console.log(`\n== Attachment references cannot be planted ==`);
+    const host = new URL(env.NEXT_PUBLIC_SUPABASE_URL).host;
+    const { data: bk } = await sb.storage.from('backups').list('daily', { limit: 1, sortBy: { column: 'name', order: 'desc' } });
+    const backupFile = bk?.[0]?.name ?? '2026-11-26T04-23-36Z.json.gz';
+    const traversal = `https://${host}/storage/v1/object/authenticated/uploads/..%2Fbackups%2Fdaily%2F${backupFile}`;
+    const foreign = `https://${host}/storage/v1/object/authenticated/uploads/1764045046123-0f1e2d3c4b5a6978.png`;
+    const body = new URLSearchParams({ name: 'Planter', email: 'planter@selftest.invalid', photo: traversal, cv: foreign, message: `voir ${foreign} merci` }).toString();
+    const res = await fetch(`${BASE}/api/submit/${formId}`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: 'https://acme.example', Referer: 'https://acme.example/contact' }, body });
+    await new Promise((r) => setTimeout(r, 600));
+    const { data: rows } = await sb.from('submissions').select('id, payload').eq('form_id', formId).order('created_at', { ascending: false }).limit(1);
+    const planted = rows?.[0];
+    const stored = JSON.stringify(planted?.payload ?? {});
+    check('a visitor’s storage links are removed before the lead is stored', res.status === 200 && planted?.payload?.name === 'Planter' && !stored.includes('/storage/v1/') && planted.payload.photo === '[storage link removed]' && planted.payload.message === 'voir [storage link removed] merci', stored.slice(0, 200));
+
+    // The same references placed straight in the database, as a lead stored before the fix would hold them.
+    const { data: old } = await sb.from('submissions').insert({ form_id: formId, payload: { name: 'Old planted', photo: traversal, cv: foreign }, ip_address: '127.0.0.1', fingerprint: 's' }).select('id').single();
+    const t = await fetch(`${BASE}/api/download?sid=${old.id}&field=photo`, { headers: { cookie: devCookie } });
+    const tBytes = (await t.arrayBuffer()).byteLength;
+    check('the owner of a lead holding a traversal reference gets no file (400), not the backup', t.status === 400 && tBytes < 200, `got ${t.status}, ${tBytes} bytes`);
+    const f = await fetch(`${BASE}/api/download?sid=${old.id}&field=cv`, { headers: { cookie: devCookie } });
+    check('a well-formed reference to a file that is not there gives 404, never another object', f.status === 404, `got ${f.status}`);
+    const viaPortal = await fetch(`${BASE}/api/download?sid=${old.id}&field=photo`, { headers: { cookie: portalCookie } });
+    check('same refusal for the client of that form', viaPortal.status === 400, `got ${viaPortal.status}`);
+    const exp = await fetch(`${BASE}/api/developer/leads/export?form=${formId}`, { headers: { cookie: `${devCookie}; inlet-locale=en` } });
+    const expText = exp.ok ? await exp.text() : '';
+    check('the export shows the traversal value as text, not as a download link', exp.status === 200 && expText.includes('..%2Fbackups%2F') && !expText.includes(`/api/download?sid=${old.id}&field=photo`), `status ${exp.status}`);
+    await sb.from('submissions').delete().in('id', [old.id, planted?.id].filter(Boolean));
+  }
+  {
     const res = await post('/api/portal/forgot-password', { email: `nobody+${Date.now()}@test.invalid` });
     check('forgot-password never reveals whether an e-mail exists (200)', res.status === 200, `got ${res.status}`);
   }

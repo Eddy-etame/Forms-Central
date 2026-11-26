@@ -1,15 +1,20 @@
-// Set (or reset) the admin password.
+// Set (or reset) the operator password.
 //
 //   node scripts/set-admin-password.mjs "your new password"
 //
-// It SHA-256-hashes the plaintext exactly the way the login route does
-// (crypto.createHash('sha256').update(password).digest('hex')) and writes the
-// result into ADMIN_PASSWORD_HASH in .env.local — so the plaintext you pass
-// here is the password you'll type on the /login screen. Nothing is logged
-// except the hash it stored.
+// Writes a salted scrypt hash ("scrypt:N:salt:hash", the same format as every
+// other password in the product, lib/passwords.ts) into ADMIN_PASSWORD_HASH in
+// .env.local when that file exists, and prints the hash so it can be set as
+// ADMIN_PASSWORD_HASH on the host. The password itself is never written or
+// printed anywhere.
 //
-// After running: restart `npm run dev` (env is read at boot), then on Vercel
-// paste the SAME new hash into the ADMIN_PASSWORD_HASH env var and redeploy.
+// Until 2026-11-26 this stored a bare SHA-256 of the password. That form still
+// signs you in, but anyone who obtained the variable could guess the password
+// offline at billions of tries a second; scrypt makes each guess cost real
+// time and memory.
+//
+// After running: restart `npm run dev` (the environment is read at start),
+// then set the SAME value on the host and redeploy.
 
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -20,31 +25,36 @@ if (!password) {
   console.error('Usage: node scripts/set-admin-password.mjs "your new password"');
   process.exit(1);
 }
-if (password.length < 8) {
-  console.error('Refusing: choose a password of at least 8 characters.');
+if (password.length < 12) {
+  console.error('Refusing: choose at least 12 characters (a few random words work well).');
+  process.exit(1);
+}
+if (password.length > 128) {
+  console.error('Refusing: 128 characters at most.');
   process.exit(1);
 }
 
-const hash = crypto.createHash('sha256').update(password).digest('hex');
+const N = 16384;
+const salt = crypto.randomBytes(16);
+const hash = `scrypt:${N}:${salt.toString('hex')}:${crypto.scryptSync(password, salt, 64, { N }).toString('hex')}`;
+
 const envPath = path.join(process.cwd(), '.env.local');
-
-let contents = '';
+let wrote = false;
 try {
-  contents = fs.readFileSync(envPath, 'utf8');
+  let contents = fs.readFileSync(envPath, 'utf8');
+  const line = `ADMIN_PASSWORD_HASH=${hash}`;
+  contents = /^ADMIN_PASSWORD_HASH=.*$/m.test(contents)
+    ? contents.replace(/^ADMIN_PASSWORD_HASH=.*$/m, line)
+    : contents.replace(/\n?$/, `\n${line}\n`);
+  fs.writeFileSync(envPath, contents, 'utf8');
+  wrote = true;
 } catch {
-  console.error(`Could not read ${envPath} — run this from the project root.`);
-  process.exit(1);
+  /* no .env.local here: the value is printed below */
 }
 
-const line = `ADMIN_PASSWORD_HASH=${hash}`;
-if (/^ADMIN_PASSWORD_HASH=.*$/m.test(contents)) {
-  contents = contents.replace(/^ADMIN_PASSWORD_HASH=.*$/m, line);
-} else {
-  contents = contents.replace(/\n?$/, `\n${line}\n`);
-}
-fs.writeFileSync(envPath, contents, 'utf8');
-
-console.log('✓ Admin password updated in .env.local');
-console.log('  New ADMIN_PASSWORD_HASH =', hash);
-console.log('  Log in with the plaintext you just passed (NOT your email).');
-console.log('  → Restart `npm run dev`, then update the same hash on Vercel + redeploy.');
+console.log(wrote ? 'Operator password updated in .env.local.' : 'No .env.local found: nothing was written to disk.');
+console.log('');
+console.log('ADMIN_PASSWORD_HASH=' + hash);
+console.log('');
+console.log('Set that value as ADMIN_PASSWORD_HASH on the host (production) and redeploy.');
+console.log('Sign in with the password you just chose.');

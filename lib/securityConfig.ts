@@ -72,7 +72,9 @@ export function validateSecurityConfig(env: NodeJS.ProcessEnv = process.env): Se
   if (!adminHash) {
     fatal.push('ADMIN_PASSWORD_HASH is not set — the super-admin login cannot be secured.');
   } else if (adminHash.length < 32) {
-    warnings.push('ADMIN_PASSWORD_HASH looks too short to be a real hash — verify it is the SHA-256 hex of your admin password.');
+    warnings.push('ADMIN_PASSWORD_HASH looks too short to be a real hash — re-create it with scripts/set-admin-password.mjs.');
+  } else if (/^[0-9a-f]{64}$/i.test(adminHash)) {
+    warnings.push('ADMIN_PASSWORD_HASH is an unsalted SHA-256 — re-create it with scripts/set-admin-password.mjs, which writes a salted scrypt hash.');
   }
 
   if (!env.NEXT_PUBLIC_SUPABASE_URL) {

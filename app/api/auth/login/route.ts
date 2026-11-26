@@ -4,6 +4,8 @@ import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 import { logSecurityEvent, SEC } from '@/lib/securityEvents';
 import { issueAdminSession } from '@/lib/adminSession';
 import { getLocale } from '@/lib/i18n';
+import { verifyPassword } from '@/lib/passwords';
+import { MAX_PASSWORD_LENGTH } from '@/lib/domain';
 
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -17,26 +19,40 @@ export async function POST(request: NextRequest) {
   const ip = clientIp(request.headers);
 
   try {
-    // Brute-force guard: the admin password is a single SHA-256 hash (no scrypt
-    // cost), so this endpoint MUST be throttled. 8 attempts/min per IP.
-    const okIp = await checkRateLimit(`admin-login:${ip}`, 8, 60_000);
-    if (!okIp) {
+    // Brute-force guard: 8 attempts a minute per address, and 40 per ten
+    // minutes whatever the address — guessing from many machines at once is
+    // slowed to four tries a minute in total.
+    const [okIp, okAll] = await Promise.all([
+      checkRateLimit(`admin-login:${ip}`, 8, 60_000),
+      checkRateLimit('admin-login:all', 40, 10 * 60_000),
+    ]);
+    if (!okIp || !okAll) {
       logSecurityEvent({ type: SEC.RATE_LIMIT_BLOCK, severity: 'warn', ip, detail: 'admin-login throttled (8/min)' });
       return NextResponse.json({ error: 'Too many attempts. Try again in a minute.' }, { status: 429 });
     }
 
     const { password } = await request.json();
-    if (!password) {
+    if (!password || typeof password !== 'string') {
       return NextResponse.json({ error: 'Password required' }, { status: 400 });
     }
+    if (password.length > MAX_PASSWORD_LENGTH) {
+      return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
+    }
 
-    // Compute SHA-256 hex hash of password and compare CONSTANT-TIME —
-    // `!==` short-circuits on the first differing byte, leaking match-length
-    // through response timing (amaz_ convention: timingSafeEqual everywhere).
-    const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
-    const a = Buffer.from(passwordHash, 'utf8');
-    const b = Buffer.from(ADMIN_PASSWORD_HASH, 'utf8');
-    const matches = a.length === b.length && crypto.timingSafeEqual(a, b);
+    // ADMIN_PASSWORD_HASH is either a salted scrypt hash ("scrypt:…", what
+    // scripts/set-admin-password.mjs writes since 2026-11-26) or the older
+    // bare SHA-256, compared in constant time. The bare form still works so
+    // nobody is locked out; it should be replaced (a leaked SHA-256 can be
+    // guessed offline at billions of tries a second).
+    let matches: boolean;
+    if (ADMIN_PASSWORD_HASH.startsWith('scrypt:')) {
+      matches = verifyPassword(password, ADMIN_PASSWORD_HASH);
+    } else {
+      const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+      const a = Buffer.from(passwordHash, 'utf8');
+      const b = Buffer.from(ADMIN_PASSWORD_HASH, 'utf8');
+      matches = a.length === b.length && crypto.timingSafeEqual(a, b);
+    }
 
     if (!matches) {
       logSecurityEvent({ type: SEC.ADMIN_LOGIN_FAILED, severity: 'critical', ip, detail: 'Invalid admin password' });

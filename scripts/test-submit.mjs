@@ -37,7 +37,7 @@ const ALLOWED_ORIGIN = 'https://allowed.example';
 let fpCounter = 0;
 const baseHeaders = () => ({ 'x-forwarded-for': TEST_IP, 'x-client-fingerprint': `fp-${TEST_IP}-${fpCounter++}` });
 
-let developerId = null, clientId = null, formId = null, inactiveFormId = null, notifyFormId = null, rawKey = null, realIp = null, directFp = null;
+let developerId = null, clientId = null, formId = null, inactiveFormId = null, notifyFormId = null, rawKey = null, realIp = null, directFp = null, honeypotBanIds = [];
 
 async function countSubmissions(fid) {
   const { count } = await sb.from('submissions').select('id', { count: 'exact', head: true }).eq('form_id', fid);
@@ -56,6 +56,7 @@ async function cleanup() {
   try {
     await sb.from('blacklist').delete().eq('target', TEST_IP);
     if (realIp) await sb.from('blacklist').delete().eq('target', realIp);
+    if (honeypotBanIds.length) await sb.from('blacklist').delete().in('id', honeypotBanIds);
     if (directFp) await sb.from('blacklist').delete().eq('target', directFp);
     await sb.from('blacklist').delete().eq('target', RELAY_VISITOR_IP);
     await sb.from('blacklist').delete().like('target', `fp-${TEST_IP}-%`);
@@ -265,25 +266,35 @@ try {
 
   // 9b. A direct visitor who fills the honeypot IS banned — by the address the platform saw, for a
   //     day — and never by the browser fingerprint, which is a header the sender writes.
-  //     This bans the test runner's own address: it is lifted in the same breath (and in cleanup).
+  //     This bans the test runner's own address, and its host name when the runner sits at a hosting
+  //     provider. Both are lifted in the same breath (and again in cleanup). The rows are found by
+  //     when they were written, not by an address learned earlier: a runner may leave through
+  //     several addresses, and until 2026-11-26 the host ban was left behind — the next run, arriving
+  //     from that host, was refused on every post.
   {
-    const { data: mine } = await sb.from('submissions').select('ip_address').eq('form_id', formId).neq('ip_address', RELAY_VISITOR_IP).neq('ip_address', TEST_IP).limit(1);
-    realIp = mine?.[0]?.ip_address ?? null;
     directFp = `fp-direct-${Date.now()}`;
     const before = await countSubmissions(formId);
+    const t0 = new Date(Date.now() - 2000).toISOString();
     const res = await fetch(`${BASE}/api/submit/${formId}`, {
       method: 'POST', redirect: 'manual',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: ALLOWED_ORIGIN, Referer: `${ALLOWED_ORIGIN}/contact`, 'x-client-fingerprint': directFp },
       body: new URLSearchParams({ name: 'Bot', email: 'bot@x.com', _gotcha: 'i-am-a-bot' }).toString(),
     });
     const after = await countSubmissions(formId);
-    await new Promise((r) => setTimeout(r, 700));
-    const { data: ipBan } = realIp ? await sb.from('blacklist').select('id, expires_at').eq('target', realIp).limit(1) : { data: [] };
+    await new Promise((r) => setTimeout(r, 1500)); // the host lookup is bounded at 1.5 s
+    const { data: written } = await sb.from('blacklist').select('id, target, type, expires_at').gte('created_at', t0).like('reason', 'Honeypot Triggered%');
+    honeypotBanIds = (written ?? []).map((r) => r.id);
+    const ipBan = (written ?? []).filter((r) => r.type === 'ip');
+    const hostBan = (written ?? []).filter((r) => r.type === 'host');
     const { data: fpBan } = await sb.from('blacklist').select('id').eq('target', directFp).limit(1);
-    if (realIp) await sb.from('blacklist').delete().eq('target', realIp);
+    if (honeypotBanIds.length) await sb.from('blacklist').delete().in('id', honeypotBanIds);
+    realIp = ipBan[0]?.target ?? null;
     check('honeypot -> silent success, NOT stored', (res.status === 303 || res.status === 200) && after === before, `status ${res.status}, ${before}->${after}`);
-    check('a direct honeypot hit bans the address the platform saw, with an expiry (temporary, court order A2)', !!realIp && (ipBan?.length ?? 0) > 0 && !!ipBan[0].expires_at, `ip known: ${!!realIp} ${JSON.stringify(ipBan)}`);
-    check('…and never the fingerprint the sender wrote', (fpBan?.length ?? 0) === 0, JSON.stringify(fpBan));
+    check('a direct honeypot hit bans the address the platform saw, with an expiry (temporary, court order A2)', ipBan.length === 1 && !!ipBan[0].expires_at, `ip bans written: ${ipBan.length}`);
+    check('…its host name too, at most once and never without an expiry', hostBan.length <= 1 && hostBan.every((r) => !!r.expires_at), `host bans written: ${hostBan.length}`);
+    check('…and never the fingerprint the sender wrote', (fpBan?.length ?? 0) === 0 && !(written ?? []).some((r) => r.type === 'fingerprint'), JSON.stringify(fpBan));
+    const { data: left } = honeypotBanIds.length ? await sb.from('blacklist').select('id').in('id', honeypotBanIds) : { data: [] };
+    check('the suite leaves no ban behind', (left?.length ?? 0) === 0, `left: ${left?.length}`);
   }
 } catch (e) {
   fail++; failures.push(`crashed: ${e.message}`); console.error('SUITE ERROR:', e);

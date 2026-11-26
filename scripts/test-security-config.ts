@@ -67,5 +67,15 @@ const GOOD = {
   ck('missing supabase URL -> warning', r.warnings.some((w) => w.includes('NEXT_PUBLIC_SUPABASE_URL')));
 }
 
+// the scheduled-job secret
+{
+  const missing = validateSecurityConfig({ ...GOOD });
+  ck('no scheduled-job secret -> warning that nothing scheduled can run (not fatal)', missing.ok === true && missing.warnings.some((w) => w.includes('CRON_SECRET') && w.includes('backup')));
+  const weak = validateSecurityConfig({ ...GOOD, CRON_SECRET: 'changeme' });
+  ck('a short or placeholder scheduled-job secret -> warning', weak.ok === true && weak.warnings.some((w) => w.includes('CRON_SECRET') && w.includes('guesses')));
+  const fine = validateSecurityConfig({ ...GOOD, CRON_SECRET: 'q7Lr2Vx9Tb4Nc8Wd1Zf6Hj3Mk5Pn0Sa7Ye' });
+  ck('a long random one -> no warning about it', !fine.warnings.some((w) => w.includes('CRON_SECRET')));
+}
+
 console.log(`\n== RESULT: ${pass} passed, ${fail} failed ==`);
 if (failures.length) { console.log('Failures:', failures.join(' | ')); process.exit(1); }

@@ -81,6 +81,16 @@ export function validateSecurityConfig(env: NodeJS.ProcessEnv = process.env): Se
     warnings.push('NEXT_PUBLIC_SUPABASE_URL is not set — Supabase client calls will fail.');
   }
 
+  // Without the scheduled-job secret nothing scheduled runs: no daily backup,
+  // no housekeeping, no sweep for notifications that never left. Not fatal —
+  // the service still takes leads — but it must not go unnoticed.
+  const cron = env.CRON_SECRET;
+  if (!cron) {
+    warnings.push('CRON_SECRET is not set — no scheduled job can run: no daily backup, no housekeeping, no notification sweep.');
+  } else if (cron.length < 24 || KNOWN_INSECURE.has(cron)) {
+    warnings.push(`CRON_SECRET is short or a placeholder (${cron.length} chars) — anyone who guesses it can trigger the scheduled jobs. Use 32+ random characters.`);
+  }
+
   if (!env.ADMIN_2FA_EMAIL) {
     warnings.push('ADMIN_2FA_EMAIL is not set — admin login has no second factor. Set it to require an emailed code on every admin sign-in.');
   }

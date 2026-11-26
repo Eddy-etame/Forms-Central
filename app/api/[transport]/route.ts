@@ -7,6 +7,8 @@ import { createClientForDeveloper, CLIENT_SELECT, shapeClient, inviteClient } fr
 import { createFormForDeveloper, findFormByName, isServiceError, FORM_SELECT } from '@/lib/forms';
 import { buildSnippet, helperSnippet, deriveOrigins, normalizeOrigins, SNIPPET_TARGETS, type SnippetTarget } from '@/lib/snippets';
 import { pendingNotificationIds } from '@/lib/delivery';
+import { createBurstLimiter } from '@/lib/burst';
+import { clientIp } from '@/lib/rateLimit';
 
 /**
  * Inlet MCP server v2 (Streamable HTTP, stateless).
@@ -440,10 +442,21 @@ function buildHandler(auth: ApiKeyAuth) {
   );
 }
 
+// Two ceilings kept in this instance's memory (lib/burst.ts): they cost nothing
+// and stop the two things an API endpoint attracts — a client trying keys, and
+// an agent stuck in a loop.
+const badKeys = createBurstLimiter();
+const calls = createBurstLimiter();
+const BAD_KEYS_PER_MINUTE = 20;
+const CALLS_PER_MINUTE = 240;
+const tooMany = (message: string) => Response.json({ jsonrpc: '2.0', error: { code: -32029, message }, id: null }, { status: 429, headers: { 'Retry-After': '60' } });
+
 async function withAuth(req: Request): Promise<Response> {
   const bearer = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');
+  const ip = clientIp(req.headers);
   const auth = await verifyApiKey(bearer);
   if (!auth) {
+    if (!badKeys.allow(ip, BAD_KEYS_PER_MINUTE)) return tooMany('Too many requests without a valid API key. Wait a minute.');
     return Response.json(
       { jsonrpc: '2.0', error: { code: -32001, message: `Unauthorized: pass an Inlet API key as "Authorization: Bearer kef_...". Create one in your dashboard (${ORIGIN}/developer/dashboard/api).` }, id: null },
       { status: 401 }
@@ -455,6 +468,7 @@ async function withAuth(req: Request): Promise<Response> {
       { status: 403 }
     );
   }
+  if (!calls.allow(auth.clientId, CALLS_PER_MINUTE)) return tooMany(`More than ${CALLS_PER_MINUTE} calls in a minute from this account. Slow down; nothing was lost.`);
   return buildHandler(auth)(req);
 }
 

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isScheduledCall } from '@/lib/cronAuth';
 import { supabase } from '@/lib/supabase';
 import { takeBackup } from '@/lib/backupCore';
 import { recordJobRun } from '@/lib/jobRuns';
@@ -20,8 +21,7 @@ export const maxDuration = 60;
  * of those tables is part of a backup, and none holds a lead.
  */
 export async function GET(req: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get('authorization') !== `Bearer ${secret}`) {
+  if (!isScheduledCall(req)) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
   const startedAt = new Date();

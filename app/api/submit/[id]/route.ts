@@ -6,6 +6,7 @@ import { isBlacklisted, blacklistTarget, AUTO_BAN_TTL_MS } from '@/lib/blacklist
 import { handleHoneypotTrigger, resolveHostDomain } from '@/lib/dnsLookup';
 import { attachmentUrl, UPLOADS_BUCKET } from '@/lib/storage';
 import { stripStorageLinks, sniffUpload, UPLOAD_CONTENT_TYPE } from '@/lib/attachments';
+import { createBurstLimiter } from '@/lib/burst';
 import { answerLang, successPageHtml, errorPageHtml, type AnswerLang } from '@/lib/formAnswerPages';
 import { verifyChallenge } from '@/lib/pow';
 import { sendLeadEmail, sendAutoReplyEmail } from '@/lib/email';
@@ -38,18 +39,12 @@ export const maxDuration = 30; // attachments + e-mail + webhook can take a whil
 // In-memory guards (per instance): anti-replay cache for PoW challenges and a
 // burst limiter. The DB-backed limiter below is the authoritative one.
 const challengeReplayCache = new Set<string>();
-const rateLimitMap = new Map<string, { count: number; timestamp: number }>();
 const autoReplyRateLimitMap = new Map<string, number[]>();
+// Bounded: the key carries a fingerprint the sender writes (lib/burst.ts).
+const burst = createBurstLimiter();
 
 function checkBurst(key: string, limit = 12): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(key);
-  if (!entry || now - entry.timestamp > 60 * 1000) {
-    rateLimitMap.set(key, { count: 1, timestamp: now });
-    return true;
-  }
-  entry.count++;
-  return entry.count <= limit;
+  return burst.allow(key, limit);
 }
 
 function checkAutoReplyRateLimit(email: string, limit = 3, timeframeMs = 10 * 60 * 1000): boolean {

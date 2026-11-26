@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isScheduledCall } from '@/lib/cronAuth';
 import { runRetention, reportDigest, NOTICE_DAYS } from '@/lib/retentionCore';
 import type { RetentionSummary } from '@/lib/retentionCore';
 import { retentionDeps, retentionMode } from '@/lib/retention';
@@ -80,8 +81,7 @@ function reportSubject(s: RetentionSummary): string {
 }
 
 export async function GET(req: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get('authorization') !== `Bearer ${secret}`) {
+  if (!isScheduledCall(req)) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
   const startedAt = new Date();

@@ -149,7 +149,7 @@ history: research, verdicts and options. What is below is what we build.
   24, UI 24 — all green on production after the deploy.
 - **Retention, approved but not yet armed.** The author approved the job. Dry
   run today: 3 free-plan leads past the 30-day window, all on the author's
-  own forms (`EAM-agency` ×2, `contact-club-de-boxe-blagnac` ×1). The two
+  own forms (two on one, one on another). The two
   steps that arm it — the three production variables plus the `crons` entry,
   and moving the author's two developer accounts off the free plan so the job
   never touches their leads — were refused by this session's automatic safety
@@ -168,9 +168,9 @@ history: research, verdicts and options. What is below is what we build.
 
 **What happened.** From the day the client sites were pointed at this
 deployment (2026-11-07) until 2026-11-24, every lead was stored and no
-notification e-mail was sent. Four real leads were affected: three on
-`contact-club-de-boxe-blagnac` (9, 10 and 18 November) and one on `boutique de
-boxe` (17 November). No lead was lost; nobody was told about them.
+notification e-mail was sent. Four real leads were affected, on two of the
+author's client sites: three on one (9, 10 and 18 November) and one on the
+other (17 November). No lead was lost; nobody was told about them.
 
 **Root cause.** The submit route started its e-mails, webhook and log rows as
 bare promises and answered the visitor. The host suspends the function once
@@ -286,9 +286,9 @@ The pool is one account with five dead spares: re-key or remove 2–6.
     e-mailed what arming would do, when it changes and weekly); armed
     (`RETENTION_APPLY=true`). **Report mode is on in production since
     2026-11-25** — the dry run the author approved on 8 November. Read-only
-    figures that night: arming would notify 4 accounts (EAM-Agency 3 leads,
-    2 past the window; club-de-boxe-blagnac 6, 1 past; Boxing Center 5, none
-    past; Alicia 1, past) and delete nothing that day.
+    figures that night: arming would notify 4 accounts (3 leads, 2 past the
+    window; 6 leads, 1 past; 5 leads, none past; 1 lead, past) and delete
+    nothing that day. The names are in the report e-mailed to the operator.
     `npm run retention:report` prints the same at any time.
   - Where people see it: the developer dashboard repeats an announced
     deletion with the export button; the client inbox says how long requests
@@ -398,7 +398,7 @@ developers who let agents write their forms).
 (migration, services, API, MCP, dashboard, portal, docs, truth pass, scripts).
 
 **Live (2026-10-30):** production runs on the author's own Vercel account at
-https://eam-inlet.vercel.app (project `inlet`, scope `etameeddy01-1772`, 47
+https://eam-inlet.vercel.app (project `inlet`, the author's personal scope, 47
 production variables, daily retention cron). Smoke-tested: every public page
 200, redirects 308, every private API 401 without a session, the submit route
 answers `FORM_NOT_FOUND` on an unknown id even without migration v22 (the
@@ -407,7 +407,7 @@ serves the previous version against the same database until the client sites
 point at the new origin.
 
 **2026-11-07 — proven live.** The author found the Supabase account again
-(project `Logiciel-formulaire`, `namqxkqygwnmgqcntxwu`, eu-north-1). A
+(project `Logiciel-formulaire`, eu-north-1). A
 Management API token saved as a network secret lets the session run SQL
 through `api.supabase.com`; migration v22 was applied that way after a fresh
 backup (0 orphan forms, one default client per developer). The three suites

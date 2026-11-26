@@ -1,0 +1,22 @@
+# What the host receives when this project is deployed from a machine.
+#
+# The deploy tool does NOT read .gitignore. Without this file it uploads the
+# whole folder as build source — and until 2026-11-26 that included backups/,
+# the local database dumps written by scripts/backup-supabase.mjs.
+#
+# So this is an allow-list: everything at the root is ignored, then only what
+# `next build` needs is let through. A new folder is out until it is named here.
+/*
+!/app
+!/components
+!/emails
+!/lib
+!/public
+!/proxy.ts
+!/instrumentation.ts
+!/next.config.ts
+!/postcss.config.mjs
+!/tsconfig.json
+!/package.json
+!/package-lock.json
+!/vercel.json

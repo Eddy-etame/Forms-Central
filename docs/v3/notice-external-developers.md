@@ -82,15 +82,18 @@ e-mail.
 
 ---
 
-## Who (from the database, 2026-11-07, addresses masked)
+## Who (from the database, 2026-11-07)
 
 | Account | Plan | Signed up | Forms on the old origin |
 |---------|------|-----------|-------------------------|
-| con***@marchedemo.com | free | 2026-06-04 | yes |
-| rhe***@gmail.com | free | 2026-06-04 | yes |
-| Rem***@gmail.com | free | 2026-06-05 | yes |
-| yam***@gmail.com | free | 2026-10-21 | yes |
-| ali***@gmail.com | free | 2026-10-22 | yes |
+| developer 1 | free | 2026-06-04 | yes |
+| developer 2 | free | 2026-06-04 | yes |
+| developer 3 | free | 2026-06-05 | yes |
+| developer 4 | free | 2026-10-21 | yes |
+| developer 5 | free | 2026-10-22 | yes |
 
-The exact addresses are in the `clients` table; the notice goes out from the
-operator mailbox, one message per developer, no bulk tool.
+No address is written here, not even in part: this file lives in a
+repository. The five are the developer accounts of the `clients` table that
+are not the operator's own, in order of sign-up; the operator dashboard lists
+them. The notice goes out from the operator mailbox, one message per
+developer, no bulk tool.

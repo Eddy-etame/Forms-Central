@@ -30,7 +30,7 @@ eq('fr operator default → en visitor', localizeAutoReplySubject('Confirmation 
 eq('case and padding tolerated', localizeAutoReplySubject('  we RECEIVED your message ', 'fr'), 'Nous avons bien reçu votre message');
 
 // a subject somebody wrote is never touched, whatever the language
-for (const custom of ['Ta séance offerte au Boxing Center Portet est réservée 🥊', 'Merci pour votre message!', 'Boutique de Boxe : votre message est bien arrivé', 'Nous avons reçu votre message', 'We got it, {{name}}']) {
+for (const custom of ['Ta séance offerte au Club Atlas est réservée 🥊', 'Merci pour votre message!', 'La Boutique Atlas : votre message est bien arrivé', 'Nous avons reçu votre message', 'We got it, {{name}}']) {
   eq(`custom kept (fr): ${custom.slice(0, 28)}`, localizeAutoReplySubject(custom, 'fr'), custom);
   eq(`custom kept (en): ${custom.slice(0, 28)}`, localizeAutoReplySubject(custom, 'en'), custom);
 }

@@ -113,7 +113,7 @@ function buildHandler(auth: ApiKeyAuth) {
           title: 'Create client',
           description: 'Create a client (a business). Idempotent on e-mail: an existing client is returned, not duplicated. With invite=true the client receives a set-password link to its lead inbox.',
           inputSchema: {
-            name: z.string().min(2).max(80).describe('Business name, e.g. "Boxing Center Portet"'),
+            name: z.string().min(2).max(80).describe('Business name, e.g. "Atlas Fitness"'),
             email: z.string().email().describe('Where the leads go. Never appears in any snippet.'),
             website: z.string().max(200).optional().describe('The site, e.g. https://acme.com — used to derive form origins'),
             lang: z.enum(['fr', 'en']).optional().describe('Auto-reply and invite language (default fr)'),

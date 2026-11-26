@@ -176,7 +176,7 @@ Other scripts:
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/backup-supabase.mjs [--files]` | dump every table (and the bucket) to `backups/<timestamp>/` (gitignored) |
+| `scripts/backup-supabase.mjs [--files]` | dump every table (and the bucket) to `backups/<timestamp>/` — real data on your disk: gitignored, kept out of deploys by `.vercelignore`, yours to delete |
 | `scripts/migrate-supabase.mjs [--dry-run]` | copy a whole project to another Supabase project, rewriting attachment URLs |
 | `scripts/build-agent-docs.mjs` | regenerate `lib/agentDocs.ts` from `docs/agent/*.md` |
 | `scripts/set-admin-password.mjs` | operator password hash |
@@ -189,13 +189,17 @@ Before pushing: `npm run lint && npx tsc --noEmit && npm run build`.
 ## Deployment (Vercel)
 
 Production is the Vercel project **`eam-inlet`** in the author's personal
-scope (`etameeddy01-1772`), served at https://eam-inlet.vercel.app with the
+scope, served at https://eam-inlet.vercel.app with the
 former `inlet-eta.vercel.app` redirecting (308). Deploys are made from the
-CLI, from a clean checkout of `main`:
+CLI. The CLI uploads the folder it runs in and does **not** read
+`.gitignore`; `.vercelignore` is therefore an allow-list (only what `next
+build` needs goes up). Until 2026-11-26 there was none, and local database
+dumps in `backups/` travelled with every deploy as private build source.
+A new top-level folder the build needs must be added to that file:
 
 ```bash
 npx vercel login                                   # device flow, any machine
-npx vercel link --yes --project eam-inlet --scope etameeddy01-1772
+npx vercel link --yes --project eam-inlet --scope <your-scope>   # `npx vercel teams ls` prints it
 npx vercel env ls                                  # every name of .env.example is set in production
 npx vercel deploy --prod --yes                     # build + release
 ```

@@ -345,6 +345,111 @@ The pool is one account with five dead spares: re-key or remove 2–6.
 - The host accepted three daily jobs: backup 04:17, retention 05:41 (report
   mode), notification sweep 06:23 UTC.
 
+### 2026-11-26 — security review of the whole surface, by hand
+
+The author's order: "this project must be at 100% at all levels, even
+security". Every route, token, e-mail, scheduled job, storage path and public
+sentence was re-read. What was found, in order of weight, and what changed.
+
+- **CRITICAL, closed the same hour — a file reference typed by a visitor could
+  leave the uploads bucket.** A lead field holding a storage link was
+  percent-decoded before use; a crafted one resolved to the private `backups`
+  bucket, so the download endpoint (for the developer who owns the lead) and
+  the signed links sent to webhooks could return a daily database backup.
+  Reproduced against production, fixed and deployed at 14:16 UTC
+  (`lib/attachments.ts`: only a file name this server generated is ever
+  resolved, nothing is decoded, and storage links typed by a visitor are
+  stripped on arrival). The backup files, whose names followed the date, were
+  deleted and a new one taken under a random name. **No sign it was used:** no
+  lead holds such a value, and between the first backup and the fix no lead
+  arrived, no account was created, and no developer session, client session
+  or API key was used.
+- **A session did not end when it should.** The API checked only a token's
+  signature: it kept working after sign-out, after a password reset, after
+  the account was deleted; a refresh token passed as an access token; a
+  replayed refresh token was honoured. Now one validated path for pages and
+  API (`lib/developerAuth.ts`, `lib/portalAuth.ts`), tokens say what they are,
+  a reset ends every session (migration v25: `sessions_valid_after`), a
+  removed device session signs the device out.
+- **An account could be taken before its owner arrived** (sign up with
+  someone's address and a password, wait for them to arrive through Google).
+  Addresses are now verified (`email_verified_at`); an unverified account that
+  signs in with Google loses the password it was created with.
+- **A client's inbox survived a change of address.** The old password, a link
+  already e-mailed to the old address and every open session kept working.
+  All three now end with the change; the new address gets its own link.
+- **A ban could be aimed.** One account relaying a visitor address could have
+  any address refused on every form of every developer; a bot could write
+  anyone's browser fingerprint and have it banned. A ban is now placed only
+  on an address this server saw itself, a host only when forward-confirmed
+  reverse DNS says it is a hosting provider, a fingerprint never.
+- **The server could be sent where it should not go.** Webhook targets are
+  resolved and must be public; redirects are not followed; the signing secret
+  is stored encrypted. Links in e-mails are built on the canonical origin, not
+  on the host header of the request.
+- **Any inline script could run on any page.** The policy allowed it; an
+  injected `onerror` handler and a `javascript:` link both ran in a test
+  against production. Every page now carries a policy built around a nonce
+  minted for that request (`lib/csp.ts`, `proxy.ts`); the same test finds
+  both refused. API answers and static files keep the fixed policy.
+- **Database dumps travelled with every deploy.** The deploy tool does not
+  read `.gitignore`: the local dumps in `backups/` were uploaded as private
+  build source with 25 builds, 7 to 26 November. Never public (every path
+  answers 404, source view needs the account), never in git. `.vercelignore`
+  is now an allow-list and the build that is live carries none. The 25 older
+  builds still hold them until they are deleted — waiting on the author.
+- **The privacy policy said things the code did not do.** Logs "expire on
+  their own": nothing deleted them (sign-in codes from July were still
+  there). Visits were counted under a one-year cookie nobody was asked about.
+  Attachments were described as public links, which they have not been since
+  8 November. Now: `lib/housekeeping.ts` runs with the daily backup and
+  deletes by age (first supervised run: 25 codes, 3 dead sessions, 3
+  addresses blanked; accounts, forms and leads untouched); visits are counted
+  without a cookie under a value that changes every day, and not at all for
+  a browser that sends Global Privacy Control or Do Not Track; the policy
+  gives the real durations, in both languages.
+- **Public claims had drifted.** The home page's structured data — what search
+  engines and assistants read — was a hand-kept English copy still saying
+  "self-hosted" and "AI spam blocking"; it is now generated from the FAQ the
+  page shows, in its language. Three answers described the old product
+  (sending through your own verified sender, attachments as links in the
+  e-mail, bans by fingerprint) and were rewritten from the code. The error
+  table said an e-mail could be banned; nothing bans one.
+- **Smaller, all closed:** a proof-of-work solution could be replayed; two
+  parallel requests could both pass a rate limit; a one-time code could be
+  tried in parallel; the auto-reply greeted a visitor with whatever they
+  typed as a name (a link, in someone else's inbox); a CSV cell could start a
+  formula; `robots.txt` listed the operator area it is meant to hide; the
+  operator shell was guarded by the proxy alone; structured data was written
+  into the page unescaped. 26 dependency advisories, now 0.
+- **Checked and found sound:** all 18 tables have row-level security on, no
+  policy and no grant to the public roles; both buckets are private; no
+  secret is in the repository or its history; the old origin answers
+  `402 DEPLOYMENT_DISABLED` on every path.
+- **This repository is public.** Its documents carried the masked addresses of
+  five developers, account names, the hosting scope name and the database
+  project reference; all removed from the current files. They remain in the
+  history until it is rewritten — the author's call, as is making the
+  repository private.
+- **Proof.** 14 unit suites (463 checks). Against production on the 15:17 UTC
+  build: MCP 24/24, developer-and-client 97/97, browser 41/41 with no browser
+  error. On the final 15:26 build, which differs only inside the housekeeping
+  module: submit 25/25 and the policy check on 17 pages (every script carries
+  the request's nonce, zero violations, injected markup refused).
+- **The submit suite was leaving a ban behind.** Its honeypot test bans the
+  runner's own address — and, since today, that address's host name when it
+  sits at a hosting provider. Only the address was lifted afterwards; the
+  next run, leaving through the same host, was refused on every post. The
+  suite now lifts every ban it causes and checks that none is left; the two
+  it left today were removed.
+- **Still open.** The no-JavaScript answers of the submit endpoint keep a
+  `javascript:` "back" link, so the API keeps the fixed policy. Styles still
+  allow inline (React writes style attributes). One e-mail address can be a
+  client of only one developer, and the refusal tells the second developer
+  so. The operator password is still a plain SHA-256 until
+  `scripts/set-admin-password.mjs` is run. No backup copy outside the
+  database's own project.
+
 ## 2. The B proposal (what we built beyond the ask)
 
 The author asked for A: developers → clients → forms, no e-mail in the code,

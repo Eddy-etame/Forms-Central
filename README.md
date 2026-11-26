@@ -50,8 +50,11 @@ created by their developer and receive a set-password link.
   set-password link (7 days) or "forgot password".
 - **Submit pipeline** `POST /api/submit/:formId` — origins (CORS), honeypot,
   proof-of-work for JavaScript posts, keyword flagging (suspect leads are
-  **kept** and flagged, never dropped), reverse-DNS host bans after a honeypot hit, per-IP rate
-  limits with 24 h bans, attachments to Storage, e-mail to the client (+
+  **kept** and flagged, never dropped), per-IP rate limits, a 24 h ban for an
+  address that fills the honeypot or floods a form (its hosting provider too,
+  when forward-confirmed reverse DNS says it belongs to one; never an address
+  a relay merely reports, never a browser fingerprint), attachments to
+  private Storage, e-mail to the client (+
   developer copy), branded auto-reply, signed webhook. API-key relays
   (`Authorization: Bearer kef_…` + `X-Inlet-Visitor-IP`) skip CORS and PoW.
   Everything after the stored lead runs through `lib/background.ts`
@@ -182,7 +185,12 @@ Other scripts:
 | `scripts/set-admin-password.mjs` | operator password hash |
 | `scripts/set-developer-password.mjs` | set a **developer** account password by hand (table `clients`) |
 
-Before pushing: `npm run lint && npx tsc --noEmit && npm run build`.
+The rules that must not drift each have a unit test that runs without a
+server or a database — `npm run test:unit` (14 suites: mail rotation, tokens,
+one-time codes, encryption, spam labels, auto-reply, retention, CSV, backups,
+attachment references, private addresses, housekeeping, the script policy).
+
+Before pushing: `npm run lint && npx tsc --noEmit && npm run test:unit && npm run build`.
 
 ---
 
@@ -217,7 +225,12 @@ or a Pro team with both identities as members.
 
 Scheduled jobs (`vercel.json` → `crons`, authenticated with `CRON_SECRET`):
 `/api/cron/backup` (04:17 UTC) copies accounts, clients, forms and leads to a
-private bucket, `/api/cron/retention` (05:41) does nothing until it is switched
+private bucket, then lets go of what the privacy policy says is not kept
+(`lib/housekeeping.ts`: visits and e-mail log lines after 13 months, security
+events and failure lines after 12, dead device sessions after 90 days, expired
+bans after 30, the address on an assistant usage line after 30, sign-in codes
+and rate-limit counters after a day — never an account, a form or a lead),
+`/api/cron/retention` (05:41) does nothing until it is switched
 on, `/api/cron/redeliver` (06:23) sends the notifications that never left.
 Each run leaves a row in `job_runs`; the operator reads them under
 Logs → Scheduled jobs.
@@ -269,7 +282,10 @@ client inbox says how long requests stay. Export (`/api/developer/leads/export`,
    `spam_status = 'suspect'`; only the honeypot rejects (the bot sees success).
 4. **Bans are temporary** (`blacklist.expires_at`, 24 h).
 5. **Attachments go through `/api/download?sid=&field=`** with session +
-   ownership checks; the storage URL never reaches a browser.
+   ownership checks; the storage URL never reaches a browser. A reference is
+   resolved only if it is a file name this server generated
+   (`lib/attachments.ts`) — nothing is decoded, so nothing can step out of
+   the bucket — and storage links typed by a visitor are stripped on arrival.
 6. **Every send is logged; a failed send is a failure**, never reported as
    delivered. Sending accounts (`SMTP_*`, `SMTP_<n>_*`) rotate with a cooldown
    on failure; the daily e-mail budget is charged after success. Work that
@@ -285,6 +301,36 @@ client inbox says how long requests stay. Export (`/api/developer/leads/export`,
 9. **Nothing personal in the product**: no personal mailbox as a fallback
    sender, no `mailto:` upgrade links — plan requests go to `plan_requests`
    and `OPERATOR_EMAIL`.
+10. **A session ends when it should** (`lib/developerAuth.ts`,
+    `lib/portalAuth.ts`): on sign-out, on a password reset, when the account
+    or the device session is gone — checked on every request, pages and API
+    alike. A token says what it is (`use`), and a refresh token is never
+    accepted as an access token. A client whose e-mail address is changed
+    loses the old password, any link already sent and every open session;
+    the new address gets its own link.
+11. **A page runs only the scripts this server sent** (`lib/csp.ts`,
+    `proxy.ts`): every page carries a policy built around a nonce minted for
+    that request; inline handlers, `javascript:` links and injected tags do
+    not run. A layout that writes an inline script reads the nonce with
+    `getNonce()`. Structured data goes through `jsonLdText()`.
+12. **A ban is never handed to someone else to aim**: only on an address this
+    server saw itself (never one a relay reports, never a browser
+    fingerprint), a host only when forward-confirmed reverse DNS says it is a
+    hosting provider, always for 24 hours.
+13. **The server does not fetch where it is told without looking**
+    (`lib/netGuard.ts`, `lib/webhooks.ts`): a webhook URL must be public
+    https, resolve to public addresses, and is never followed through a
+    redirect. Links in e-mails are built on the canonical origin, never on
+    the host header of the request.
+14. **Public pages are counted without a cookie** (`/api/track`): a value
+    that changes every day, no stored address, nothing recorded for a
+    browser that sends Global Privacy Control or Do Not Track. What the
+    privacy policy says about durations is enforced by `lib/housekeeping.ts`.
+15. **Real data stays out of the repository and out of deploys**: `backups/`
+    and `.env*` are gitignored, `.vercelignore` is an allow-list, and docs
+    never carry a customer's address, not even masked.
+
+Found a weakness? `/.well-known/security.txt` says where to write.
 
 ---
 

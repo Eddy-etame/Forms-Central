@@ -8,7 +8,10 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         // Keep app internals out of the index; marketing pages stay crawlable.
-        disallow: ["/admin", "/api/", "/developer/dashboard", "/developer/choose-plan", "/portal", "/login"],
+        // The operator area is deliberately absent: it answers like any missing
+        // page to everyone else and carries its own noindex — a public list of
+        // "do not look here" paths is the one place that would point at it.
+        disallow: ["/api/", "/developer/dashboard", "/developer/choose-plan", "/portal"],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

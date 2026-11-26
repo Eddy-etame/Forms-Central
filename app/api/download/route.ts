@@ -5,6 +5,8 @@ import { verifyJWT, isAdminAccess } from '@/lib/jwt';
 import { getDeveloperSession } from '@/lib/developerAuth';
 import { getPortalSession } from '@/lib/portalAuth';
 import { attachmentPath, downloadAttachment } from '@/lib/storage';
+import { contentTypeForName } from '@/lib/attachments';
+import { FILE_CSP } from '@/lib/csp';
 import { checkRateLimit, clientIp } from '@/lib/rateLimit';
 
 /**
@@ -65,11 +67,18 @@ export async function GET(request: Request) {
     const filename = (path.split('/').pop() || 'file').replace(/[^\w.\-]+/g, '_');
     return new NextResponse(blob.stream(), {
       headers: {
-        'Content-Type': blob.type || 'application/octet-stream',
+        // The type comes from the name this server gave the file (which follows
+        // its bytes), never from what was stored with it: older objects carry
+        // the type their sender declared.
+        'Content-Type': contentTypeForName(filename),
         'Content-Length': String(blob.size),
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Cache-Control': 'private, no-store',
         'X-Content-Type-Options': 'nosniff',
+        // Bytes from a stranger, on this origin: if a browser ever renders one
+        // as a document, it runs nothing, loads nothing and frames nowhere.
+        'Content-Security-Policy': FILE_CSP,
+        'Cross-Origin-Resource-Policy': 'same-origin',
       },
     });
   } catch (error) {

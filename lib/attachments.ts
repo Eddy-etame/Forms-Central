@@ -14,6 +14,51 @@
  */
 export const ATTACHMENT_NAME_RE = /^\d{10,16}-[0-9a-f]{16}\.(?:jpg|png|pdf|webp|bin)$/;
 
+/**
+ * What a stored file is, decided by its first bytes — never by what the sender
+ * says it is.
+ *
+ * A file arrives as `data:<type>;base64,…` and the type is whatever the
+ * sender typed. Until 2026-11-26 that string chose the file's extension
+ * (`text/html;x=jpeg` became a `.jpg`) and was stored as the object's content
+ * type, which the download endpoint then repeated to the browser. A file now
+ * gets one of the four known extensions only if its signature says so;
+ * anything else is a `.bin`, served as opaque bytes.
+ */
+export type UploadKind = 'jpg' | 'png' | 'pdf' | 'webp' | 'bin';
+
+export const UPLOAD_CONTENT_TYPE: Record<UploadKind, string> = {
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  pdf: 'application/pdf',
+  webp: 'image/webp',
+  bin: 'application/octet-stream',
+};
+
+const starts = (b: Uint8Array, sig: number[], at = 0) => b.length >= at + sig.length && sig.every((v, i) => b[at + i] === v);
+
+export function sniffUpload(bytes: Uint8Array): UploadKind {
+  if (starts(bytes, [0xff, 0xd8, 0xff])) return 'jpg';
+  if (starts(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return 'png';
+  if (starts(bytes, [0x52, 0x49, 0x46, 0x46]) && starts(bytes, [0x57, 0x45, 0x42, 0x50], 8)) return 'webp'; // RIFF….WEBP
+  // %PDF- may be preceded by a few stray bytes (readers accept it within the first 1024).
+  const limit = Math.min(bytes.length - 5, 1024);
+  for (let i = 0; i <= limit; i++) {
+    if (bytes[i] === 0x25 && starts(bytes, [0x25, 0x50, 0x44, 0x46, 0x2d], i)) {
+      // …but never after markup: a page that merely contains "%PDF-" is not a PDF.
+      for (let j = 0; j < i; j++) if (bytes[j] === 0x3c) return 'bin';
+      return 'pdf';
+    }
+  }
+  return 'bin';
+}
+
+/** The content type to answer with for a stored file, from its generated name alone. */
+export function contentTypeForName(name: string): string {
+  const ext = ATTACHMENT_NAME_RE.test(name) ? (name.slice(name.lastIndexOf('.') + 1) as UploadKind) : 'bin';
+  return UPLOAD_CONTENT_TYPE[ext] ?? UPLOAD_CONTENT_TYPE.bin;
+}
+
 // `public` is the form older rows hold; `authenticated` is what is written today. Nothing else is ever stored.
 const REFERENCE_RE = /^https:\/\/([a-z0-9.-]+)\/storage\/v1\/object\/(?:public|authenticated)\/uploads\/([^/?#\\%]+)$/;
 

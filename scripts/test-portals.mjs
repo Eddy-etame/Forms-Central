@@ -38,11 +38,13 @@ const DEV_EMAIL = `portaldev+${Date.now()}@test.invalid`;
 const EC_EMAIL = `acme+${Date.now()}@test.invalid`;
 const EC2_EMAIL = `beta+${Date.now()}@test.invalid`;
 let developerId = null, devCookie = '', formId = null, form2Id = null, acmeId = null, betaId = null, portalCookie = '', fileObjectPath = null;
+const extraObjects = [];
 const otherDevs = [];
 
 async function cleanup() {
   try {
     if (fileObjectPath) await sb.storage.from('uploads').remove([fileObjectPath]);
+    if (extraObjects.length) await sb.storage.from('uploads').remove(extraObjects);
     for (const id of [developerId, ...otherDevs].filter(Boolean)) {
       const { data: forms } = await sb.from('forms').select('id').eq('client_id', id);
       for (const f of forms ?? []) { await sb.from('submissions').delete().eq('form_id', f.id); await sb.from('email_log').delete().eq('form_id', f.id); await sb.from('failures_log').delete().eq('form_id', f.id); }
@@ -242,6 +244,40 @@ try {
       const dlAnon = await fetch(`${BASE}/api/download?sid=${fileLead.id}&field=photo`);
       check('anonymous download is refused (401)', dlAnon.status === 401, `got ${dlAnon.status}`);
     }
+  }
+  {
+    // 2026-11-26 (later): the type a sender declared used to choose the file's extension
+    // (`text/html;x=jpeg` became a .jpg) and was repeated to the browser on download. The bytes
+    // decide now, and a download is answered as opaque, sandboxed data.
+    console.log(`\n== A file is what its bytes say, not what its sender says ==`);
+    const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    const PAGE = Buffer.from('<!doctype html><html><body><script>document.title="ran"</script>hello</body></html>');
+    const sendFile = async (who, dataUri) => {
+      const body = new URLSearchParams({ name: who, email: 'file@x.com', photo: dataUri }).toString();
+      const res = await fetch(`${BASE}/api/submit/${formId}`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: 'https://acme.example', Referer: 'https://acme.example/contact' }, body });
+      await new Promise((r) => setTimeout(r, 600));
+      const { data: rows } = await sb.from('submissions').select('id, payload').eq('form_id', formId).eq('payload->>name', who).limit(1);
+      const m = String(rows?.[0]?.payload?.photo ?? '').match(/\/uploads\/([^/]+)$/);
+      const name = m ? decodeURIComponent(m[1]) : null;
+      if (name) extraObjects.push(name);
+      const dl = rows?.[0] ? await fetch(`${BASE}/api/download?sid=${rows[0].id}&field=photo`, { headers: { cookie: devCookie } }) : null;
+      const bytes = dl?.ok ? Buffer.from(await dl.arrayBuffer()) : Buffer.alloc(0);
+      const { data: listed } = name ? await sb.storage.from('uploads').list('', { search: name, limit: 1 }) : { data: [] };
+      return { status: res.status, name, dl, bytes, storedType: listed?.[0]?.metadata?.mimetype ?? null };
+    };
+    const liar = await sendFile('Liar', `data:image/png;base64,${PAGE.toString('base64')}`);
+    check('a web page declared as an image is stored as opaque bytes (.bin, octet-stream)', liar.status === 200 && /\.bin$/.test(liar.name || '') && liar.storedType === 'application/octet-stream', `${liar.status} ${liar.name?.slice(-8)} ${liar.storedType}`);
+    const loose = await sendFile('Loose', `data:text/html;x=jpeg;base64,${PAGE.toString('base64')}`);
+    check('"text/html;x=jpeg" no longer makes a .jpg', /\.bin$/.test(loose.name || '') && loose.storedType === 'application/octet-stream', `${loose.name?.slice(-8)} ${loose.storedType}`);
+    const shy = await sendFile('Shy', `data:text/html;base64,${PNG.toString('base64')}`);
+    check('an image declared as a web page is stored as the image it is', /\.png$/.test(shy.name || '') && shy.storedType === 'image/png', `${shy.name?.slice(-8)} ${shy.storedType}`);
+    const h = liar.dl?.headers;
+    check('downloading the disguised page: same bytes, told to the browser as opaque data to save', liar.dl?.status === 200 && liar.bytes.equals(PAGE) && h.get('content-type') === 'application/octet-stream' && /^attachment;/.test(h.get('content-disposition') || '') && h.get('x-content-type-options') === 'nosniff',
+      `${liar.dl?.status} ${h?.get('content-type')} ${h?.get('content-disposition')}`);
+    const fileCsp = h?.get('content-security-policy') || '';
+    check('…under a policy where nothing loads or runs, in a sandbox', fileCsp.includes("default-src 'none'") && /(^|;\s*)sandbox(;|$)/.test(fileCsp.split(',')[0]) && !/unsafe-inline|script-src/.test(fileCsp), fileCsp.slice(0, 80));
+    check('…and never kept by a cache or readable from another site', /no-store/.test(h?.get('cache-control') || '') && h?.get('cross-origin-resource-policy') === 'same-origin', `${h?.get('cache-control')} ${h?.get('cross-origin-resource-policy')}`);
+    check('the real image still downloads as an image', shy.dl?.status === 200 && shy.dl.headers.get('content-type') === 'image/png' && shy.bytes.equals(PNG), `${shy.dl?.status} ${shy.dl?.headers.get('content-type')}`);
   }
   {
     // 2026-11-26: a reference typed into a form field used to be resolved by the server, with its

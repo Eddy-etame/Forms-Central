@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { isBlacklisted, blacklistTarget, AUTO_BAN_TTL_MS } from '@/lib/blacklist';
 import { handleHoneypotTrigger, resolveHostDomain } from '@/lib/dnsLookup';
 import { attachmentUrl, UPLOADS_BUCKET } from '@/lib/storage';
-import { stripStorageLinks } from '@/lib/attachments';
+import { stripStorageLinks, sniffUpload, UPLOAD_CONTENT_TYPE } from '@/lib/attachments';
 import { verifyChallenge } from '@/lib/pow';
 import { sendLeadEmail, sendAutoReplyEmail } from '@/lib/email';
 import { getQuotaState, logEmailSend } from '@/lib/quota';
@@ -367,15 +367,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (typeof value !== 'string' || !value.startsWith('data:')) continue;
     const match = value.match(/^data:(.*?);base64,(.*)$/);
     if (!match) continue;
-    const mimeType = match[1];
-    const ext = mimeType.includes('jpeg') || mimeType.includes('jpg') ? 'jpg'
-      : mimeType.includes('png') ? 'png'
-      : mimeType.includes('pdf') ? 'pdf'
-      : mimeType.includes('webp') ? 'webp'
-      : 'bin';
+    // The declared type (match[1]) is the sender's word: the bytes decide.
+    const bytes = Buffer.from(match[2], 'base64');
+    const ext = sniffUpload(bytes);
     const filename = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}.${ext}`;
     try {
-      const { data, error } = await supabase.storage.from(UPLOADS_BUCKET).upload(filename, Buffer.from(match[2], 'base64'), { contentType: mimeType, upsert: false });
+      const { data, error } = await supabase.storage.from(UPLOADS_BUCKET).upload(filename, bytes, { contentType: UPLOAD_CONTENT_TYPE[ext], upsert: false });
       if (!error && data) {
         // The bucket is private: the payload keeps the object's reference, readers go through /api/download.
         cleanPayload[key] = attachmentUrl(filename);

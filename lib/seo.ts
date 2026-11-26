@@ -84,6 +84,15 @@ export async function resolveLocale(lang?: string): Promise<Locale> {
   return getLocale();
 }
 
+/**
+ * Serialise structured data for a <script type="application/ld+json"> block.
+ * A "<" inside a string would let the text close the block and open markup of
+ * its own; written as \u003c it is the same JSON and can do neither.
+ */
+export function jsonLdText(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c');
+}
+
 /** Build localized Metadata with hreflang alternates for a marketing page. */
 export function buildMetadata(key: SeoKey, locale: Locale): Metadata {
   const s = SEO[locale][key];

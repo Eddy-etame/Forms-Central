@@ -4,7 +4,7 @@ import { Check, Minus, ArrowRight } from "lucide-react";
 import { Kicker } from "@/components/marketing/Kicker";
 import { getDictionary } from "@/lib/dictionaries";
 import { getAppDict } from "@/lib/appDict";
-import { resolveLocale, buildMetadata } from "@/lib/seo";
+import { resolveLocale, buildMetadata, jsonLdText } from "@/lib/seo";
 import { NavBar, SiteFooter } from "@/components/marketing/NavBar";
 import AiChat from "@/components/AiChat";
 import { PLANS, type PlanId } from "@/lib/plans";
@@ -19,49 +19,36 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   return buildMetadata('pricing', await resolveLocale(lang));
 }
 
-// Structured data (schema.org) stays in English regardless of page locale — convention for JSON-LD.
-const FAQ_JSONLD = [
-  {
-    q: "What happens if I go over my submission or email quota?",
-    a: "Your leads are never lost. Submissions keep being stored in your dashboard even over quota — only outgoing emails pause until the next day or an upgrade. Losing a lead over a billing limit is not acceptable to us.",
-  },
-  {
-    q: "Why is there an emails-per-day limit?",
-    a: "Every submission can trigger up to two emails (the client's notification + the branded auto-reply). Daily caps keep delivery fast and reputable for everyone. Higher tiers get dramatically more throughput.",
-  },
-  {
-    q: "Can I switch plans anytime?",
-    a: "Yes. Request a plan from your dashboard and it is activated by hand the same day; downgrades apply at the end of the cycle. Your forms, clients, leads and settings are never touched by a plan change.",
-  },
-  {
-    q: "Is the free plan really free forever?",
-    a: "Yes. Three forms, two clients, 50 submissions a month, full anti-spam, API and MCP included. It is enough to run a real site — most developers upgrade when they add their third client, not because we squeezed them.",
-  },
-];
-
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: FAQ_JSONLD.map((f) => ({
-    "@type": "Question",
-    name: f.q,
-    acceptedAnswer: { "@type": "Answer", text: f.a },
-  })),
-};
-
-const productJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Product",
-  name: "Inlet",
-  description: "Form backend for developers and the clients they build for: every form belongs to a client, leads reach the client by e-mail and in a private inbox, AI agents integrate it through MCP.",
-  brand: { "@type": "Brand", name: "Inlet" },
-  offers: Object.values(PLANS).map((p) => ({
-    "@type": "Offer",
-    name: p.name,
-    price: String(p.priceMonthly),
-    priceCurrency: "USD",
-  })),
-};
+/* Structured data: the product, and the same four questions the page shows,
+   in the language it shows them — never a second copy kept by hand. */
+function pricingJsonLd(locale: "en" | "fr", t: ReturnType<typeof getDictionary>["pricing"]) {
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: "Inlet",
+      description: buildMetadata("home", locale).description,
+      brand: { "@type": "Brand", name: "Inlet" },
+      offers: Object.values(PLANS).map((p) => ({
+        "@type": "Offer",
+        name: p.name,
+        price: String(p.priceMonthly),
+        priceCurrency: "USD",
+      })),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      inLanguage: locale,
+      mainEntity: [
+        { q: t.faqQ1, a: t.faqA1 },
+        { q: t.faqQ2, a: t.faqA2 },
+        { q: t.faqQ3, a: t.faqA3 },
+        { q: t.faqQ4, a: t.faqA4 },
+      ].map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+    },
+  ];
+}
 
 type Row = { label: string; values: (string | boolean)[] };
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -223,7 +210,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify([productJsonLd, faqJsonLd]) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdText(pricingJsonLd(locale, t)) }}
       />
       <div className="min-h-screen bg-white text-slate-900 font-sans">
         <ScrollProgress />

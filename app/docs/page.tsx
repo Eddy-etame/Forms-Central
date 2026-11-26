@@ -7,7 +7,7 @@ import CopyButton from "@/components/CopyButton";
 import { Magnetic, ScrollProgress } from "@/components/marketing/Interactive";
 import Reveal from "@/components/Reveal";
 import SnippetTabs from "@/components/developer/SnippetTabs";
-import { resolveLocale, buildMetadata, SITE_URL } from "@/lib/seo";
+import { resolveLocale, buildMetadata, jsonLdText, SITE_URL } from "@/lib/seo";
 import { getAppDict } from "@/lib/appDict";
 import { PLANS } from "@/lib/plans";
 import { relayNextSnippet, relayAstroSnippet } from "@/lib/snippets";
@@ -102,7 +102,7 @@ const ERRORS: Err[] = [
   { code: "POW_PARAMETERS_MISSING / POW_*", status: 400, en: "JSON posts must solve a fresh challenge from /api/challenge. Never reuse one.", fr: "Les envois JSON doivent résoudre un défi frais depuis /api/challenge. N’en réutilisez jamais un." },
   { code: "INVALID_API_KEY", status: 401, en: "The relay key is wrong, revoked, or belongs to another account.", fr: "La clé du relais est fausse, révoquée, ou appartient à un autre compte." },
   { code: "RATE_LIMIT_EXCEEDED", status: 429, en: "Too many posts from one IP. Back off 60 s; repeated bursts earn a temporary ban.", fr: "Trop d’envois depuis une IP. Patientez 60 s ; des rafales répétées valent un bannissement temporaire." },
-  { code: "HOST_BLACKLISTED / SENDER_BLACKLISTED", status: 403, en: "The IP or e-mail is temporarily banned (24 h) after a honeypot hit or a burst. Wait, or contact the developer if a real person is caught.", fr: "L’IP ou l’e-mail est banni temporairement (24 h) après un honeypot ou une rafale. Attendez, ou contactez le développeur si une vraie personne est bloquée." },
+  { code: "HOST_BLACKLISTED / SENDER_BLACKLISTED", status: 403, en: "The sending address — or the hosting provider it belongs to — is refused for 24 hours after a honeypot hit or a flood. Wait, or contact the developer if a real person is caught.", fr: "L’adresse d’envoi — ou l’hébergeur auquel elle appartient — est refusée 24 heures après un honeypot ou une inondation. Attendez, ou contactez le développeur si une vraie personne est bloquée." },
   { code: "PAYLOAD_TOO_LARGE", status: 413, en: "The body is over the limit (attachments included). Shrink files before sending.", fr: "Le corps dépasse la limite (pièces jointes comprises). Réduisez les fichiers avant l’envoi." },
   { code: "DATABASE_*", status: 500, en: "Inlet failed to store the lead. The visitor sees an error, nothing is silently lost; retry.", fr: "Inlet n’a pas pu stocker le lead. Le visiteur voit une erreur, rien n’est perdu en silence ; réessayez." },
 ];
@@ -220,7 +220,7 @@ const DOC: Record<Locale, DocDict> = {
         { t: "Allowed origins.", d: "Each form lists the sites that may post to it (CORS). Derived from the site URL; editable; * allows any site when you need it." },
         { t: "Honeypot + proof-of-work.", d: "A hidden empty field catches dumb bots; a SHA-256 challenge makes bulk JavaScript posting expensive. Both are invisible to visitors." },
         { t: "Keyword flagging, never silent drops.", d: "A lead that trips the keyword filter is stored and flagged “suspect”, the auto-reply is withheld, and the notification subject says [Check]. You decide; nothing disappears." },
-        { t: "Rate limits and temporary bans.", d: "Per-IP limits; abusers are banned for 24 hours, not forever, so a shared office IP recovers." },
+        { t: "Rate limits and temporary bans.", d: "Per-IP limits. An address that fills the honeypot or floods a form is refused for 24 hours, not forever, so a shared office IP recovers. A ban is only ever placed on an address Inlet saw itself, never on one a relay reports." },
         { t: "Attachments.", d: "Downloads go through an endpoint that checks the session and the ownership of the lead; the storage URL is never handed to a browser." },
         { t: "Accounts.", d: "Developers sign in with password + e-mail OTP. Clients get single-use set-password links. API keys are hashed at rest and revocable. Sending accounts rotate with a cooldown on failure; every send is logged; a failed send is a failure, never a false “delivered”." },
       ],
@@ -367,7 +367,7 @@ const DOC: Record<Locale, DocDict> = {
         { t: "Origines autorisées.", d: "Chaque formulaire liste les sites qui peuvent y poster (CORS). Déduites de l’URL du site ; modifiables ; * autorise n’importe quel site si besoin." },
         { t: "Honeypot + preuve de travail.", d: "Un champ vide caché attrape les bots simples ; un défi SHA-256 rend l’envoi massif en JavaScript coûteux. Les deux sont invisibles pour les visiteurs." },
         { t: "Mots-clés signalés, jamais supprimés en silence.", d: "Un lead qui déclenche le filtre est stocké et marqué « à vérifier », la réponse automatique est retenue, et le sujet de la notification dit [À vérifier]. Vous décidez ; rien ne disparaît." },
-        { t: "Limites de débit et bannissements temporaires.", d: "Limites par IP ; les abuseurs sont bannis 24 heures, pas pour toujours, pour qu’une IP de bureau partagée s’en remette." },
+        { t: "Limites de débit et bannissements temporaires.", d: "Limites par IP. Une adresse qui remplit le honeypot ou inonde un formulaire est refusée 24 heures, pas pour toujours, pour qu’une IP de bureau partagée s’en remette. Un bannissement ne vise jamais qu’une adresse qu’Inlet a vue lui-même, jamais celle qu’un relais déclare." },
         { t: "Pièces jointes.", d: "Les téléchargements passent par un point d’accès qui vérifie la session et la propriété du lead ; l’URL de stockage n’est jamais remise à un navigateur." },
         { t: "Comptes.", d: "Les développeurs se connectent avec mot de passe + code OTP par e-mail. Les clients reçoivent des liens à usage unique. Les clés API sont hachées et révocables. Les comptes d’envoi tournent avec une mise en pause en cas d’échec ; chaque envoi est journalisé ; un envoi échoué est un échec, jamais un faux « délivré »." },
       ],
@@ -471,7 +471,7 @@ export default async function DocsPage({ searchParams }: { searchParams: Promise
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdText(jsonLd) }} />
       <div className="min-h-screen bg-white text-slate-900 font-sans">
         <ScrollProgress />
         <NavBar locale={locale} />

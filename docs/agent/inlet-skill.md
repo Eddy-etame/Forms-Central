@@ -217,7 +217,7 @@ export function verifyInletWebhook(rawBody, sigHeader, secret, toleranceSec = 30
 | `POW_PARAMETERS_MISSING` / `POW_*` | 400 | solve a fresh challenge; never reuse one |
 | `INVALID_API_KEY` | 401 | the relay key is wrong, revoked, or belongs to another account |
 | `RATE_LIMIT_EXCEEDED` | 429 | back off 60 s; repeated bursts earn a temporary ban |
-| `HOST_BLACKLISTED` / `SENDER_BLACKLISTED` | 403 | IP or e-mail temporarily banned (24 h) after a honeypot hit or a burst |
+| `HOST_BLACKLISTED` / `SENDER_BLACKLISTED` | 403 | the sending address, or its hosting provider, is refused for 24 h after a honeypot hit or a flood |
 | `PAYLOAD_TOO_LARGE` | 413 | body over the limit (attachments included) — shrink files |
 | `MISSING_ORIGIN` | 400 | a CORS preflight (OPTIONS) without an Origin header — browsers always send one; a server needs no preflight, POST directly |
 

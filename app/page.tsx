@@ -7,7 +7,7 @@ import { NavBar } from "@/components/marketing/NavBar";
 import { Kicker } from "@/components/marketing/Kicker";
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/dictionaries";
-import { resolveLocale, buildMetadata, SITE_URL } from "@/lib/seo";
+import { resolveLocale, buildMetadata, jsonLdText, SITE_URL } from "@/lib/seo";
 import HeroPreview from "@/components/marketing/HeroPreview";
 import { LogoBadge } from "@/components/Logo";
 import AiChat from "@/components/AiChat";
@@ -18,79 +18,50 @@ import { Magnetic, Tilt, SpotlightCard, ScrollProgress } from "@/components/mark
 
 const SITE_NAME = "Inlet";
 
-/* ---------------------------------------------------------------- FAQ data
-   Single source of truth: rendered in the page AND in FAQPage JSON-LD.
-   FAQ schema is the highest-impact structured data for AI citations. */
-const FAQ: { q: string; a: string }[] = [
-  {
-    q: "Do my websites need SMTP credentials or an email library?",
-    a: "No. SMTP is configured once inside the service. Your websites only POST their form fields to a form URL — they hold no email credentials and import no mailer. This is the core difference from wiring email into every site.",
-  },
-  {
-    q: "Can it send email without a verified domain?",
-    a: "Yes. With a single verified sender (for example via Brevo) you can send to anyone — no full domain setup required. A custom domain with DKIM/SPF improves deliverability at scale, but is optional to start.",
-  },
-  {
-    q: "Which frameworks and stacks does it support?",
-    a: "Any browser JavaScript environment: Astro, Next.js, Nuxt, Vue, Svelte, or plain static HTML. You copy one small submit helper (or a standard HTML form) and point it at your form URL.",
-  },
-  {
-    q: "How does it stop spam?",
-    a: "Four layers: a hidden honeypot field, a cryptographic proof-of-work challenge that costs bots CPU, an NLP keyword filter, and reverse-DNS blocking of VPN/cloud hosts. Blocked attempts are logged, never delivered.",
-  },
-  {
-    q: "How is this different from Formspree, Basin, or Jotform?",
-    a: "It is self-hosted on your own Supabase and Vercel, so you own the data. It is multi-tenant and white-label — one backend serves many client sites, each with its own branded emails. It is developer-first (code integration), not a drag-and-drop builder.",
-  },
-  {
-    q: "What happens to file uploads?",
-    a: "Base64 file payloads are intercepted, uploaded to storage, and replaced with clean download links inside the notification email — so attachments never trip spam filters or bloat inboxes.",
-  },
-];
-
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "SoftwareApplication",
-      name: SITE_NAME,
-      applicationCategory: "DeveloperApplication",
-      operatingSystem: "Web",
-      url: SITE_URL,
-      description:
-        "Self-hosted form backend that centralizes submissions from all your sites into one dashboard — no SMTP, no per-site setup. White-labeled auto-reply emails, AI + proof-of-work spam blocking, CSV exports.",
-      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-      featureList: [
-        "Centralized submissions dashboard",
-        "No SMTP in consumer apps",
-        "Multi-tenant white-label emails",
-        "AI + proof-of-work spam protection",
-        "CSV lead export",
-        "Automatic SMTP fallback rotation",
-      ],
-    },
-    {
-      "@type": "Organization",
-      name: SITE_NAME,
-      url: SITE_URL,
-      logo: `${SITE_URL}/icon.svg`,
-      founder: { "@type": "Person", name: "King_E" },
-    },
-    {
-      "@type": "WebSite",
-      name: SITE_NAME,
-      url: SITE_URL,
-    },
-    {
-      "@type": "FAQPage",
-      mainEntity: FAQ.map((f) => ({
-        "@type": "Question",
-        name: f.q,
-        acceptedAnswer: { "@type": "Answer", text: f.a },
-      })),
-    },
-  ],
-};
+/* ------------------------------------------------------- structured data
+   Built from the very dictionary the page renders, in the language it renders:
+   the FAQ a search engine or an assistant reads is the FAQ a visitor reads.
+   (Until 2026-11-26 this was a second, hand-kept English copy; it had drifted
+   to a product that no longer exists.) */
+function homeJsonLd(locale: "en" | "fr", landing: ReturnType<typeof getDictionary>["landing"]) {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        name: SITE_NAME,
+        applicationCategory: "DeveloperApplication",
+        operatingSystem: "Web",
+        url: SITE_URL,
+        inLanguage: locale,
+        description: buildMetadata("home", locale).description,
+        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+        featureList: landing.features.cards.map((c) => c.title),
+      },
+      {
+        "@type": "Organization",
+        name: SITE_NAME,
+        url: SITE_URL,
+        logo: `${SITE_URL}/icon.svg`,
+        founder: { "@type": "Person", name: "King_E" },
+      },
+      {
+        "@type": "WebSite",
+        name: SITE_NAME,
+        url: SITE_URL,
+      },
+      {
+        "@type": "FAQPage",
+        inLanguage: locale,
+        mainEntity: landing.faq.items.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+    ],
+  };
+}
 
 const SNIPPET = `// 1. Get a proof-of-work challenge, solve it, POST your fields.
 const API_URL = process.env.FORM_API_URL;   // the service
@@ -121,7 +92,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
   const L = d.landing;
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdText(homeJsonLd(locale, L)) }} />
       <div className="min-h-screen bg-white text-slate-900 font-sans">
         <ScrollProgress />
         <NavBar variant="dark" locale={locale} />

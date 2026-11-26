@@ -61,8 +61,9 @@ Agents can also follow /llm-install.md; Claude Code can use /inlet-skill.md.
 
 SECURITY
 - Spam gates: honeypot, proof-of-work, keyword filter (suspect leads are kept
-  and flagged, never silently dropped), reverse-DNS host bans after a honeypot hit, per-IP
-  rate limits with temporary bans. Blocked attempts are logged.
+  and flagged, never silently dropped), per-IP rate limits. An address that fills the
+  honeypot or floods a form is refused for 24 hours — its hosting provider too, when it
+  belongs to one. Blocked attempts are logged.
 - Allowed origins per form (CORS). Developers sign in with password + e-mail
   OTP. Attachments are served only to the owners of the lead. API keys are
   hashed at rest and revocable.

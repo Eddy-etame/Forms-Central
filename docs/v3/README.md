@@ -506,6 +506,38 @@ answers, the pages of the submit endpoint — and found a product bug on the way
   MCP 24/24, developer-and-client 104/104, browser 50/50 with no browser
   error; the plain-form flow by hand in a browser, in both languages.
 
+### 2026-11-27 — the first scheduled run with housekeeping, and noise left in the failure log
+
+- **The backup job ran on its own with housekeeping attached** (04:23 UTC):
+  backup stored under a random name in the private bucket, read back and
+  counted (10 developers, 10 clients, 22 forms, 15 leads — unchanged);
+  housekeeping ran with no error and removed nothing, the supervised run of
+  the day before having left nothing old enough. No ban in force.
+- **413 lines in the failure log are not real.** On 26 November between 14:00
+  and 16:33 UTC the suites were run against a local server on a machine that
+  cannot reach any mail server, pointed at the production database. Every
+  send attempt there wrote one "connection refused" line per sending account
+  and one "every sending account failed" line — 354 and 59. Production never
+  failed: it handed a notification and an auto-reply to the mail server at
+  05:35 UTC today, and wrote no failure line since. The lines are easy to
+  tell apart (the only ones that say `ECONNREFUSED`, all in that window, none
+  tied to a form) but they sit on the operator's Logs page looking like an
+  outage. Removing them was refused by the session's permissions; the
+  statement below does it, in the database's SQL editor:
+
+  ```sql
+  delete from failures_log
+  where form_id is null
+    and created_at >= '2026-11-26 14:00+00' and created_at < '2026-11-26 16:40+00'
+    and (error_type = 'SMTP_ALL_ACCOUNTS_FAILED'
+         or (error_type = 'SMTP_ACCOUNT_FAILED' and error_message like '%ECONNREFUSED%'));
+  ```
+
+  The lesson for the next local run: a local server writes into the database
+  it is pointed at, mail failures included. On a machine without mail access,
+  run the suites against production (they clean up after themselves there),
+  or remove those lines afterwards.
+
 ## 2. The B proposal (what we built beyond the ask)
 
 The author asked for A: developers → clients → forms, no e-mail in the code,

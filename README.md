@@ -154,7 +154,12 @@ See `.env.example` — every variable is documented there. The ones people miss:
 ## Tests and scripts
 
 The suites run against a live dev server and the database in `.env.local`
-(they create and delete their own rows; nothing sends e-mail):
+(they create and delete their own rows; nothing sends e-mail). One thing
+they cannot clean up: a local server on a machine that cannot reach the mail
+servers writes a "connection refused" line per sending account, for every
+send, into the failure log of the database it is pointed at. Against a
+production database, run the suites on the production URL instead, or delete
+those lines afterwards:
 
 ```bash
 npm run dev -- -p 3005
